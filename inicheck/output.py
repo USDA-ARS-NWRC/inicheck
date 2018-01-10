@@ -130,8 +130,8 @@ def print_config_report(warnings, errors, logger= None):
     print out in a pretty format the issues
 
     Args:
-        warnings - List of non-critical messages returned from :func:`~smrf.utils.io.check_config'.
-        errors - List of critical messages returned from :func:`~smrf.utils.io.check_config'.
+        warnings - List of non-critical messages returned from :func:`~utilities.check_config'.
+        errors - List of critical messages returned from :func:`~utilities.check_config'.
         logger - pass in the logger function being used. If no logger is provided, print is used. Default = None
 
     Returns:
@@ -144,7 +144,7 @@ def print_config_report(warnings, errors, logger= None):
     if logger != None:
         out = logger.info
     else:
-        out = print
+        out = print_out
 
 
     msg_len = 110
@@ -182,3 +182,6 @@ def print_config_report(warnings, errors, logger= None):
 
     if not any_errors and not any_warnings:
         out("No errors or warnings were reported with the config file.\n")
+
+def print_out(out_str):
+    print out_str

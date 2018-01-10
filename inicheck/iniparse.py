@@ -1,6 +1,8 @@
 import os
+from utilities import remove_chars, pcfg
+from collections import OrderedDict
 
-def _read_config_file(filename):
+def read_config(filename):
     """
     Opens and reads in the config file in its most raw form.
     Creates a dictionary of dictionaries that contain the string result
@@ -8,7 +10,7 @@ def _read_config_file(filename):
     Args:
         filename: Real path to the config file to be opened
     Returns:
-        dictionary: dict of dict containing the info in a config file
+        config: dict of dicts containing the info in a config file
     """
 
 
@@ -17,8 +19,11 @@ def _read_config_file(filename):
         f.close()
 
     sections = parse_sections(lines)
-    result = parse_items(sections)
-    print result
+    config = parse_items(sections)
+    pcfg(config)
+    print
+    print
+    return config
 
 def parse_sections(lines):
     """
@@ -33,12 +38,12 @@ def parse_sections(lines):
                   values that are strings of the contents between sections
 
     """
-    result = {}
+    result = OrderedDict()
     section = None
     i=0
 
     while i <len(lines):
-        line = _remove_chars(lines[i],'\t\n')
+        line = remove_chars(lines[i],'\t\n')
         line = line.strip()
 
         #Comment checking
@@ -56,10 +61,14 @@ def parse_sections(lines):
                 if ']' in line:
                     #Ensure this line is not a list provided under an item
                     if ':' not in line and '=' not in line:
-                        section = (_remove_chars(line,'[]')).lower()
+                        section = (remove_chars(line,'[]')).lower()
                         result[section]=[]
+
+                    #Catch items that contain lists
+                    else:
+                        result[section].append(line)
                 else:
-                    raise ValueError("Config file contains an open bracket at"
+                    raise ValueError("Config file contains an open bracket at "
                                      "line {0}".format(i))
 
             else:
@@ -79,43 +88,23 @@ def parse_items(parsed_sections_dict):
     Returns:
         result: dictionary of dictionaries containing sections,items, and their values
     """
-    result = {}
+    result = OrderedDict()
+
     for k,v in parsed_sections_dict.items():
+        result[k] = OrderedDict()
+
         for i,val in enumerate(v):
 
             #Look for item notation
             if ':' in val:
                 parseable = val.split(':')
                 item = parseable[0].lower()
+                result[k][item] = []
 
                 #Check for a value right after the item name
-                if parseable[-1].strip():
-                    result[k]={item:list(parseable[-1])}
-
-                else:
-                    properties = ("".join(v[i+1:])).split(',')
-                    result[k] = {item:properties}
-
-
+                potential_value=parseable[-1].strip()
+                if potential_value:
+                    result[k][item].append(potential_value)
+            else:
+                result[k][item].append(remove_chars(val,','))
     return result
-
-
-def _remove_chars(orig_str,char_str, replace_str=None):
-    """
-    Removes all charact in orig_str that are in char_str
-
-    Args:
-        orig_str: Original string needing cleaning
-        char_str: String of characters to be removed
-        replace_str: replace values with a character if requested
-
-    Returns:
-        string: orig_str with out any characters in char_str
-    """
-    if replace_str == None:
-        clean_str = [c for c in orig_str if c not in char_str]
-    else:
-        clean_str = [c if c not in char_str else replace_str for c in orig_str]
-
-
-    return "".join(clean_str)
