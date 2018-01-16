@@ -1,118 +1,61 @@
+from datetime import date
 
-def generate_config(config,fname, inicheck = False, order_lst = None, titles = None):
+def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
+                    section_titles = None):
     """
     Generates a list of strings to be written and then writes them in the ini file
 
     Args:
-        config - Config file dictionary created by :func:`~smrf.utils.io.read_config'.
+        config - Config file dictionary created by
+                 :func:`~inicheck.config.UserConfig'.
         fname - String path to the output location for the new config file.
-        inicheck - Boolean value that adds the line generated using inicheck to config, Default = False
+        package_header - This is string that enables the user to customize
+                         config files with their own titles. Creating a string
+                         at the top that says "Configuration File for
+                         <package_header>"
+
+        inicheck - Boolean value that adds the line "file generated using
+                   inicheck to config file, Default = False
 
     Returns:
         None
     """
 
-    # find output of 'git describe'
-    gitVersion = utils.getgitinfo()
-
     #Header surround each commented titles in the ini file
     section_header = ('#'*80) + '\n' + ('# {0}\n') +('#'*80)
-
-    #Dictionaries do not go in order so we provide the order here
-    if order_lst == None:
-        order_lst = ['topo',
-                      'time',
-                      'stations',
-                      'csv',
-                      'mysql',
-                      'gridded',
-                      'air_temp',
-                      'vapor_pressure',
-                      'wind',
-                      'precip',
-                      'albedo',
-                      'solar',
-                      'thermal',
-                      'soil_temp',
-                      'output',
-                      'logging',
-                      'system'
-                      ]
-
-    #Dictionary of commented section titles
-    if titles == None:
-        titles = {'topo': "Files for DEM and vegetation",
-                  'time': "Dates to run model",
-                  'stations': "Stations to use",
-                  'csv': "CSV data files",
-                  'mysql': "MySQL database",
-                  'gridded': "Gridded dataset i.e. wrf_out",
-                  'air_temp': "Air temperature distribution",
-                  'vapor_pressure': "Vapor pressure distribution",
-                  'wind': "Wind speed and wind direction distribution",
-                  'precip': "Precipitation distribution",
-                  'albedo': "Albedo distribution",
-                  'solar': "Solar radiation distribution",
-                  'thermal': "Thermal radiation distribution",
-                  'soil_temp': " Soil temperature",
-                  'output': "Output variables",
-                  'logging': "Logging",
-                  'system': "System variables"
-                }
 
     #Construct the section strings
     config_str="#"*80
 
-    #File header
-    config_str += """
-#
-# Configuration file for SMRF {0}
-# Date generated: {1}
-""".format(gitVersion, date.today())
+    #File header with specific package option
+    config_str += "# Configuration File "
+    if package_header != None:
+        config_str+= "for {0}\n".format(package_header)
 
+    #Add in the date generated
+    config_str+= "# Date generated: {0}".format(date.today())
+
+    #Generated with inicheck
     if inicheck:
         config_str+= "# Generated using: inicheck <filename> -w \n# "
 
     config_str+="""
-# For details on configuration file syntax see:
-# https://docs.python.org/2/library/configparser.html
-#
-# For more SMRF related help see:
-# http://smrf.readthedocs.io/en/latest/
+# For more inicheck help see:
+# http://inicheck.readthedocs.io/en/latest/
 """
 
-    #Check for one of the three data set options
-    user_sections = config.keys()
-    if 'csv' in user_sections:
-        if 'mysql' in order_lst:
-            order_lst.remove('mysql')
-        if 'gridded' in order_lst:
-            order_lst.remove('gridded')
-
-    elif 'mysql' in user_sections:
-        if 'csv' in order_lst:
-            order_lst.remove('csv')
-        if 'gridded' in order_lst:
-            order_lst.remove('gridded')
-
-    elif 'gridded' in user_sections:
-        if 'stations' in order_lst:
-            order_lst.remove('stations')
-        if 'csv' in order_lst:
-            order_lst.remove('csv')
-        if 'mysql' in order_lst:
-            order_lst.remove('mysql')
-
-
     #Generate the string for the file, creating them in order.
-    for section in order_lst:
-        #Add the header
-        config_str+='\n'*2
-        config_str+=section_header.format(titles[section])
+    for section in mcfg.keys():
+        if section_titles != None:
+            #Add the header
+            config_str+='\n'*2
+            config_str+=section_header.format(section_titles[section])
+
         config_str+='\n'
         config_str+='\n[{0}]\n'.format(section)
+
         #Add section items and values
-        for k,v in config.get(section).items():
+        for k,v in config[section].items():
             if type(v) == list:
                 astr = ", ".join(str(c.strip()) for c in v)
             else:

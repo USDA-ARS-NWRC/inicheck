@@ -1,3 +1,5 @@
+from pandas import to_datetime
+
 
 def remove_chars(orig_str,char_str, replace_str=None):
     """
@@ -16,8 +18,8 @@ def remove_chars(orig_str,char_str, replace_str=None):
     else:
         clean_str = [c if c not in char_str else replace_str for c in orig_str]
 
-
     return "".join(clean_str)
+
 
 def cast_variable(variable,type_value):
     """
@@ -33,8 +35,9 @@ def cast_variable(variable,type_value):
     type_value = str(type_value)
     value = []
     for v in variable:
+
         if 'datetime' in type_value:
-            value.append(pd.to_datetime(v))
+            value.append(to_datetime(v))
         elif 'bool' in type_value:
             if v.lower() in ['yes','y','true']:
                 v = True
@@ -59,18 +62,22 @@ def cast_variable(variable,type_value):
         value = value[0]
     return value
 
+
 def pcfg(cfg):
     """
     prints out the config file to the prompt with a nice stagger Look for
     readability
+
+    Args:
+        cfg: dict of dict in a heirarcy of  {section, {items, values}}
     """
 
     for sec in cfg.keys():
-        print(sec)
+        print(repr(sec))
         for item in cfg[sec].keys():
             print('\t'+item)
             if type(cfg[sec][item])==list:
                 out = ", ".join(cfg[sec][item])
             else:
                 out = cfg[sec][item]
-            print('\t\t'+out)
+            print('\t\t'+repr(out))

@@ -13,37 +13,37 @@ def read_config(filename):
         config: dict of dicts containing the info in a config file
     """
 
+    sections = parse_sections(fname = filename)
+    sec_and_items = parse_items(sections)
+    config = parse_values(sec_and_items)
 
-    with open(filename) as f:
-        lines = f.readlines()
-        f.close()
-
-    sections = parse_sections(lines)
-    config = parse_items(sections)
-    pcfg(config)
-    print
-    print
+    #pcfg(config)
     return config
 
-def parse_sections(lines):
+
+def parse_sections(fname):
     """
     Returns a dictionary containing all the sections as keys with a single
     string of the contents after the section
     Args:
 
-        lines: A list of strings that are read in.
+        fname: filename of the config to parse
 
     Returns:
         sections: dictionary containing keys that are the section names and
                   values that are strings of the contents between sections
 
     """
+    with open(fname) as f:
+        lines = f.readlines()
+        f.close()
+
     result = OrderedDict()
     section = None
     i=0
 
-    while i <len(lines):
-        line = remove_chars(lines[i],'\t\n')
+    for i in range(len(lines)):
+        line = remove_chars(lines[i],'\t')
         line = line.strip()
 
         #Comment checking
@@ -54,27 +54,22 @@ def parse_sections(lines):
             line = line.split(';')[0]
 
         #check for empty line first
-        if line not in os.linesep:
+        if line and line not in os.linesep:
             #Look for section
-            if '[' in line:
+            if line.startswith('['):
                 #look for open brackets
-                if ']' in line:
+                if line.endswith(']'):
                     #Ensure this line is not a list provided under an item
-                    if ':' not in line and '=' not in line:
-                        section = (remove_chars(line,'[]')).lower()
-                        result[section]=[]
+                    section = (remove_chars(line,'[]')).lower()
+                    result[section]=[]
 
-                    #Catch items that contain lists
-                    else:
-                        result[section].append(line)
-                else:
-                    raise ValueError("Config file contains an open bracket at "
-                                     "line {0}".format(i))
+                # else:
+                #     raise ValueError("Config file contains an open bracket at "
+                #                      "line {0}\n{1}".format(i,fname))
 
             else:
-                result[section].append(line)
+                result[section].append(lines[i])
 
-        i+=1
     return result
 
 
@@ -86,25 +81,71 @@ def parse_items(parsed_sections_dict):
         parsed_sections_dict: dictionary containing keys as the sections and
                               values as a continuous string of the
     Returns:
-        result: dictionary of dictionaries containing sections,items, and their values
+        result: dictionary of dictionaries containing sections,items, and their
+                values
     """
     result = OrderedDict()
 
     for k,v in parsed_sections_dict.items():
+        item = None
         result[k] = OrderedDict()
-
         for i,val in enumerate(v):
-
+            val = val.lstrip()
             #Look for item notation
+
             if ':' in val:
-                parseable = val.split(':')
+                # Only split on the first colon to avoid collisions with datetime
+                parse_loc = val.index(':')
+                parseable = [val[0:parse_loc],val[parse_loc+1:]]
                 item = parseable[0].lower()
-                result[k][item] = []
+
+                result[k][item] = ''
 
                 #Check for a value right after the item name
-                potential_value=parseable[-1].strip()
-                if potential_value:
-                    result[k][item].append(potential_value)
+                potential_value = (parseable[-1].replace('\n',' ')).lstrip()
+
+                #Avoid stashing properties in line with the item
+                if '=' not in potential_value:
+                    result[k][item]=potential_value.lstrip()
+
+                #Property value provided in line with item
+                else:
+                    result[k][item]+=potential_value
+
+                #print('\t\t'+repr(potential_value))
+
+            #User added line returns likely for readability
             else:
-                result[k][item].append(remove_chars(val,','))
+                result[k][item]+=val.lstrip()
+
+            #Always split on commas provided
+            # if ',' in result[k][item]:
+            #     result[k][item] = [s.strip() for s in (result[k][item].replace('\n',' ')).split(',')]
+
     return result
+
+def parse_values(parsed_items):
+        """
+        Takes the output from parse_items and parses any values or properties
+        provided in each item placing the strings into a list. If no properties
+        are defined then it will clean up values provided and put them in a list of len one.
+
+        Args:
+            parsed_sections_dict: dict of dicts containing joined strings found
+                                  under each item
+        Returns:
+            result: dictionary of dictionaries containing sections,items, and
+                    the values provided as a list
+        """
+        result = {}
+        for section in parsed_items.keys():
+            result[section] = {}
+            for item,val in parsed_items[section].items():
+                value = val.strip()
+                if ',' in val:
+                    result[section][item] = [v.strip()  for v in value.split(',')]
+
+                else:
+                    result[section][item] = [value]
+
+        return result

@@ -1,6 +1,6 @@
 from iniparse import read_config
 from utilities import cast_variable
-
+from pandas import to_datetime
 import os
 import sys
 class UserConfig():
@@ -22,10 +22,9 @@ class UserConfig():
         for section,configured in self.cfg.items():
                 for k,v in self.mcfg[section].items():
                     if v.name not in configured.keys():
-                        #print(v.name,v.default)
                         self.cfg[section][k]=v.default
 
-    def check_config_file(self):
+    def check(self):
         """
         looks at the users provided config file and checks it to a master config file
         looking at correctness and missing info.
@@ -39,11 +38,6 @@ class UserConfig():
         msg = "{: <20} {: <30} {: <60}"
         errors = []
         warnings = []
-
-        #Check for all the required sections
-        has_a_data_section = False
-        data_sections = ['csv',"mysql","gridded"]
-        user_sections = self.cfg.keys()
 
         for section in self.mcfg.keys():
             if section not in user_sections and section not in data_sections:
@@ -92,7 +86,7 @@ class UserConfig():
 
                                 if options_type == 'datetime':
                                     try:
-                                        pd.to_datetime(v)
+                                        to_datetime(v)
                                     except:
                                         errors.append(msg.format(section,item,'Format not datetime'))
 
@@ -143,10 +137,14 @@ class MasterConfig():
         raw_config = read_config(master_config_file)
         for section in raw_config.keys():
             sec = {}
+            #print(section)
             for item in raw_config[section].keys():
+
                 sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])
+                #print('\t' + repr(item))
 
             cfg[section] = sec
+
 
         return cfg
 
@@ -170,16 +168,15 @@ class ConfigEntry():
         #Options should always be a list
         if type(self.options) != list:
             self.options = [self.options]
-        if self.name =='client':
-            self.options = [v.upper() for v in self.options]
 
     def parse_info(self,info):
         """
         """
         if type(info) != list:
             info = [info]
-
+        #print('\t\t'+repr(info))
         for s in info:
+
             if '=' in s:
                 a = s.split('=')
             else:
@@ -198,14 +195,14 @@ class ConfigEntry():
             # Is there a list?
             if '[' in value:
                 if ']' not in value:
-                    raise ValueError("Missing bracket in Master Config file under {0}".format(name))
+                    raise ValueError("Missing bracket in Config file under {0}".format(name))
                 else:
                     value = (''.join(c for c in value if c not in '[]'))
                     value = value.split(' ')
-                    #value = [v for v in value if v == ' ' ]
 
             result = value
             setattr(self,name,result)
+            #print("\t\t"+repr(name)+": "+repr(result))
 
     def convert_type(self,value):
         if str(value).lower() == 'none':
