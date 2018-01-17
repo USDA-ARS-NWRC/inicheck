@@ -5,6 +5,7 @@ from inicheck import __recipe_keywords__
 from pandas import to_datetime
 import os
 import sys
+import copy
 
 class UserConfig():
     def __init__(self,filename,mcfg=None):
@@ -13,7 +14,7 @@ class UserConfig():
         if mcfg != None:
             self.mcfg = mcfg
 
-    def add_recipes(self):
+    def apply_recipes(self):
         """
         Look through the users config file and section by section add in missing
         parameters to add defaults
@@ -21,79 +22,62 @@ class UserConfig():
         Returns:
             user_cfg: User config dictionary with defaults added.
         """
-        all_user_sections = self.cfg.keys()
 
         for r in self.mcfg.recipes:
 
             for trigger,recipe_entry in r.triggers.items():
-                gates = 0
-                gates_passed = 0
-                #print(trigger)
-                for name in recipe_entry.valid_names:
-                    condition = getattr(recipe_entry,name)
+                conditions_met = 0
 
-                    #Checks  if not None or not empty list
-                    if bool(condition):
-                        #print('\t'+repr(condition))
+                for condition in recipe_entry.conditions:
+                        for section in self.cfg.keys():
+                            if (condition[0] == 'any' or
+                                condition[0] == section):
 
-                        gates+=1
+                               #Has a section we are looking for
+                               if condition[1:2] == ['any','any']:
+                                   conditions_met+=1
+                                   break
+                               else:
+                                   for item, value in self.cfg[section].items():
+                                       if (condition[1] == 'any' or
+                                           condition[1] == item):
+                                            #has any items named
+                                           if (condition[0]=='any' and
+                                               condition[2]=='any'):
+                                                conditions_met+=1
+                                                break
+                                           else:
+                                               if condition[2] == value:
+                                                   conditions_met+=1
+                                                   break
 
-                        #Make sections a list for D-R-Y
-                        if 'section' in name:
-                            if type(condition) != list:
-                                condition = [condition]
-
-                        #Checks for has_section,has_item, or has_value
-                        if type(condition) == list and len(condition)>0:
-                            #Section check
-                            if condition[0] in all_user_sections:
-                                #has_section
-                                if len(condition) == 1:
-                                    print('has_section {0}!'.format(repr(condition)))
-                                    gates_passed+=1
-                                else:
-                                    print(condition[1],self.cfg[condition[0]].keys())
-
-                                    #Check for item name in section
-                                    if condition[1] in self.cfg[condition[0]].keys():
-                                        # has_item
-                                        if len(condition) == 2:
-                                            print('has_item {0}!'.format(repr(condition)))
-                                            gates_passed+=1
-
-                                        else:
-                                            #has_value
-                                            if self.mcfg[condition[0]][condition[1]].convert_type(condition[2]) == self.cfg[condition[0]][condition[1]]:
-                                                gates_passed+=1
-                                                print('has_value {0}!'.format(repr(condition)))
-
-
-                        else:
-                            #look for an item name anywhere (has_item_any)
-                            for section in self.cfg.keys():
-                                if condition in self.cfg[section]:
-                                    gates_passed+=1
-                                    break
 
                 #Determine if the condition was met.
-                if gates!=0 and gates==gates_passed:
+                if len(recipe_entry.conditions)==conditions_met:
                     print "DEBUG: Trigger: {0} was met!".format(trigger)
                     #Insert the recipe into the users config
                     self.change_cfg(r.applied_config)
                 else:
-                    print "DEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,gates,gates_passed)
+                    print "DEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
 
 
     def change_cfg(self,insert_cfg):
         """
         Uses inserts a partial config to the users config
         """
-        for section in insert_cfg.keys():
-            if section not in self.cfg.keys():
-                self.cfg[section] = {}
+        for sections in insert_cfg.keys():
+            if sections =='all':
+                sections = self.cfg.keys()
+            else:
+                if type(sections)!=list:
+                    sections = [sections]
 
-            for item, value in insert_cfg[section].items():
-                self.cfg[section][item] = value
+            for s in sections:
+                if s not in self.cfg.keys():
+                    self.cfg[s] = {}
+
+                for item, value in insert_cfg[s].items():
+                    self.cfg[s][item] = value
 
 
     def add_defaults(self):
@@ -216,7 +200,6 @@ class MasterConfig():
                     break
             else:
                 for item in raw_config[section].keys():
-
                     sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])
 
             cfg[section] = sec

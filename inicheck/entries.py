@@ -53,22 +53,32 @@ class RecipeEntry:
     """
     def __init__(self, parseable_line):
 
-        #Acceptable conditions
-        self.has_section = None
-        self.has_item = []
-        self.has_item_any = None
-        self.has_value = []
+        self.conditions = []
 
-        self.valid_names = ['has_section','has_item','has_item_any',
-                            'has_value']
-
+        self.valid_names = ['has_section','has_item','has_value']
         parsed_dict = parse_entry(parseable_line, valid_names = self.valid_names)
+        heirarcy = ['section','item','value']
+
+        #There can be multiple conditions returned
         for name,value in parsed_dict.items():
-            setattr(self,name,value)
-        #Options should always be a list
-        if type(self.has_value) != list or type(self.has_item)!= list:
-            raise ValueError("has_value and has_item_name is not type list in"
-                             "config ----> {0}".format(parseable_line))
+            result = ['any','any','any']
+
+            if type(value) == list:
+                #easy assignment to result using [section  item value syntax]
+                for i,v in enumerate(value):
+                    result[i] = v
+
+            #If single item provided
+            else:
+                for i,keyword in enumerate(heirarcy):
+                    if keyword in name:
+                        result[i] = value
+
+        #If result is all any, then clear it
+        if len([True for i in result if i == 'any']) != len(result):
+
+            self.conditions.append(result)
+
 
 class ConfigEntry:
     """

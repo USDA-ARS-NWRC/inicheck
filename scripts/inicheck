@@ -20,7 +20,7 @@ def main():
     if os.path.isfile(args.config_file):
         mcfg = MasterConfig(args.master_file)
         ucfg = UserConfig(args.config_file, mcfg = mcfg)
-        ucfg.add_recipes()
+        ucfg.apply_recipes()
         pcfg(ucfg.cfg)
         # warnings, errors = ucfg.check()
         # print_config_report(warnings,errors)

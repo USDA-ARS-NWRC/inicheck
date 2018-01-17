@@ -38,7 +38,7 @@ def parse_entry(info,valid_names=None):
 
         #Check for constraints on potential names of entries
         if valid_names != None and name not in valid_names:
-            raise ValueError("Invalid option set in the Master Config File for "
+            raise ValueError("Invalid option set in the master config File for "
                              "entry -----> {0}".format(name))
 
         value = a[1].strip()
@@ -50,7 +50,7 @@ def parse_entry(info,valid_names=None):
         # Is there a list of values provided?
         if '[' in value:
             if ']' not in value:
-                raise ValueError("Missing bracket in Config file under {0}".format(name))
+                raise ValueError("Missing bracket in config file under {0}".format(name))
             else:
                 value = (''.join(c for c in value if c not in '[]'))
                 value = value.split(' ')
