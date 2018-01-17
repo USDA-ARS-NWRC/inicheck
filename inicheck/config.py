@@ -29,32 +29,40 @@ class UserConfig():
                 conditions_met = 0
 
                 for condition in recipe_entry.conditions:
-                        for section in self.cfg.keys():
-                            if (condition[0] == 'any' or
-                                condition[0] == section):
+                    print(trigger,condition)
+                    for section in self.cfg.keys():
+                        if (condition[0] == 'any' or
+                            condition[0] == section):
 
-                               #Has a section we are looking for
-                               if condition[1:2] == ['any','any']:
-                                   conditions_met+=1
-                                   break
-                               else:
-                                   for item, value in self.cfg[section].items():
-                                       if (condition[1] == 'any' or
-                                           condition[1] == item):
-                                            #has any items named
-                                           if (condition[0]=='any' and
-                                               condition[2]=='any'):
-                                                conditions_met+=1
-                                                break
-                                           else:
-                                               if condition[2] == value:
-                                                   conditions_met+=1
-                                                   break
+                           #checks for a section only
+                           if condition[1:2] == ['any','any']:
+                               print("has_section triggered!")
+                               conditions_met+=1
+                               break
 
+                           else:
+                               for item, value in self.cfg[section].items():
+                                   if (condition[1] == 'any' or
+                                       condition[1] == item):
+
+                                       # has any items named
+                                       if (condition[0]=='any' and
+                                           condition[2]=='any'):
+                                           conditions_met+=1
+                                           print("has_item anywhere triggered!")
+                                           break
+
+                                       else:
+
+                                           if (condition[2] == 'any' or
+                                               condition[2] == value):
+                                               print("has_value triggered!")
+                                               conditions_met+=1
+                                               break
 
                 #Determine if the condition was met.
                 if len(recipe_entry.conditions)==conditions_met:
-                    print "DEBUG: Trigger: {0} was met!".format(trigger)
+                    print "DEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
                     #Insert the recipe into the users config
                     self.change_cfg(r.applied_config)
                 else:
