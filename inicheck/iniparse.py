@@ -21,6 +21,44 @@ def read_config(filename):
     return config
 
 
+def parse_entry(info,valid_names=None):
+    properties = {}
+    if type(info) != list:
+        info = [info]
+
+    for s in info:
+        if '=' in s:
+            a = s.split('=')
+        else:
+            raise ValueError('Master Config file missing an equals sign in '
+                            'entry {0}\n or missing a comma above this '
+                            'entry'.format(info))
+
+        name = (a[0].lower()).strip()
+
+        #Check for constraints on potential names of entries
+        if valid_names != None and name not in valid_names:
+            raise ValueError("Invalid option set in the Master Config File for "
+                             "entry -----> {0}".format(name))
+
+        value = a[1].strip()
+
+        result = []
+        value = value.replace('\n'," ")
+        value = value.replace('\t',"")
+
+        # Is there a list of values provided?
+        if '[' in value:
+            if ']' not in value:
+                raise ValueError("Missing bracket in Config file under {0}".format(name))
+            else:
+                value = (''.join(c for c in value if c not in '[]'))
+                value = value.split(' ')
+
+        properties[name] = value
+    return properties
+
+
 def parse_sections(fname):
     """
     Returns a dictionary containing all the sections as keys with a single
@@ -34,6 +72,7 @@ def parse_sections(fname):
                   values that are strings of the contents between sections
 
     """
+
     with open(fname) as f:
         lines = f.readlines()
         f.close()
@@ -62,10 +101,6 @@ def parse_sections(fname):
                     #Ensure this line is not a list provided under an item
                     section = (remove_chars(line,'[]')).lower()
                     result[section]=[]
-
-                # else:
-                #     raise ValueError("Config file contains an open bracket at "
-                #                      "line {0}\n{1}".format(i,fname))
 
             else:
                 result[section].append(lines[i])
@@ -112,15 +147,9 @@ def parse_items(parsed_sections_dict):
                 else:
                     result[k][item]+=potential_value
 
-                #print('\t\t'+repr(potential_value))
-
             #User added line returns likely for readability
             else:
                 result[k][item]+=val.lstrip()
-
-            #Always split on commas provided
-            # if ',' in result[k][item]:
-            #     result[k][item] = [s.strip() for s in (result[k][item].replace('\n',' ')).split(',')]
 
     return result
 

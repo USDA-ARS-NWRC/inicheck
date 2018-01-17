@@ -18,12 +18,12 @@ def main():
     args = parser.parse_args()
 
     if os.path.isfile(args.config_file):
-        mcfg = MasterConfig(args.master_file).cfg
+        mcfg = MasterConfig(args.master_file)
         ucfg = UserConfig(args.config_file, mcfg = mcfg)
-        ucfg.add_defaults()
-        #pcfg(ucfg.cfg)
-        warnings, errors = ucfg.check()
-        print_config_report(warnings,errors)
+        ucfg.add_recipes()
+        pcfg(ucfg.cfg)
+        # warnings, errors = ucfg.check()
+        # print_config_report(warnings,errors)
     else:
         raise IOError('File does not exist.')
 

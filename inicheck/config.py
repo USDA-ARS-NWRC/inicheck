@@ -1,14 +1,100 @@
 from iniparse import read_config
 from utilities import cast_variable
+from entries import ConfigEntry, RecipeSection
+from inicheck import __recipe_keywords__
 from pandas import to_datetime
 import os
 import sys
+
 class UserConfig():
     def __init__(self,filename,mcfg=None):
         self.filename = filename
         self.cfg = read_config(filename)
         if mcfg != None:
             self.mcfg = mcfg
+
+    def add_recipes(self):
+        """
+        Look through the users config file and section by section add in missing
+        parameters to add defaults
+
+        Returns:
+            user_cfg: User config dictionary with defaults added.
+        """
+        all_user_sections = self.cfg.keys()
+
+        for r in self.mcfg.recipes:
+
+            for trigger,recipe_entry in r.triggers.items():
+                gates = 0
+                gates_passed = 0
+                #print(trigger)
+                for name in recipe_entry.valid_names:
+                    condition = getattr(recipe_entry,name)
+
+                    #Checks  if not None or not empty list
+                    if bool(condition):
+                        #print('\t'+repr(condition))
+
+                        gates+=1
+
+                        #Make sections a list for D-R-Y
+                        if 'section' in name:
+                            if type(condition) != list:
+                                condition = [condition]
+
+                        #Checks for has_section,has_item, or has_value
+                        if type(condition) == list and len(condition)>0:
+                            #Section check
+                            if condition[0] in all_user_sections:
+                                #has_section
+                                if len(condition) == 1:
+                                    print('has_section {0}!'.format(repr(condition)))
+                                    gates_passed+=1
+                                else:
+                                    print(condition[1],self.cfg[condition[0]].keys())
+
+                                    #Check for item name in section
+                                    if condition[1] in self.cfg[condition[0]].keys():
+                                        # has_item
+                                        if len(condition) == 2:
+                                            print('has_item {0}!'.format(repr(condition)))
+                                            gates_passed+=1
+
+                                        else:
+                                            #has_value
+                                            if self.mcfg[condition[0]][condition[1]].convert_type(condition[2]) == self.cfg[condition[0]][condition[1]]:
+                                                gates_passed+=1
+                                                print('has_value {0}!'.format(repr(condition)))
+
+
+                        else:
+                            #look for an item name anywhere (has_item_any)
+                            for section in self.cfg.keys():
+                                if condition in self.cfg[section]:
+                                    gates_passed+=1
+                                    break
+
+                #Determine if the condition was met.
+                if gates!=0 and gates==gates_passed:
+                    print "DEBUG: Trigger: {0} was met!".format(trigger)
+                    #Insert the recipe into the users config
+                    self.change_cfg(r.applied_config)
+                else:
+                    print "DEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,gates,gates_passed)
+
+
+    def change_cfg(self,insert_cfg):
+        """
+        Uses inserts a partial config to the users config
+        """
+        for section in insert_cfg.keys():
+            if section not in self.cfg.keys():
+                self.cfg[section] = {}
+
+            for item, value in insert_cfg[section].items():
+                self.cfg[section][item] = value
+
 
     def add_defaults(self):
         """
@@ -18,9 +104,10 @@ class UserConfig():
         Returns:
             user_cfg: User config dictionary with defaults added.
         """
+        master = self.mcfg.cfg
 
         for section,configured in self.cfg.items():
-                for k,v in self.mcfg[section].items():
+                for k,v in master[section].items():
                     if v.name not in configured.keys():
                         self.cfg[section][k]=v.default
 
@@ -31,38 +118,23 @@ class UserConfig():
 
         Returns:
             tuple:
-            - **warnings** - Returns a list of string messages that are consider non-critical issues with config file.
-            - **errors** - Returns a list of string messages that are consider critical issues with the config file.
+            - **warnings** - Returns a list of string messages that are consider
+                             non-critical issues with config file.
+            - **errors** - Returns a list of string messages that are consider
+                           critical issues with the config file.
         """
 
         msg = "{: <20} {: <30} {: <60}"
         errors = []
         warnings = []
 
-        for section in self.mcfg.keys():
-            if section not in user_sections and section not in data_sections:
-                # stations not needed if gridded input data used
-                if 'gridded' not in user_sections and section == 'stations':
-                    err_str = "Missing required section."
-                    errors.append(msg.format(section," ", err_str))
-
-            #Check for a data section
-            elif section in user_sections and section in data_sections:
-                has_a_data_section = True
-
-        if not has_a_data_section:
-            err_str = "Must specify a CSV or MySQL or Gridded section."
-            errors.append(msg.format(" "," ", err_str))
-
         #Compare user config file to our master config
-        for section,configured in self.cfg.items():
-            #Are these valid sections?
-            if section not in self.mcfg.keys():
-                errors.append(msg.format(section,item, "Not a valid section."))
+        for section, configured in self.cfg.items():
 
             #In the section check the values and options
             for item,value in configured.items():
                 litem = item.lower()
+
                 #Is the item known as a configurable item?
                 if litem not in self.mcfg[section].keys():
                     wrn = "Not a registered option."
@@ -118,6 +190,7 @@ class UserConfig():
 
 class MasterConfig():
     def __init__(self,filename):
+        self.recipes = []
         self.cfg = self._read(filename)
 
     def _read(self, master_config_file):
@@ -137,79 +210,16 @@ class MasterConfig():
         raw_config = read_config(master_config_file)
         for section in raw_config.keys():
             sec = {}
-            #print(section)
-            for item in raw_config[section].keys():
+            for word in __recipe_keywords__:
+                if word in section:
+                    self.recipes.append(RecipeSection(raw_config[section]))
+                    break
+            else:
+                for item in raw_config[section].keys():
 
-                sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])
-                #print('\t' + repr(item))
+                    sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])
 
             cfg[section] = sec
 
 
         return cfg
-
-
-class ConfigEntry():
-    def __init__(self, name=None, value=None, default = None, entry_type='str', options=[], parseable_line=None):
-        self.name = name
-        self.value = value
-        self.default = default
-        self.options = options
-        self.description = ''
-        self.type = entry_type
-
-        if parseable_line != None:
-            self.parse_info(parseable_line)
-
-        self.default = self.convert_type(self.default)
-
-        self.options = self.convert_type(self.options)
-
-        #Options should always be a list
-        if type(self.options) != list:
-            self.options = [self.options]
-
-    def parse_info(self,info):
-        """
-        """
-        if type(info) != list:
-            info = [info]
-        #print('\t\t'+repr(info))
-        for s in info:
-
-            if '=' in s:
-                a = s.split('=')
-            else:
-                raise ValueError('Master Config file missing an equals sign in entry {0}\n or missing a comma above this entry'.format(info))
-
-            name = (a[0].lower()).strip()
-            if not hasattr(self,name):
-                raise ValueError("Invalid option set in the Master Config File for item ----->{0}".format(name))
-
-            value = a[1].strip()
-
-            result = []
-            value = value.replace('\n'," ")
-            value = value.replace('\t',"")
-
-            # Is there a list?
-            if '[' in value:
-                if ']' not in value:
-                    raise ValueError("Missing bracket in Config file under {0}".format(name))
-                else:
-                    value = (''.join(c for c in value if c not in '[]'))
-                    value = value.split(' ')
-
-            result = value
-            setattr(self,name,result)
-            #print("\t\t"+repr(name)+": "+repr(result))
-
-    def convert_type(self,value):
-        if str(value).lower() == 'none':
-            value = None
-
-        else:
-            if self.type not in str(type(value)):
-                value = cast_variable(value,self.type)
-
-        return value

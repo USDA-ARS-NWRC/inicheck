@@ -74,10 +74,13 @@ def pcfg(cfg):
 
     for sec in cfg.keys():
         print(repr(sec))
-        for item in cfg[sec].keys():
-            print('\t'+item)
-            if type(cfg[sec][item])==list:
-                out = ", ".join(cfg[sec][item])
-            else:
-                out = cfg[sec][item]
-            print('\t\t'+repr(out))
+        try:
+            for item in cfg[sec].keys():
+                print('\t'+item)
+                if type(cfg[sec][item])==list:
+                    out = ", ".join(cfg[sec][item])
+                else:
+                    out = cfg[sec][item]
+                print('\t\t'+repr(out))
+        except:
+            print('\t recipe')
