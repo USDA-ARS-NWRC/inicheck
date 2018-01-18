@@ -29,7 +29,9 @@ class UserConfig():
                 conditions_met = 0
 
                 for condition in recipe_entry.conditions:
-                    print(trigger,condition)
+                    trigger_section = None
+                    trigger_item = None
+                    trigger_value = None
                     for section in self.cfg.keys():
                         if (condition[0] == 'any' or
                             condition[0] == section):
@@ -46,6 +48,7 @@ class UserConfig():
                                        condition[1] == item):
 
                                        # has any items named
+
                                        if (condition[0]=='any' and
                                            condition[2]=='any'):
                                            conditions_met+=1
@@ -53,40 +56,84 @@ class UserConfig():
                                            break
 
                                        else:
-
+                                           print(condition,value)
                                            if (condition[2] == 'any' or
-                                               condition[2] == value):
+                                               [condition[2]] == value):
+
                                                print("has_value triggered!")
                                                conditions_met+=1
                                                break
 
                 #Determine if the condition was met.
                 if len(recipe_entry.conditions)==conditions_met:
-                    print "DEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
+                    print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
                     #Insert the recipe into the users config
-                    self.change_cfg(r.applied_config)
+                    self.cfg = self.change_cfg(r.applied_config,trigger_section=section,
+                                                     trigger_item=item,
+                                                     trigger_value=value)
                 else:
-                    print "DEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
+                    print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
 
 
-    def change_cfg(self,insert_cfg):
+    def change_cfg(self,insert_cfg, trigger_section=None,trigger_item=None,
+                    trigger_value=None):
         """
-        Uses inserts a partial config to the users config
+        Uses inserts a partial config to the users config. If the user has
+        already defined a value that the inser_cfg has it will do nothing
         """
+        result = copy.deepcopy(self.cfg)
+
         for sections in insert_cfg.keys():
+            #Apply cfg to all sections
             if sections =='all':
-                sections = self.cfg.keys()
+                sections = result.keys()
+                insert_key = 'all'
+            #Apply cfg only to section that triggered it
+            elif sections == 'any':
+                insert_key = 'any'
+                if trigger_section == None:
+                    raise ValueError('trigger entries cannot be passed as None if keyword any is used')
+                else:
+                    sections = trigger_section
             else:
-                if type(sections)!=list:
-                    sections = [sections]
+                insert_key = None
+            if type(sections)!=list:
+                sections = [sections]
 
             for s in sections:
-                if s not in self.cfg.keys():
-                    self.cfg[s] = {}
 
-                for item, value in insert_cfg[s].items():
-                    self.cfg[s][item] = value
+                #Adding a new section
+                if s not in result.keys():
+                    result[s] = {}
 
+                #Special
+                if insert_key not in ['all','any']:
+                    insert_key = s
+
+                for item, value in insert_cfg[insert_key].items():
+                    applied = value
+                    if not item in result[s].keys():
+                        #Recipe requests defaults for section
+                        if item == 'apply_defaults' and value.lower() == 'true':
+                            for d_item, default in self.mcfg.cfg[s].items():
+                                result[s][d_item] = self.mcfg.cfg[s][d_item].default
+
+                        #Recipe requests default for item
+                        elif value =='default':
+                            applied = self.mcfg.cfg[s][item].default
+
+                        elif item == 'remove_section' and value.lower() == 'true':
+                            del result[s]
+                            break
+
+                        elif item == 'remove_item':
+                            if value in result[s].keys():
+                                del result[s][value]
+
+                        #Recipe specifies the entire entry
+                        else:
+                            result[s][item] = applied
+            return result
 
     def add_defaults(self):
         """
@@ -119,6 +166,7 @@ class UserConfig():
         msg = "{: <20} {: <30} {: <60}"
         errors = []
         warnings = []
+        master = self.mcfg.cfg
 
         #Compare user config file to our master config
         for section, configured in self.cfg.items():
@@ -128,7 +176,7 @@ class UserConfig():
                 litem = item.lower()
 
                 #Is the item known as a configurable item?
-                if litem not in self.mcfg[section].keys():
+                if litem not in master[section].keys():
                     wrn = "Not a registered option."
                     if section.lower() == 'wind':
                         wrn +=  " Common for station names."
@@ -143,10 +191,10 @@ class UserConfig():
 
                         for v in val_lst:
                             if v != None:
-                                v = self.mcfg[section][litem].convert_type(v)
+                                v = master[section][litem].convert_type(v)
 
                                 # Do we have an idea os what to expect (type and options)?
-                                options_type = self.mcfg[section][item].type
+                                options_type = master[section][item].type
 
                                 if options_type == 'datetime':
                                     try:
@@ -174,7 +222,7 @@ class UserConfig():
                                 elif options_type not in str(type(v)):
                                     errors.append(msg.format(section,item,'Expecting a {0} recieved {1}'.format(options_type,type(v))))
 
-                                if self.mcfg[section][item].options and v not in self.mcfg[section][item].options:
+                                if master[section][item].options and v not in master[section][item].options:
                                     err_str = "Invalid option: {0} ".format(v)
                                     errors.append(msg.format(section, item, err_str))
 

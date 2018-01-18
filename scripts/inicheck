@@ -22,8 +22,8 @@ def main():
         ucfg = UserConfig(args.config_file, mcfg = mcfg)
         ucfg.apply_recipes()
         pcfg(ucfg.cfg)
-        # warnings, errors = ucfg.check()
-        # print_config_report(warnings,errors)
+        warnings, errors = ucfg.check()
+        print_config_report(warnings,errors)
     else:
         raise IOError('File does not exist.')
 
@@ -31,7 +31,7 @@ def main():
         out_f = './{0}_full.ini'.format(os.path.basename(args.config_file).split('.')[0])
         print("Writing complete config file showing all defaults of values that were not provided...")
         print('{0}'.format(out_f))
-        generate_config(ucfg.cfg,mcfg,out_f, inicheck=True)
+        generate_config(ucfg.cfg,mcfg.cfg,out_f, inicheck=True)
 
 if __name__ == '__main__':
     main()

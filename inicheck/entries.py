@@ -3,7 +3,7 @@ from inicheck import __trigger_keywords__, __recipe_keywords__
 from iniparse import parse_entry
 
 class RecipeSection:
-    """docstring for RecipeEntry."""
+    """docstring for RecipeSection."""
 
     def __init__(self, recipe_section_dict):
 
@@ -16,7 +16,7 @@ class RecipeSection:
             # Check item for action keywords
             for word in __trigger_keywords__:
                 if word in item:
-                    self.triggers[item] = RecipeEntry(entry)
+                    self.triggers[item] = TriggerEntry(entry)
                     break
 
             # Check for assigned values if any trigger
@@ -24,7 +24,8 @@ class RecipeSection:
                 item_dict = parse_entry(entry)
                 self.applied_config[item] = item_dict
 
-class RecipeEntry:
+
+class TriggerEntry:
     """
     RecipeEntry designed to aid in parsing master config file entries under
     a recipe.
@@ -78,7 +79,6 @@ class RecipeEntry:
         if len([True for i in result if i == 'any']) != len(result):
 
             self.conditions.append(result)
-
 
 class ConfigEntry:
     """
