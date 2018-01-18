@@ -254,11 +254,11 @@ class MasterConfig():
                 if word in section:
                     self.recipes.append(RecipeSection(raw_config[section]))
                     break
-            else:
-                for item in raw_config[section].keys():
-                    sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])
+                else:
+                    for item in raw_config[section].keys():
+                        sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])
 
-            cfg[section] = sec
+                    cfg[section] = sec
 
 
         return cfg

@@ -1,5 +1,5 @@
 from datetime import date
-
+import os
 def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
                     section_titles = None):
     """
@@ -20,24 +20,26 @@ def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
     Returns:
         None
     """
-
+    header_len = 80
+    pg_sep = '#'*header_len
     #Header surround each commented titles in the ini file
-    section_header = ('#'*80) + '\n' + ('# {0}\n') +('#'*80)
+    section_header = pg_sep + '\n' + ('# {0}\n') + pg_sep
 
     #Construct the section strings
-    config_str="#"*80
+    config_str=""
+    config_str+=pg_sep
 
     #File header with specific package option
-    config_str += "# Configuration File "
+    config_str += "\n# Configuration File "
     if package_header != None:
         config_str+= "for {0}\n".format(package_header)
 
     #Add in the date generated
-    config_str+= "# Date generated: {0}".format(date.today())
+    config_str+= "\n# Date generated: {0}".format(date.today())
 
     #Generated with inicheck
     if inicheck:
-        config_str+= "# Generated using: inicheck <filename> -w \n# "
+        config_str+= "\n# Generated using: inicheck <filename> -w "
 
     config_str+="""
 # For more inicheck help see:
@@ -45,17 +47,21 @@ def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
 """
 
     #Generate the string for the file, creating them in order.
-    for section in mcfg.keys():
+    for section in config.keys():
+        config_str+='\n'*2
+
         if section_titles != None:
             #Add the header
-            config_str+='\n'*2
             config_str+=section_header.format(section_titles[section])
+        else:
+            config_str+=(pg_sep)
 
         config_str+='\n'
         config_str+='\n[{0}]\n'.format(section)
 
         #Add section items and values
-        for k,v in config[section].items():
+        for k in sorted(config[section].keys()):
+            v = config[section][k]
             if type(v) == list:
                 astr = ", ".join(str(c.strip()) for c in v)
             else:
