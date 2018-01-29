@@ -2,29 +2,52 @@
 
 """Console script for inicheck."""
 
-import click
-
+import importlib
+import argparse
 from inicheck.iniparse import read_config
 from inicheck.config import MasterConfig, UserConfig
 from inicheck.output import print_config_report,generate_config
 from inicheck.utilities import pcfg
 import os
 
+def main():
 
-@click.command()
-@click.argument('config_file',nargs=1,
-                              type=click.Path(),
-                              metavar='<Users CFG File>')
-@click.argument('master_file',nargs=1,
-                              type=click.Path(),
-                              metavar='<Master CFG File>')
-@click.option('-w',is_flag=True,help='Flag to output full config if it passes the checks')
+    parser = argparse.ArgumentParser(description="Examine and auto populate"
+                                                 " ini files with a master file"
+                                                 " comparison.")
+    parser.add_argument('config_file', metavar='CF', type=str,
+                        help='Path to a config file that needs checking')
 
-def main(config_file, master_file,w):
+    parser.add_argument('--master','-c', metavar='MF', type=str,
+                        help='Path to a config file that needs checking')
 
-    if os.path.isfile(config_file):
+    parser.add_argument('--module','-m', metavar='M', type=str,
+                        help="Module name with an attribute __CoreConfig__ that"
+                             " is a path to a master config file")
+
+    parser.add_argument('-w', dest='write', action='store_true',
+                        help="Determines whether to write out the file with all"
+                             " the defaults")
+    args = parser.parse_args()
+
+    #Prefer module use
+    if args.module != None:
+        i = importlib.import_module(args.module)
+        master_file = os.path.abspath(os.path.join(i.__file__, i.__CoreConfig__))
+
+    #Alternatively use a path for the master file
+    elif args.master != None:
+        master_file = args.master_file
+
+    else:
+        print("ERROR: Please provide either a module or a path to a master config")
+        sys.exit()
+
+    if os.path.isfile(args.config_file):
+        config_file = args.config_file
+
         mcfg = MasterConfig(master_file)
-
+        #pcfg(mcfg.cfg)
         ucfg = UserConfig(config_file, mcfg = mcfg)
         ucfg.apply_recipes()
         warnings, errors = ucfg.check()

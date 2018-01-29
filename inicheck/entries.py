@@ -1,6 +1,7 @@
 from utilities import cast_variable
 from inicheck import __trigger_keywords__, __recipe_keywords__
 from iniparse import parse_entry
+from collections import OrderedDict
 
 class RecipeSection:
     """docstring for RecipeSection."""
@@ -8,9 +9,10 @@ class RecipeSection:
     def __init__(self, recipe_section_dict):
 
         #Conditions to be met
-        self.triggers = {}
+        self.triggers = OrderedDict()
         #Config file to apply if conditions are met
-        self.applied_config = {}
+        self.add_config = {}
+        self.remove_config = {}
 
         for item,entry in recipe_section_dict.items():
             # Check item for action keywords
@@ -22,7 +24,11 @@ class RecipeSection:
             # Check for assigned values if any trigger
             if item not in self.triggers.keys():
                 item_dict = parse_entry(entry)
-                self.applied_config[item] = item_dict
+                print item_dict
+                if 'remove' in entry:
+                    self.remove_config[item] = item_dict
+                else:
+                    self.remove_config[item] = item_dict
 
 
 class TriggerEntry:

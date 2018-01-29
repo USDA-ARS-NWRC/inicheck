@@ -3,11 +3,13 @@ from utilities import cast_variable
 from entries import ConfigEntry, RecipeSection
 from inicheck import __recipe_keywords__
 from pandas import to_datetime
+from collections import OrderedDict
 import os
 import sys
 import copy
 
 class UserConfig():
+
     def __init__(self,filename,mcfg=None):
         self.filename = filename
         self.cfg = read_config(filename)
@@ -32,48 +34,51 @@ class UserConfig():
                     trigger_section = None
                     trigger_item = None
                     trigger_value = None
+
                     for section in self.cfg.keys():
                         if (condition[0] == 'any' or
                             condition[0] == section):
 
                            #checks for a section only
                            if condition[1:2] == ['any','any']:
-                               print("has_section triggered!")
+                               print("has_section triggered! {0}".format(condition))
                                conditions_met+=1
                                break
-
                            else:
                                for item, value in self.cfg[section].items():
                                    if (condition[1] == 'any' or
                                        condition[1] == item):
 
                                        # has any items named
-
                                        if (condition[0]=='any' and
                                            condition[2]=='any'):
                                            conditions_met+=1
-                                           print("has_item anywhere triggered!")
+                                           print("has_item anywhere triggered! {0}".format(condition))
                                            break
 
                                        else:
-                                           print(condition,value)
                                            if (condition[2] == 'any' or
                                                [condition[2]] == value):
 
-                                               print("has_value triggered!")
+                                               print("has_value triggered! {0}".format(condition))
                                                conditions_met+=1
                                                break
 
+
                 #Determine if the condition was met.
-                if len(recipe_entry.conditions)==conditions_met:
+                print("NGates: {0} NPassed {1}".format(len(recipe_entry.conditions),conditions_met))
+                if (len(recipe_entry.conditions)==conditions_met and
+                    len(recipe_entry.conditions) != 0):
+
                     print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
                     #Insert the recipe into the users config
-                    self.cfg = self.change_cfg(r.applied_config,trigger_section=section,
+                    self.cfg = self.change_cfg(r,trigger_section=section,
                                                      trigger_item=item,
                                                      trigger_value=value)
+                    break
                 else:
                     print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
-
+                print('\n\n')
 
     def change_cfg(self,insert_cfg, trigger_section=None,trigger_item=None,
                     trigger_value=None):
@@ -91,6 +96,7 @@ class UserConfig():
             #Apply cfg only to section that triggered it
             elif sections == 'any':
                 insert_key = 'any'
+
                 if trigger_section == None:
                     raise ValueError('trigger entries cannot be passed as None if keyword any is used')
                 else:
@@ -114,26 +120,39 @@ class UserConfig():
                     applied = value
                     if not item in result[s].keys():
                         #Recipe requests defaults for section
+                        print("SECTION: {0} INSERT_KEY: {1} ITEM: {2} VALUE: {3}".format(s,insert_key,item,value))
                         if item == 'apply_defaults' and value.lower() == 'true':
-                            for d_item, default in self.mcfg.cfg[s].items():
-                                result[s][d_item] = self.mcfg.cfg[s][d_item].default
+                            for d_item, obj in self.mcfg.cfg[s].items():
+                                result[s][d_item] = obj.default
 
                         #Recipe requests default for item
                         elif value =='default':
                             applied = self.mcfg.cfg[s][item].default
 
-                        elif item == 'remove_section' and value.lower() == 'true':
+                        #Recipe specifies the entire entry
+                        else:
+                            print("Added {0} {1} {2}".format(s,item,applied))
+                            result[s][item] = applied
+
+                    #Item already in the cfg
+                    else:
+                        if item == 'remove_section' and value.lower() == 'true':
                             del result[s]
-                            break
+                            print("Removed Section {0}".format(s))
+                            #break
 
                         elif item == 'remove_item':
                             if value in result[s].keys():
                                 del result[s][value]
+                                print("Removed item {0}, {1}".format(s,item))
 
-                        #Recipe specifies the entire entry
-                        else:
-                            result[s][item] = applied
             return result
+
+    def add_config(self,add_cfg):
+        """
+        Adds add_config to self.cfg
+        """
+        
 
     def add_defaults(self):
         """
@@ -245,7 +264,7 @@ class MasterConfig():
                     options. Based on the Core Config file.
         """
 
-        cfg = {}
+        cfg = OrderedDict()
         #Read in will automatically get the configurable key added
         raw_config = read_config(master_config_file)
         for section in raw_config.keys():
