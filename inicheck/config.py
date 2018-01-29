@@ -1,5 +1,5 @@
 from iniparse import read_config
-from utilities import cast_variable
+from utilities import cast_variable, mk_lst
 from entries import ConfigEntry, RecipeSection
 from inicheck import __recipe_keywords__
 from pandas import to_datetime
@@ -13,6 +13,7 @@ class UserConfig():
     def __init__(self,filename,mcfg=None):
         self.filename = filename
         self.cfg = read_config(filename)
+        self.sections,self.items,self.values = self.get_unique_entries(self.cfg)
         if mcfg != None:
             self.mcfg = mcfg
 
@@ -29,72 +30,74 @@ class UserConfig():
 
             for trigger,recipe_entry in r.triggers.items():
                 conditions_met = 0
-
+                triggered = False
+                #All conditions must be met if to be applied
                 for condition in recipe_entry.conditions:
-                    trigger_section = None
-                    trigger_item = None
-                    trigger_value = None
-
+                    conditions_triggered = []
                     for section in self.cfg.keys():
-                        if (condition[0] == 'any' or
-                            condition[0] == section):
+                        for item in self.cfg[section].keys():
+                            vals = mk_lst(self.cfg[section][item])
+                            for v in vals:
 
-                           #checks for a section only
-                           if condition[1:2] == ['any','any']:
-                               print("has_section triggered! {0}".format(condition))
-                               conditions_met+=1
-                               break
-                           else:
-                               for item, value in self.cfg[section].items():
+                                if (condition[0] == 'any' or
+                                    condition[0] == section):
+                                   #print("Section Gate {0} == {1}".format(condition[0],section))
+
                                    if (condition[1] == 'any' or
                                        condition[1] == item):
+                                      #print("\t\tItem Gate {0} == {1}".format(condition[1],item))
 
-                                       # has any items named
-                                       if (condition[0]=='any' and
-                                           condition[2]=='any'):
-                                           conditions_met+=1
-                                           print("has_item anywhere triggered! {0}".format(condition))
-                                           break
+                                      if (condition[2] == 'any' or
+                                          condition[2] == v):
+                                          #print("\t\t\t\tValue Gate {0} == {1}".format(condition[2],v))
 
-                                       else:
-                                           if (condition[2] == 'any' or
-                                               [condition[2]] == value):
+                                          #Note conditions cannot be [any any any]
+                                          conditions_triggered.append((section,item,v))
+                                          triggered = True
 
-                                               print("has_value triggered! {0}".format(condition))
-                                               conditions_met+=1
-                                               break
+                    #Determine if the condition was met.
+                    #print("NGates: {0} NPassed {1}".format(len(recipe_entry.conditions),conditions_met))
+                    if triggered:
+                        conditions_met +=1
+                        triggered = False
 
-
-                #Determine if the condition was met.
-                print("NGates: {0} NPassed {1}".format(len(recipe_entry.conditions),conditions_met))
-                if (len(recipe_entry.conditions)==conditions_met and
+                if (conditions_met==len(recipe_entry.conditions) and
                     len(recipe_entry.conditions) != 0):
-
+                    conditions_met = 0
                     print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
                     #Insert the recipe into the users config
-                    self.cfg = self.change_cfg(r,trigger_section=section,
-                                                     trigger_item=item,
-                                                     trigger_value=value)
-                    break
-                else:
-                    print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
-                print('\n\n')
+                    # self.cfg = self.change_cfg(r.add_config, adding = True,
+                    #                                  trigger_section=section,
+                    #                                  trigger_item=item,
+                    #                                  trigger_value=value)
 
-    def change_cfg(self,insert_cfg, trigger_section=None,trigger_item=None,
-                    trigger_value=None):
+                    #else:
+                        #print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
+                    print('\n\n')
+
+
+    def change_cfg(self,recipe,trigger_section,trigger_item,
+                    trigger_value,adding = True):
         """
-        Uses inserts a partial config to the users config. If the user has
-        already defined a value that the inser_cfg has it will do nothing
+        User inserts a partial config to the users config. If the user has
+        already defined a value that the insert_cfg has it will do nothing
         """
         result = copy.deepcopy(self.cfg)
+        remove = recipe.remove_config
+        add = recipe.add_config
 
+        for section in add.keys():
+            for item in add[section].keys():
+                vals = mk_lst(add[section][item])
+                for v in vals:
+                    if section == 'any':
+                        pass
+                        #s = tigger
+
+        #Interpret all and any options at the section level
         for sections in insert_cfg.keys():
-            #Apply cfg to all sections
-            if sections =='all':
-                sections = result.keys()
-                insert_key = 'all'
             #Apply cfg only to section that triggered it
-            elif sections == 'any':
+            if sections == 'any':
                 insert_key = 'any'
 
                 if trigger_section == None:
@@ -148,11 +151,31 @@ class UserConfig():
 
             return result
 
-    def add_config(self,add_cfg):
+
+    def get_unique_entries(self,cfg):
         """
-        Adds add_config to self.cfg
+        Appends all the values in the user config to respectives lists of
+        section names, item names, and values. Afterwards any copy is removed
+        so all is left is a unique list of names and values
         """
-        
+
+        unique_sections = []
+        unique_items = []
+        unique_values = []
+
+        for section in cfg.keys():
+            for item,value in cfg[section].items():
+                if type(value) != list:
+                    vals = [value]
+                else:
+                    vals = value
+
+                for v in vals:
+                    unique_sections.append(section)
+                    unique_items.append(item)
+                    unique_values.append(v)
+
+        return set(unique_sections),set(unique_items), set(unique_values)
 
     def add_defaults(self):
         """
@@ -222,12 +245,12 @@ class UserConfig():
                                         errors.append(msg.format(section,item,'Format not datetime'))
 
                                 elif options_type == 'filename':
-                                    if self.filename != None:
-                                        p = os.path.split(self.filename)
-                                        v = os.path.join(p[0],v)
+                                    if self.filename != None and v != None:
+                                        p = os.path.dirname(self.filename)
+                                        v = os.path.join(p,v)
 
-                                    if not os.path.isfile(os.path.abspath(v)):
-                                        errors.append(msg.format(section,item,'Path does not exist'))
+                                        if not os.path.isfile(os.path.abspath(v)):
+                                            errors.append(msg.format(section,item,'Path does not exist'))
 
                                 elif options_type == 'directory':
                                     if self.filename != None:

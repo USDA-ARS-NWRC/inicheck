@@ -1,5 +1,20 @@
 from pandas import to_datetime
 
+def mk_lst(values, unlst=False):
+    """
+    while iterating through several type of lists and items it is convenient to
+    assume that we recieve a list, use this function to accomplish this. It also
+    convenient to be able to return the original type after were done with it.
+    """
+
+    if type(values) != list:
+        values = [values]
+    else:
+        if unlst:
+            if len(values)==1:
+                values = values[0]
+
+    return values
 
 def remove_chars(orig_str,char_str, replace_str=None):
     """
