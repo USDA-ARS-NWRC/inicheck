@@ -7,12 +7,17 @@ from collections import OrderedDict
 import os
 import sys
 import copy
+import importlib
+
+
+
 DEBUG = True
 FULL_DEBUG = False
 class UserConfig():
 
     def __init__(self,filename,mcfg=None):
         self.filename = filename
+        self.recipes = []
         self.cfg = read_config(filename)
         self.sections,self.items,self.values = self.get_unique_entries(self.cfg)
         if mcfg != None:
@@ -68,6 +73,8 @@ class UserConfig():
                 if (conditions_met==len(recipe_entry.conditions) and
                     len(recipe_entry.conditions) != 0):
                     conditions_met = 0
+                    self.recipes.append(r)
+
                     if DEBUG:
                         print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
 
@@ -76,7 +83,6 @@ class UserConfig():
                         #Insert the recipe into the users config for each situation
                         self.cfg = self.change_cfg(r.add_config, situation)
                         self.cfg = self.change_cfg(r.remove_config, situation,removing = True)
-
                 else:
                     if DEBUG:
                         print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
@@ -245,9 +251,49 @@ class UserConfig():
         return warnings,errors
 
 class MasterConfig():
-    def __init__(self,filename):
+    def __init__(self, path=None, module=None):
+
+        if path == None:
+            path == []
+
+        if type(path) != list:
+
+            path = [path]
+
         self.recipes = []
-        self.cfg = self._read(filename)
+
+        if module != None:
+            i = importlib.import_module(module)
+            path.append(os.path.abspath(os.path.join(i.__file__, i.__core_config__)))
+
+            if hasattr(i,'__recipes__'):
+                path.append(i.__recipes__)
+
+        if len(path)==0:
+            raise ValueError("No file was either provided or found when initiating a master config file")
+
+        self.cfg = self.add_files(path)
+
+    def add_files(self,paths):
+        """
+        Designed to  add to the master config file if the user has split up files
+        to reduce the amount of info in a master file. e.g. recipes are stored in a
+        other file
+
+        Args:
+            paths: list of real path to another cfg.ini
+        Returns:
+            config: Original config with appended information found in the extra cfg
+        """
+
+        result = OrderedDict()
+
+        for f in paths:
+            if f != None:
+                extra_cfg = self._read(f)
+                result.update(extra_cfg)
+
+        return result
 
     def _read(self, master_config_file):
         """

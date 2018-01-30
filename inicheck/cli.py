@@ -31,22 +31,15 @@ def main():
                              " the defaults")
     args = parser.parse_args()
 
-    #Prefer module use
-    if args.module != None:
-        i = importlib.import_module(args.module)
-        master_file = os.path.abspath(os.path.join(i.__file__, i.__core_config__))
+    #master_file = os.path.abspath(os.path.join(i.__file__, i.__core_config__))
 
-    #Alternatively use a path for the master file
-    elif args.master != None:
-        master_file = args.master_file
-
-    else:
+    if args.module == None and args.master == None:
         print("ERROR: Please provide either a module or a path to a master config")
         sys.exit()
 
     if os.path.isfile(args.config_file):
         config_file = args.config_file
-        mcfg = MasterConfig(master_file)
+        mcfg = MasterConfig(args.master, module = args.module)
 
         #pcfg(mcfg.cfg)
         ucfg = UserConfig(config_file, mcfg = mcfg)
@@ -54,7 +47,7 @@ def main():
         warnings, errors = ucfg.check()
         print_config_report(warnings,errors)
 
-        print_recipe_summary(mcfg.recipes)
+        print_recipe_summary(ucfg.recipes)
     else:
         raise IOError('File does not exist.')
 

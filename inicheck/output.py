@@ -171,7 +171,7 @@ def print_recipe_summary(lst_recipes):
 
         print_cfg_for_recipe(r.add_config,cfg_msg,hdr="\n\tAdds:")
         print_cfg_for_recipe(r.remove_config,cfg_msg,hdr="\n\tRemoves:")
-
+        print('\n')
     print('\n')
 
 def print_cfg_for_recipe(cfg,fmt,hdr = None):
