@@ -24,7 +24,6 @@ class RecipeSection:
             # Check for assigned values if any trigger
             if item not in self.triggers.keys():
                 item_dict = parse_entry(entry)
-                print item_dict
                 if 'remove' in entry:
                     self.remove_config[item] = item_dict
                 else:

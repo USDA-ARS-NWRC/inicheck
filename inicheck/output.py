@@ -1,9 +1,12 @@
 from datetime import date
 import os
+
+
 def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
                     section_titles = None):
     """
-    Generates a list of strings to be written and then writes them in the ini file
+    Generates a list of strings to be written and then writes them in the ini
+    file
 
     Args:
         config - Config file dictionary created by
@@ -47,26 +50,27 @@ def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
 """
 
     #Generate the string for the file, creating them in order.
-    for section in config.keys():
-        config_str+='\n'*2
+    for section in mcfg.keys():
+        if section in config.keys():
+            config_str+='\n'*2
 
-        if section_titles != None:
-            #Add the header
-            config_str+=section_header.format(section_titles[section])
-        else:
-            config_str+=(pg_sep)
-
-        config_str+='\n'
-        config_str+='\n[{0}]\n'.format(section)
-
-        #Add section items and values
-        for k in sorted(config[section].keys()):
-            v = config[section][k]
-            if type(v) == list:
-                astr = ", ".join(str(c.strip()) for c in v)
+            if section_titles != None:
+                #Add the header
+                config_str+=section_header.format(section_titles[section])
             else:
-                astr = str(v)
-            config_str+="{0:<30} {1:<10}\n".format((k+':'),astr)
+                config_str+=(pg_sep)
+
+            config_str+='\n'
+            config_str+='\n[{0}]\n'.format(section)
+
+            #Add section items and values
+            for k in sorted(config[section].keys()):
+                v = config[section][k]
+                if type(v) == list:
+                    astr = ", ".join(str(c.strip()) for c in v)
+                else:
+                    astr = str(v)
+                config_str+="{0:<30} {1:<10}\n".format((k+':'),astr)
 
     #Write out the string generated
     with open(os.path.abspath(fname),'w') as f:

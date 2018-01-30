@@ -104,7 +104,6 @@ def parse_sections(fname):
 
             else:
                 result[section].append(lines[i])
-
     return result
 
 
@@ -166,7 +165,7 @@ def parse_values(parsed_items):
             result: dictionary of dictionaries containing sections,items, and
                     the values provided as a list
         """
-        result = {}
+        result = OrderedDict()
         for section in parsed_items.keys():
             result[section] = {}
             for item,val in parsed_items[section].items():

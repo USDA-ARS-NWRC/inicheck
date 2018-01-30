@@ -65,92 +65,58 @@ class UserConfig():
                     len(recipe_entry.conditions) != 0):
                     conditions_met = 0
                     print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
-                    #Insert the recipe into the users config
-                    # self.cfg = self.change_cfg(r.add_config, adding = True,
-                    #                                  trigger_section=section,
-                    #                                  trigger_item=item,
-                    #                                  trigger_value=value)
+
+                    #Iterate through the conditions found and apply changes
+                    for situation in conditions_triggered:
+                        #Insert the recipe into the users config for each situation
+                        self.cfg = self.change_cfg(r.add_config, situation)
+                        self.cfg = self.change_cfg(r.remove_config, situation,removing = True)
 
                     #else:
                         #print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
                     print('\n\n')
 
 
-    def change_cfg(self,recipe,trigger_section,trigger_item,
-                    trigger_value,adding = True):
+    def change_cfg(self,partial_cfg,situation, removing = False):
         """
-        User inserts a partial config to the users config. If the user has
-        already defined a value that the insert_cfg has it will do nothing
+        User inserts a partial config by using each situation that triggered a
+        recipe. A situation consists of a tuple of (section,item,value).
         """
         result = copy.deepcopy(self.cfg)
-        remove = recipe.remove_config
-        add = recipe.add_config
-
-        for section in add.keys():
-            for item in add[section].keys():
-                vals = mk_lst(add[section][item])
-                for v in vals:
-                    if section == 'any':
-                        pass
-                        #s = tigger
-
-        #Interpret all and any options at the section level
-        for sections in insert_cfg.keys():
-            #Apply cfg only to section that triggered it
-            if sections == 'any':
-                insert_key = 'any'
-
-                if trigger_section == None:
-                    raise ValueError('trigger entries cannot be passed as None if keyword any is used')
+        for section in partial_cfg.keys():
+            for item in partial_cfg[section].keys():
+                if section =='any':
+                    s = situation[0]
                 else:
-                    sections = trigger_section
-            else:
-                insert_key = None
-            if type(sections)!=list:
-                sections = [sections]
+                    s = section
+                if item == 'any':
+                    i = situation[1]
+                else:
+                    i = item
+                if partial_cfg[section][item] == 'any':
+                    v = situation[2]
+                else:
+                    v = partial_cfg[section][item]
 
-            for s in sections:
-
-                #Adding a new section
-                if s not in result.keys():
-                    result[s] = {}
-
-                #Special
-                if insert_key not in ['all','any']:
-                    insert_key = s
-
-                for item, value in insert_cfg[insert_key].items():
-                    applied = value
-                    if not item in result[s].keys():
-                        #Recipe requests defaults for section
-                        print("SECTION: {0} INSERT_KEY: {1} ITEM: {2} VALUE: {3}".format(s,insert_key,item,value))
-                        if item == 'apply_defaults' and value.lower() == 'true':
-                            for d_item, obj in self.mcfg.cfg[s].items():
-                                result[s][d_item] = obj.default
-
-                        #Recipe requests default for item
-                        elif value =='default':
-                            applied = self.mcfg.cfg[s][item].default
-
-                        #Recipe specifies the entire entry
+                if removing:
+                    if section in result.keys():
+                        #Check for empty dictionaries, remove them if removing
+                        if not bool(result[section]):
+                            del result[section]
                         else:
-                            print("Added {0} {1} {2}".format(s,item,applied))
-                            result[s][item] = applied
+                            if item in result[section].keys():
+                                del result[s][i]
+                #Adding
+                else:
+                    if section in result.keys():
+                        #Check for empty dictionaries, add them if not removing
+                        if not bool(result[section]):
+                            result[section] = {}
+                        else:
+                            if item in result[section].keys():
+                                result[s][i]=v
 
-                    #Item already in the cfg
-                    else:
-                        if item == 'remove_section' and value.lower() == 'true':
-                            del result[s]
-                            print("Removed Section {0}".format(s))
-                            #break
-
-                        elif item == 'remove_item':
-                            if value in result[s].keys():
-                                del result[s][value]
-                                print("Removed item {0}, {1}".format(s,item))
-
-            return result
-
+        return result
 
     def get_unique_entries(self,cfg):
         """
@@ -274,7 +240,7 @@ class MasterConfig():
     def __init__(self,filename):
         self.recipes = []
         self.cfg = self._read(filename)
-
+        print(self.cfg.keys())
     def _read(self, master_config_file):
         """
         Reads in the core config file which has special syntax for specifying options
