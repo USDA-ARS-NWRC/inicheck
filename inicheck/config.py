@@ -41,8 +41,19 @@ class UserConfig():
                 for condition in recipe_entry.conditions:
                     conditions_triggered = []
                     for section in self.cfg.keys():
-                        for item in self.cfg[section].keys():
-                            vals = mk_lst(self.cfg[section][item])
+
+                        #Watch out for empty sections
+                        if len(self.cfg[section].keys()) == 0:
+                            items = [None]
+                        else:
+                            items = self.cfg[section].keys()
+
+                        for item in items:
+                            #Watch for empties
+                            if item == None:
+                                vals = [None]
+                            else:
+                                vals = mk_lst(self.cfg[section][item])
                             for v in vals:
 
                                 if (condition[0] == 'any' or
@@ -82,7 +93,7 @@ class UserConfig():
                     for situation in conditions_triggered:
                         #Insert the recipe into the users config for each situation
                         self.cfg = self.change_cfg(r.add_config, situation)
-                        self.cfg = self.change_cfg(r.remove_config, situation,removing = True)
+                        self.cfg = self.change_cfg(r.remove_config, situation, removing = True)
                 else:
                     if DEBUG:
                         print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
@@ -95,40 +106,59 @@ class UserConfig():
         recipe. A situation consists of a tuple of (section,item,value).
         """
         result = copy.deepcopy(self.cfg)
+
         for section in partial_cfg.keys():
             for item in partial_cfg[section].keys():
+                value = partial_cfg[section][item]
+                #Precursor setup
+                if item == 'apply_defaults' :
+                    if value.lower()=='true':
+                        value ='default'
+                        item = 'any'
+
+                elif item == 'remove_section':
+                    if value.lower()=='true':
+                        value='any'
+                        item = 'any'
+
+                #Normal operation
                 if section =='any':
                     s = situation[0]
                 else:
                     s = section
+
                 if item == 'any':
                     i = situation[1]
                 else:
                     i = item
-                if partial_cfg[section][item] == 'any':
+
+                if value == 'any':
                     v = situation[2]
+
+                elif value == 'default' and i in self.mcfg.cfg[s].keys():
+                    v = self.mcfg.cfg[s][i].default
                 else:
-                    v = partial_cfg[section][item]
+                    v = value
+
 
                 if removing:
-                    if section in result.keys():
+                    if s in result.keys():
                         #Check for empty dictionaries, remove them if removing
-                        if not bool(result[section]):
-                            del result[section]
+                        if not bool(result[s]):
+                            del result[s]
                         else:
-                            if item in result[section].keys():
+                            if i in result[s].keys():
                                 del result[s][i]
                 #Adding
                 else:
-                    if section in result.keys():
+                    if s in result.keys():
                         #Check for empty dictionaries, add them if not removing
-                        if not bool(result[section]):
-                            result[section] = {}
+                        if not bool(result[s]):
+                            result[s] = {}
                         else:
-                            if item in result[section].keys():
-                                if v == 'default':
-                                    v = self.mcfg.cfg[section][item].default
+                            if i not in result[s].keys():
                                 result[s][i]=v
+
 
         return result
 

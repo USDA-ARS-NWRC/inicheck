@@ -18,17 +18,48 @@ class RecipeSection:
             # Check item for action keywords
             for word in __trigger_keywords__:
                 if word in item:
-                    self.triggers[item] = TriggerEntry(entry,name = item)
+                    self.triggers[item] = TriggerEntry(entry)
                     break
 
             # Check for assigned values if any trigger
             if item not in self.triggers.keys():
                 item_dict = parse_entry(entry)
+
                 if 'remove' in entry:
                     self.remove_config[item] = item_dict
                 else:
                     self.add_config[item] = item_dict
 
+# class ActionEntry:
+#     """
+#
+#     """
+#     def __init__(self, parseable_line, name = None):
+#
+#         self.application = []
+#
+#         #Flag indicating this action is removing items
+#         self.removing = False
+#
+#         self.keywords = ['apply_defaults','default','remove_section']
+#         parsed_dict = parse_entry(parseable_line)
+#         heirarcy = ['section','item','value']
+#
+#         #There can be multiple conditions returned
+#         for name,value in parsed_dict.items():
+#             result = ['any','any','any']
+#
+#             if type(value) == list:
+#                 #easy assignment to result using [section  item value syntax]
+#                 for i,v in enumerate(value):
+#                     result[i] = v
+#
+#             #If single item provided
+#             else:
+#                 if
+#         #If result is all any, then clear it
+#         if len([True for i in result if i == 'any']) != len(result):
+#             self.conditions.append(result)
 
 class TriggerEntry:
     """
@@ -68,7 +99,6 @@ class TriggerEntry:
         #There can be multiple conditions returned
         for name,value in parsed_dict.items():
             result = ['any','any','any']
-
             if type(value) == list:
                 #easy assignment to result using [section  item value syntax]
                 for i,v in enumerate(value):

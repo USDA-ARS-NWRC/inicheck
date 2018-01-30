@@ -39,9 +39,11 @@ def remove_chars(orig_str,char_str, replace_str=None):
 def cast_variable(variable,type_value):
     """
     Casts an object to the spectified type value
+
     Args:
         variable - some variable to be casted
         type_value - string value indicating type to cast.
+
     Returns:
         value - The original variable now casted in type_value
     """
@@ -50,7 +52,7 @@ def cast_variable(variable,type_value):
     type_value = str(type_value)
     value = []
     for v in variable:
-
+        
         if 'datetime' in type_value:
             value.append(to_datetime(v))
         elif 'bool' in type_value:

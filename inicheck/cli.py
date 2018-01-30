@@ -29,9 +29,10 @@ def main():
     parser.add_argument('-w', dest='write', action='store_true',
                         help="Determines whether to write out the file with all"
                              " the defaults")
+    parser.add_argument('-r', dest='recipes', action='store_true',
+                        help="Prints out the recipe summary")
     args = parser.parse_args()
 
-    #master_file = os.path.abspath(os.path.join(i.__file__, i.__core_config__))
 
     if args.module == None and args.master == None:
         print("ERROR: Please provide either a module or a path to a master config")
@@ -39,23 +40,28 @@ def main():
 
     if os.path.isfile(args.config_file):
         config_file = args.config_file
-        mcfg = MasterConfig(args.master, module = args.module)
+        mcfg = MasterConfig(path = args.master, module = args.module)
 
-        #pcfg(mcfg.cfg)
         ucfg = UserConfig(config_file, mcfg = mcfg)
         ucfg.apply_recipes()
         warnings, errors = ucfg.check()
         print_config_report(warnings,errors)
+        #pcfg(ucfg.cfg)
 
-        print_recipe_summary(ucfg.recipes)
+        if args.recipes:
+            print_recipe_summary(ucfg.recipes)
+
+
     else:
         raise IOError('File does not exist.')
 
     if args.write:
         out_f = './{0}_full.ini'.format(os.path.basename(config_file).split('.')[0])
-        print("Writing complete config file showing all defaults of values that were not provided...")
+        print("Writing complete config file with all recipes and defaults necessary...")
         print('{0}'.format(out_f))
         generate_config(ucfg.cfg,mcfg.cfg,out_f, inicheck=True)
+
+
 
 if __name__ == '__main__':
     main()
