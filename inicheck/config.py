@@ -7,7 +7,8 @@ from collections import OrderedDict
 import os
 import sys
 import copy
-
+DEBUG = True
+FULL_DEBUG = False
 class UserConfig():
 
     def __init__(self,filename,mcfg=None):
@@ -41,15 +42,18 @@ class UserConfig():
 
                                 if (condition[0] == 'any' or
                                     condition[0] == section):
-                                   #print("Section Gate {0} == {1}".format(condition[0],section))
+                                   if FULL_DEBUG:
+                                       print("Section Gate {0} == {1}".format(condition[0],section))
 
                                    if (condition[1] == 'any' or
                                        condition[1] == item):
-                                      #print("\t\tItem Gate {0} == {1}".format(condition[1],item))
+                                      if FULL_DEBUG:
+                                          print("\t\tItem Gate {0} == {1}".format(condition[1],item))
 
                                       if (condition[2] == 'any' or
                                           condition[2] == v):
-                                          #print("\t\t\t\tValue Gate {0} == {1}".format(condition[2],v))
+                                          if FULL_DEBUG:
+                                             print("\t\t\t\tValue Gate {0} == {1}".format(condition[2],v))
 
                                           #Note conditions cannot be [any any any]
                                           conditions_triggered.append((section,item,v))
@@ -64,7 +68,8 @@ class UserConfig():
                 if (conditions_met==len(recipe_entry.conditions) and
                     len(recipe_entry.conditions) != 0):
                     conditions_met = 0
-                    print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
+                    if DEBUG:
+                        print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
 
                     #Iterate through the conditions found and apply changes
                     for situation in conditions_triggered:
@@ -72,12 +77,13 @@ class UserConfig():
                         self.cfg = self.change_cfg(r.add_config, situation)
                         self.cfg = self.change_cfg(r.remove_config, situation,removing = True)
 
-                    #else:
-                        #print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
-                    print('\n\n')
+                else:
+                    if DEBUG:
+                        print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
+                        print('\n\n')
 
 
-    def change_cfg(self,partial_cfg,situation, removing = False):
+    def change_cfg(self,partial_cfg, situation, removing = False):
         """
         User inserts a partial config by using each situation that triggered a
         recipe. A situation consists of a tuple of (section,item,value).
@@ -114,6 +120,8 @@ class UserConfig():
                             result[section] = {}
                         else:
                             if item in result[section].keys():
+                                if v == 'default':
+                                    v = self.mcfg.cfg[section][item].default
                                 result[s][i]=v
 
         return result
@@ -240,7 +248,7 @@ class MasterConfig():
     def __init__(self,filename):
         self.recipes = []
         self.cfg = self._read(filename)
-        print(self.cfg.keys())
+
     def _read(self, master_config_file):
         """
         Reads in the core config file which has special syntax for specifying options
@@ -260,7 +268,7 @@ class MasterConfig():
             sec = {}
             for word in __recipe_keywords__:
                 if word in section:
-                    self.recipes.append(RecipeSection(raw_config[section]))
+                    self.recipes.append(RecipeSection(raw_config[section], name = section))
                     break
                 else:
                     for item in raw_config[section].keys():

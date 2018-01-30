@@ -6,8 +6,8 @@ from collections import OrderedDict
 class RecipeSection:
     """docstring for RecipeSection."""
 
-    def __init__(self, recipe_section_dict):
-
+    def __init__(self, recipe_section_dict, name = None):
+        self.name = name
         #Conditions to be met
         self.triggers = OrderedDict()
         #Config file to apply if conditions are met
@@ -18,7 +18,7 @@ class RecipeSection:
             # Check item for action keywords
             for word in __trigger_keywords__:
                 if word in item:
-                    self.triggers[item] = TriggerEntry(entry)
+                    self.triggers[item] = TriggerEntry(entry,name = item)
                     break
 
             # Check for assigned values if any trigger
@@ -27,7 +27,7 @@ class RecipeSection:
                 if 'remove' in entry:
                     self.remove_config[item] = item_dict
                 else:
-                    self.remove_config[item] = item_dict
+                    self.add_config[item] = item_dict
 
 
 class TriggerEntry:
@@ -57,7 +57,7 @@ class TriggerEntry:
     values denoted with = and will only accept has_section, has_item, has_item_any
     has_value
     """
-    def __init__(self, parseable_line):
+    def __init__(self, parseable_line, name = None):
 
         self.conditions = []
 

@@ -6,7 +6,7 @@ import importlib
 import argparse
 from inicheck.iniparse import read_config
 from inicheck.config import MasterConfig, UserConfig
-from inicheck.output import print_config_report,generate_config
+from inicheck.output import print_config_report,generate_config, print_recipe_summary
 from inicheck.utilities import pcfg
 import os
 
@@ -54,6 +54,7 @@ def main():
         warnings, errors = ucfg.check()
         print_config_report(warnings,errors)
 
+        print_recipe_summary(mcfg.recipes)
     else:
         raise IOError('File does not exist.')
 

@@ -137,4 +137,47 @@ def print_config_report(warnings, errors, logger= None):
         out("No errors or warnings were reported with the config file.\n")
 
 def print_out(out_str):
+    """
+    wrapper for print so we can use either a logger or a stdout
+    """
     print out_str
+
+
+def print_recipe_summary(lst_recipes):
+    """
+    Prints out the recipes found and how they are interpretted
+    """
+    #len of recipe separators
+    msg_len = 110
+    header = "="*msg_len
+    recipe_hdr = "-"*msg_len
+    r_msg = "\n{: <20}\n"+recipe_hdr
+    cfg_msg = "\t\t{: <20} {: <20} {: <20}"
+
+    msg = "\t\t{: <20} {: <25}"
+
+    print('\n\n')
+    print("Recipes Summary:")
+    print(header)
+    for r in lst_recipes:
+        print(r_msg.format(r.name))
+        print("\tConditionals:")
+        for n,t in r.triggers.items():
+            for i,c in enumerate(t.conditions):
+                if i == 0:
+                    print(msg.format(n,c))
+                else:
+                    print(msg.format("",c))
+
+        print_cfg_for_recipe(r.add_config,cfg_msg,hdr="\n\tAdds:")
+        print_cfg_for_recipe(r.remove_config,cfg_msg,hdr="\n\tRemoves:")
+
+    print('\n')
+
+def print_cfg_for_recipe(cfg,fmt,hdr = None):
+    if hdr !=None:
+        print(hdr)
+
+    for section in cfg.keys():
+        for item, value in cfg[section].items():
+            print(fmt.format(section,item,value))
