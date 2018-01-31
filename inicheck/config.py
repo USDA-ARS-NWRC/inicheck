@@ -1,5 +1,5 @@
 from iniparse import read_config
-from utilities import cast_variable, mk_lst
+from utilities import cast_variable, mk_lst, pcfg
 from entries import ConfigEntry, RecipeSection
 from inicheck import __recipe_keywords__
 from pandas import to_datetime
@@ -92,15 +92,14 @@ class UserConfig():
                     #Iterate through the conditions found and apply changes
                     for situation in conditions_triggered:
                         #Insert the recipe into the users config for each situation
-                        self.cfg = self.change_cfg(r.add_config, situation)
-                        self.cfg = self.change_cfg(r.remove_config, situation, removing = True)
+                        self.cfg = self.interpret_recipes(r.adj_config, situation)
                 else:
                     if DEBUG:
                         print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
                         print('\n\n')
 
 
-    def change_cfg(self,partial_cfg, situation, removing = False):
+    def interpret_recipes(self,partial_cfg, situation):
         """
         User inserts a partial config by using each situation that triggered a
         recipe. A situation consists of a tuple of (section,item,value).
@@ -110,47 +109,42 @@ class UserConfig():
         for section in partial_cfg.keys():
             for item in partial_cfg[section].keys():
                 value = partial_cfg[section][item]
-                #Precursor setup
-                if item == 'apply_defaults' :
-                    if value.lower()=='true':
-                        value ='default'
-                        item = 'any'
+
+                if item =='apply_defaults':
+                    result = self.add_defaults(result,sections = section)
 
                 elif item == 'remove_section':
                     if value.lower()=='true':
-                        value='any'
-                        item = 'any'
+                        if section in result.keys():
+                            print("remove section called: {0} {1} {2}".format(section,item,value))
+                            del result[section]
 
-                #Normal operation
-                if section =='any':
-                    s = situation[0]
+                elif item == 'remove_item':
+                    #remove_item calls the item from its value
+                    print("Remove item called: {0} {1} {2}".format(section,item,value))
+                    item = value
+                    if section in result.keys():
+                        if item in result[section].keys():
+                            del result[section][item]
+
                 else:
-                    s = section
 
-                if item == 'any':
-                    i = situation[1]
-                else:
-                    i = item
+                    #Normal operation
+                    if section =='any':
+                        s = situation[0]
+                    else:
+                        s = section
 
-                if value == 'any':
-                    v = situation[2]
+                    if value == 'any':
+                        v = situation[2]
+                    else:
+                        i = item
 
-                elif value == 'default' and i in self.mcfg.cfg[s].keys():
-                    v = self.mcfg.cfg[s][i].default
-                else:
-                    v = value
+                    if value == 'default' and i in self.mcfg.cfg[s].keys():
+                        v = self.mcfg.cfg[s][i].default
+                    else:
+                        v = value
 
-
-                if removing:
-                    if s in result.keys():
-                        #Check for empty dictionaries, remove them if removing
-                        if not bool(result[s]):
-                            del result[s]
-                        else:
-                            if i in result[s].keys():
-                                del result[s][i]
-                #Adding
-                else:
                     if s in result.keys():
                         #Check for empty dictionaries, add them if not removing
                         if not bool(result[s]):
@@ -187,20 +181,34 @@ class UserConfig():
 
         return set(unique_sections),set(unique_items), set(unique_values)
 
-    def add_defaults(self):
+
+    def add_defaults(self, cfg, sections = None):
         """
         Look through the users config file and section by section add in missing
         parameters to add defaults
 
+        Args:
+            sections: Single section name or a list of sections to apply (optional)
+                      otherwise uses all sections in users config
         Returns:
             user_cfg: User config dictionary with defaults added.
+
         """
         master = self.mcfg.cfg
+        result = copy.deepcopy(cfg)
+        #Either go through specified sections or all sections provided by the user.
+        if sections == None:
+            sections = result.keys()
+        else:
+            #Accounts for single items not entered as a list
+            sections = mk_lst(sections)
 
-        for section,configured in self.cfg.items():
-                for k,v in master[section].items():
-                    if v.name not in configured.keys():
-                        self.cfg[section][k]=v.default
+        for section in sections:
+            configured = result[section]
+            for k,v in master[section].items():
+                if v.name not in configured.keys():
+                    result[section][k]=v.default
+        return result
 
     def check(self):
         """

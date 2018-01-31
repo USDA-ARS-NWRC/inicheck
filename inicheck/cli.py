@@ -62,6 +62,5 @@ def main():
         generate_config(ucfg.cfg,mcfg.cfg,out_f, inicheck=True)
 
 
-
 if __name__ == '__main__':
     main()

@@ -11,8 +11,7 @@ class RecipeSection:
         #Conditions to be met
         self.triggers = OrderedDict()
         #Config file to apply if conditions are met
-        self.add_config = {}
-        self.remove_config = {}
+        self.adj_config = {}
 
         for item,entry in recipe_section_dict.items():
             # Check item for action keywords
@@ -25,10 +24,7 @@ class RecipeSection:
             if item not in self.triggers.keys():
                 item_dict = parse_entry(entry)
 
-                if 'remove' in entry:
-                    self.remove_config[item] = item_dict
-                else:
-                    self.add_config[item] = item_dict
+                self.adj_config[item] = item_dict
 
 # class ActionEntry:
 #     """
