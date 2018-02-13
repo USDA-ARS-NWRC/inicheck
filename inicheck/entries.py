@@ -1,7 +1,7 @@
-from utilities import cast_variable
-from inicheck import __trigger_keywords__, __recipe_keywords__
-from iniparse import parse_entry
 from collections import OrderedDict
+from .utilities import cast_variable
+from .iniparse import parse_entry
+from . import __trigger_keywords__, __recipe_keywords__
 
 class RecipeSection:
     """docstring for RecipeSection."""
@@ -25,37 +25,6 @@ class RecipeSection:
                 item_dict = parse_entry(entry)
 
                 self.adj_config[item] = item_dict
-
-# class ActionEntry:
-#     """
-#
-#     """
-#     def __init__(self, parseable_line, name = None):
-#
-#         self.application = []
-#
-#         #Flag indicating this action is removing items
-#         self.removing = False
-#
-#         self.keywords = ['apply_defaults','default','remove_section']
-#         parsed_dict = parse_entry(parseable_line)
-#         heirarcy = ['section','item','value']
-#
-#         #There can be multiple conditions returned
-#         for name,value in parsed_dict.items():
-#             result = ['any','any','any']
-#
-#             if type(value) == list:
-#                 #easy assignment to result using [section  item value syntax]
-#                 for i,v in enumerate(value):
-#                     result[i] = v
-#
-#             #If single item provided
-#             else:
-#                 if
-#         #If result is all any, then clear it
-#         if len([True for i in result if i == 'any']) != len(result):
-#             self.conditions.append(result)
 
 class TriggerEntry:
     """

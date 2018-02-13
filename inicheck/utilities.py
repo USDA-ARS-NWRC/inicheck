@@ -52,7 +52,7 @@ def cast_variable(variable,type_value):
     type_value = str(type_value)
     value = []
     for v in variable:
-        
+
         if 'datetime' in type_value:
             value.append(to_datetime(v))
         elif 'bool' in type_value:

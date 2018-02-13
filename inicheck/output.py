@@ -2,7 +2,7 @@ from datetime import date
 import os
 
 
-def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
+def generate_config(config_obj,fname, package_header=None, inicheck = False,
                     section_titles = None):
     """
     Generates a list of strings to be written and then writes them in the ini
@@ -48,7 +48,9 @@ def generate_config(config,mcfg,fname, package_header=None, inicheck = False,
 # For more inicheck help see:
 # http://inicheck.readthedocs.io/en/latest/
 """
-
+    config = config_obj.cfg
+    mcfg = config_obj.mcfg.cfg
+    
     #Generate the string for the file, creating them in order.
     for section in mcfg.keys():
         if section in config.keys():

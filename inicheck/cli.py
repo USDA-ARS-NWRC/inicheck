@@ -4,11 +4,11 @@
 
 import importlib
 import argparse
-from inicheck.iniparse import read_config
-from inicheck.config import MasterConfig, UserConfig
-from inicheck.output import print_config_report,generate_config, print_recipe_summary
-from inicheck.utilities import pcfg
+from .output import print_config_report,generate_config, print_recipe_summary
+from .utilities import pcfg
+from .tools import get_user_config
 import os
+import sys
 
 def main():
 
@@ -37,12 +37,9 @@ def main():
     if args.module == None and args.master == None:
         print("ERROR: Please provide either a module or a path to a master config")
         sys.exit()
-
-    if os.path.isfile(args.config_file):
-        config_file = args.config_file
-        mcfg = MasterConfig(path = args.master, module = args.module)
-
-        ucfg = UserConfig(config_file, mcfg = mcfg)
+    else:
+        f = os.path.abspath(args.config_file)
+        ucfg = get_user_config(f, master_file = args.master, module = args.module)
         ucfg.apply_recipes()
         warnings, errors = ucfg.check()
         print_config_report(warnings,errors)
@@ -52,14 +49,11 @@ def main():
             print_recipe_summary(ucfg.recipes)
 
 
-    else:
-        raise IOError('File does not exist.')
-
-    if args.write:
-        out_f = './{0}_full.ini'.format(os.path.basename(config_file).split('.')[0])
-        print("Writing complete config file with all recipes and defaults necessary...")
-        print('{0}'.format(out_f))
-        generate_config(ucfg.cfg,mcfg.cfg,out_f, inicheck=True)
+        if args.write:
+            out_f = './{0}_full.ini'.format(os.path.basename(f).split('.')[0])
+            print("Writing complete config file with all recipes and necessary defaults...")
+            print('{0}'.format(out_f))
+            generate_config(ucfg,out_f, inicheck=True)
 
 
 if __name__ == '__main__':

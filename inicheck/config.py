@@ -1,7 +1,7 @@
-from iniparse import read_config
-from utilities import cast_variable, mk_lst, pcfg
-from entries import ConfigEntry, RecipeSection
-from inicheck import __recipe_keywords__
+from .iniparse import read_config
+from .utilities import cast_variable, mk_lst, pcfg
+from .entries import ConfigEntry, RecipeSection
+from . import __recipe_keywords__
 from pandas import to_datetime
 from collections import OrderedDict
 import os
@@ -9,10 +9,9 @@ import sys
 import copy
 import importlib
 
-
-
 DEBUG = True
 FULL_DEBUG = False
+
 class UserConfig():
 
     def __init__(self,filename,mcfg=None):
@@ -108,6 +107,7 @@ class UserConfig():
 
         for section in partial_cfg.keys():
             for item in partial_cfg[section].keys():
+                remove = False
                 value = partial_cfg[section][item]
 
                 if item =='apply_defaults':
@@ -115,46 +115,56 @@ class UserConfig():
 
                 elif item == 'remove_section':
                     if value.lower()=='true':
-                        if section in result.keys():
-                            print("remove section called: {0} {1} {2}".format(section,item,value))
-                            del result[section]
 
-                elif item == 'remove_item':
-                    #remove_item calls the item from its value
-                    print("Remove item called: {0} {1} {2}".format(section,item,value))
-                    item = value
-                    if section in result.keys():
-                        if item in result[section].keys():
-                            del result[section][item]
+                        if section in result.keys():
+                            print("removed section: {0}".format(section))
+                            del result[section]
 
                 else:
 
                     #Normal operation
                     if section =='any':
                         s = situation[0]
+
                     else:
                         s = section
 
-                    if value == 'any':
-                        v = situation[2]
+                    if item == 'any':
+                        i = situation[1]
+
+                    elif item == 'remove_item':
+                        i = value
+
                     else:
                         i = item
 
-                    if value == 'default' and i in self.mcfg.cfg[s].keys():
+                    if value == 'any':
+                        v = situation[2]
+
+                    elif value == 'default' and i in self.mcfg.cfg[s].keys():
                         v = self.mcfg.cfg[s][i].default
+
                     else:
                         v = value
 
-                    if s in result.keys():
+                    if item == 'remove_item':
+                        if s in result.keys():
+                            if i in result[s].keys():
+                                print("Removed: {0} {1}".format(s,i))
+                                del result[s][i]
+
+                    elif s in result.keys():
                         #Check for empty dictionaries, add them if not removing
                         if not bool(result[s]):
+                            print("Adding section {0}".format(s))
                             result[s] = {}
                         else:
                             if i not in result[s].keys():
+                                print("Adding {0} {1} {2}".format(s,i,v))
                                 result[s][i]=v
 
-
         return result
+
 
     def get_unique_entries(self,cfg):
         """
@@ -209,6 +219,31 @@ class UserConfig():
                 if v.name not in configured.keys():
                     result[section][k]=v.default
         return result
+
+    def update_config_paths(self,user_cfg_path = None):
+            """
+            Sets all paths so that they are always relative to the config file or
+            absolute.
+            """
+            if user_cfg_path == None:
+                user_cfg_path = self.filename
+
+            mcfg = self.mcfg.cfg
+            cfg = self.cfg
+
+            #Cycle thru users config
+            for section in cfg.keys():
+                for item in cfg[section].keys():
+                    d = cfg[section][item]
+                    #Does master have this and is it not none
+                    if item in mcfg[section].keys() and d != None:
+                        m = mcfg[section][item]
+                        #Any paths
+                        if m.type == 'filename' or  m.type == 'directory':
+                            if not os.path.isabs(cfg[section][item]):
+                                path = os.path.abspath(os.path.join(os.path.dirname(user_cfg_path),cfg[section][item]))
+                                cfg[section][item] = path
+            return cfg
 
     def check(self):
         """

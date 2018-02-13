@@ -1,5 +1,5 @@
 import os
-from utilities import remove_chars, pcfg
+from .utilities import  pcfg,remove_chars
 from collections import OrderedDict
 
 def read_config(filename):
@@ -19,7 +19,6 @@ def read_config(filename):
 
     #pcfg(config)
     return config
-
 
 def parse_entry(info,valid_names=None):
     properties = {}
