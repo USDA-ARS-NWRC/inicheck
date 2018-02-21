@@ -105,7 +105,7 @@ class ConfigEntry:
     description
     """
 
-    def __init__(self, name=None, value=None, default = None, entry_type='str',
+    def __init__(self, name=None, value=None, default = None, entry_type='string',
                  options=[], parseable_line=None):
         self.name = name
         self.value = value

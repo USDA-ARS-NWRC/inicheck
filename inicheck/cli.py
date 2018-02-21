@@ -4,9 +4,9 @@
 
 import importlib
 import argparse
-from .output import print_config_report,generate_config, print_recipe_summary
-from .utilities import pcfg
-from .tools import get_user_config
+from . output import print_config_report,generate_config, print_recipe_summary
+from . utilities import pcfg
+from . tools import get_user_config, check_config, cast_all_variables
 import os
 import sys
 
@@ -39,9 +39,9 @@ def main():
         sys.exit()
     else:
         f = os.path.abspath(args.config_file)
-        ucfg = get_user_config(f, master_file = args.master, module = args.module)
+        ucfg = get_user_config(f, master_files = args.master, module = args.module)
         ucfg.apply_recipes()
-        warnings, errors = ucfg.check()
+        warnings, errors = check_config(ucfg)
         print_config_report(warnings,errors)
         #pcfg(ucfg.cfg)
 

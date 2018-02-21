@@ -1,4 +1,6 @@
 from pandas import to_datetime
+import inspect
+import sys
 
 def mk_lst(values, unlst=False):
     """
@@ -36,47 +38,59 @@ def remove_chars(orig_str,char_str, replace_str=None):
     return "".join(clean_str)
 
 
-def cast_variable(variable,type_value):
+def get_checkers(module = 'inicheck.checkers',keywords = ['check']):
+    """
+    Args:
+        module: The module to search for the classes
+
+    Returns a dictionary of the classes available for checking config entries
+    """
+    funcs = inspect.getmembers(sys.modules['inicheck.checkers'], inspect.isclass)
+    func_dict = {}
+    for name,fn in funcs:
+        k = name.lower()
+        #Remove any keywords
+        for w in keywords:
+            if w in k:
+                k = k.replace(w,'')
+
+        func_dict[k] = fn
+
+    return func_dict
+
+
+
+def cast_variable(variable,type_value,available_types = None,ucfg = None):
     """
     Casts an object to the spectified type value
 
     Args:
         variable - some variable to be casted
         type_value - string value indicating type to cast.
+        available_types - A dictionary of names and type check functions
+        ucfg - users config object from class UserConfig
 
     Returns:
         value - The original variable now casted in type_value
     """
-    if type(variable) != list:
-        variable = [variable]
+    variable = mk_lst(variable)
     type_value = str(type_value)
     value = []
+    if available_types == None:
+        available_types = get_checkers()
+
     for v in variable:
+        option_found = False
 
-        if 'datetime' in type_value:
-            value.append(to_datetime(v))
-        elif 'bool' in type_value:
-            if v.lower() in ['yes','y','true']:
-                v = True
-            elif v.lower() in ['no','n','false']:
-                v = False
+        for name,fn in available_types.items():
+            if type_value in name:
+                b = fn(value = v, config = ucfg)
+                value = b.cast()
+                option_found = True
 
-            value.append(bool(v))
-        elif 'int' in type_value:
-            value.append(int(v))
-        elif 'float' in type_value:
-            value.append(float(v))
-        elif type_value == 'filename' or type_value == 'directory':
-            value.append(v)
-        elif v in ['none']:  # None
-            value.append(None)
-        elif 'str' in type_value:
-            value.append(str(v.lower()))
-        else:
+        if not option_found:
             raise ValueError("Unknown type_value prescribed. ----> {0}".format(type_value))
 
-    if len(value) == 1:
-        value = value[0]
     return value
 
 

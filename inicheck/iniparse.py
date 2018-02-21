@@ -20,6 +20,7 @@ def read_config(filename):
     #pcfg(config)
     return config
 
+
 def parse_entry(info,valid_names=None):
     properties = {}
     if type(info) != list:
@@ -106,7 +107,7 @@ def parse_sections(fname):
     return result
 
 
-def parse_items(parsed_sections_dict):
+def parse_items(parsed_sections_dict,mcfg=None):
     """
     Takes the output from parse_sections and parses the items in each section
 
