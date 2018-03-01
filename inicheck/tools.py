@@ -1,6 +1,6 @@
 import os
 from . config import UserConfig, MasterConfig
-from . utilities import mk_lst, cast_variable, get_checkers
+from . utilities import mk_lst, cast_variable, get_checkers,pcfg
 
 def check_config(config_obj,checkers = None):
             """
@@ -21,7 +21,6 @@ def check_config(config_obj,checkers = None):
             master = config_obj.mcfg.cfg
             cfg = config_obj.cfg
             standard_funcs = get_checkers()
-
             #Compare user config file to our master config
             for section, configured in cfg.items():
 
@@ -36,31 +35,29 @@ def check_config(config_obj,checkers = None):
                             wrn +=  " Common for station names."
                         warnings.append(msg.format(section,item, wrn))
                     else:
-                        if litem != 'stations':
-                            #Did the user provide a list value or single value
-                            val_lst = mk_lst(value)
+                        #Did the user provide a list value or single value
+                        val_lst = mk_lst(value)
 
-                            for v in val_lst:
-                                if v != None:
-                                    #v = master[section][litem].convert_type(v)
+                        for v in val_lst:
+                            if v != None:
+                                # Do we have an idea of what to expect (type and options)?
+                                options_type = master[section][item].type
 
-                                    # Do we have an idea os what to expect (type and options)?
-                                    options_type = master[section][item].type
+                                for name,fn in standard_funcs.items():
 
-                                    for name,fn in standard_funcs.items():
-
-                                        if options_type in name.lower():
-                                            b = fn(value = v, config = config_obj)
-                                            issue = b.check()
-                                            if issue != None:
-                                                full_msg = msg.format(section,item,issue)
-
-                                                if b.msg_level == 'error':
-                                                    errors.append(full_msg)
-                                                if b.msg_level == 'warning':
-                                                    warnings.append(full_msg)
-                                        else:
-                                            issue = None
+                                    if options_type == name.lower():
+                                        b = fn(value = v, config = config_obj)
+                                        issue = b.check()
+                                        if issue != None:
+                                            full_msg = msg.format(section,item,issue)
+                                            print(name,fn,issue)
+                                            if b.msg_level == 'error':
+                                                errors.append(full_msg)
+                                            elif b.msg_level == 'warning':
+                                                warnings.append(full_msg)
+                                        break
+                                    else:
+                                        issue = None
 
 
 
@@ -105,6 +102,7 @@ def cast_all_variables(config_obj,mcfg_obj, other_types = None):
                                 b = fn(value = v, config = config_obj)
                                 values.append(b.cast())
                                 option_found = True
+                                break
 
                         if not option_found:
                             raise ValueError("Unknown type_value prescribed. ----> {0}".format(type_value))
@@ -140,6 +138,7 @@ def get_user_config(config_file,master_files = None, module= None, mcfg = None):
 
         ucfg = UserConfig(config_file, mcfg = mcfg)
         ucfg = cast_all_variables(ucfg,mcfg)
+        #pcfg(ucfg.cfg)
 
 
     else:

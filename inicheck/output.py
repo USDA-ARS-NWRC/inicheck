@@ -33,9 +33,12 @@ def generate_config(config_obj,fname, package_header=None, inicheck = False,
     config_str+=pg_sep
 
     #File header with specific package option
-    config_str += "\n# Configuration File "
-    if package_header != None:
-        config_str+= "for {0}\n".format(package_header)
+    if config_obj.mcfg.header != None:
+        header = config_obj.mcfg.header.split('\n')
+        for line in header:
+            config_str += ('\n# '+line)
+    else:
+        config_str += "\n# Configuration File "
 
     #Add in the date generated
     config_str+= "\n# Date generated: {0}".format(date.today())
@@ -50,7 +53,7 @@ def generate_config(config_obj,fname, package_header=None, inicheck = False,
 """
     config = config_obj.cfg
     mcfg = config_obj.mcfg.cfg
-    
+
     #Generate the string for the file, creating them in order.
     for section in mcfg.keys():
         if section in config.keys():

@@ -261,6 +261,8 @@ class MasterConfig():
             path = [path]
 
         self.recipes = []
+        self.titles = None
+        self.header = None
 
         if module != None:
             i = importlib.import_module(module)
@@ -268,6 +270,12 @@ class MasterConfig():
 
             if hasattr(i,'__recipes__'):
                 path.append(i.__recipes__)
+
+            if hasattr(i,'__config_titles__'):
+                self.titles = getattr(i,'__config_titles__')
+
+            if hasattr(i,'__config_header__'):
+                self.header = getattr(i,'__config_header__')
 
         if len(path)==0:
             raise ValueError("No file was either provided or found when initiating a master config file")

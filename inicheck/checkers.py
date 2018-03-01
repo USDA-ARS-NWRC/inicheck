@@ -65,6 +65,8 @@ class CheckType(GenericCheck):
         Checks for type validity
         """
         msg = None
+        self.msg_level = 'error'
+
         if self.type not in str(type(self.value)):
                 valid = False
                 msg = "Expecting {0} received {1}".format(self.type,str(self.value))
@@ -154,12 +156,6 @@ class CheckString(CheckType):
         self.type_func = str
         self.type = 'string'
 
-    #
-    # if master[section][item].options and v not in master[section][item].options:
-    #     err_str = "Invalid option: {0} ".format(v)
-                                    # errors.append(msg.format(section, item, err_str))
-
-
 
 class CheckPath(CheckType):
     """
@@ -167,7 +163,6 @@ class CheckPath(CheckType):
     """
 
     def __init__(self,**kwargs):
-        self.msg_level = 'warning'
         super(CheckPath,self).__init__(**kwargs)
         self.root_loc = self.config.filename
 
@@ -185,6 +180,7 @@ class CheckPath(CheckType):
         """
         Checks for existing filename
         """
+        self.msg_level = 'warning'
 
         if self.dir_path:
             exists = os.path.isdir(self.value)
@@ -229,6 +225,7 @@ class CheckCriticalFilename(CheckFilename):
     def __init__(self,**kwargs):
         super(CheckCriticalFilename,self).__init__(**kwargs)
         self.msg_level = 'error'
+
 
 class CheckCriticalDirectory(CheckDirectory):
     """

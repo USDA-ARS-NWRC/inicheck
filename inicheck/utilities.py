@@ -38,23 +38,28 @@ def remove_chars(orig_str,char_str, replace_str=None):
     return "".join(clean_str)
 
 
-def get_checkers(module = 'inicheck.checkers',keywords = ['check']):
+def get_checkers(module = 'inicheck.checkers', keywords = []):
     """
     Args:
         module: The module to search for the classes
 
     Returns a dictionary of the classes available for checking config entries
     """
-    funcs = inspect.getmembers(sys.modules['inicheck.checkers'], inspect.isclass)
+    keywords.append('check')
+
+    funcs = inspect.getmembers(sys.modules[module], inspect.isclass)
     func_dict = {}
+
     for name,fn in funcs:
+        checker_found = False
         k = name.lower()
         #Remove any keywords
         for w in keywords:
             if w in k:
                 k = k.replace(w,'')
-
-        func_dict[k] = fn
+                checker_found = True
+        if checker_found:
+            func_dict[k] = fn
 
     return func_dict
 

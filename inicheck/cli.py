@@ -40,10 +40,12 @@ def main():
     else:
         f = os.path.abspath(args.config_file)
         ucfg = get_user_config(f, master_files = args.master, module = args.module)
+
         ucfg.apply_recipes()
+        # pcfg(ucfg.cfg)
+
         warnings, errors = check_config(ucfg)
         print_config_report(warnings,errors)
-        #pcfg(ucfg.cfg)
 
         if args.recipes:
             print_recipe_summary(ucfg.recipes)
@@ -53,6 +55,7 @@ def main():
             out_f = './{0}_full.ini'.format(os.path.basename(f).split('.')[0])
             print("Writing complete config file with all recipes and necessary defaults...")
             print('{0}'.format(out_f))
+
             generate_config(ucfg,out_f, inicheck=True)
 
 
