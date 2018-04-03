@@ -5,10 +5,12 @@
 import importlib
 import argparse
 from . output import print_config_report,generate_config, print_recipe_summary
-from . utilities import pcfg
+from . utilities import pcfg,pmcfg
 from . tools import get_user_config, check_config, cast_all_variables
 import os
 import sys
+
+
 
 def main():
 
@@ -37,14 +39,18 @@ def main():
     if args.module == None and args.master == None:
         print("ERROR: Please provide either a module or a path to a master config")
         sys.exit()
+
     else:
         f = os.path.abspath(args.config_file)
         ucfg = get_user_config(f, master_files = args.master, module = args.module)
 
+        #pmcfg(ucfg.mcfg.cfg)
         ucfg.apply_recipes()
-        # pcfg(ucfg.cfg)
 
         warnings, errors = check_config(ucfg)
+        #pcfg(ucfg.cfg)
+        #pmcfg(ucfg.mcfg.cfg)
+
         print_config_report(warnings,errors)
 
         if args.recipes:
@@ -56,7 +62,7 @@ def main():
             print("Writing complete config file with all recipes and necessary defaults...")
             print('{0}'.format(out_f))
 
-            generate_config(ucfg,out_f, inicheck=True)
+            generate_config(ucfg,out_f, section_titles = ucfg.mcfg.titles,inicheck=True)
 
 
 if __name__ == '__main__':

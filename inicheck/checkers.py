@@ -1,8 +1,9 @@
 '''
-Functions for check an producing errors and warnings
+Functions for checking valus in a config file and producing errors and warnings
 '''
 import os
 from pandas import to_datetime
+
 
 class GenericCheck(object):
     def __init__(self,**kwargs):
@@ -15,6 +16,7 @@ class GenericCheck(object):
 
         self.msg_level = 'warning'
         self.value = kwargs["value"]
+
         self.config = kwargs["config"]
 
         if not self.msg_level.lower() in ['warning','error']:
@@ -56,9 +58,10 @@ class CheckType(GenericCheck):
 
     def __init__(self,**kwargs):
         super(CheckType,self).__init__(**kwargs)
-        self.type = None
+        self.type = 'string'
         #Function used for casting to types
         self.type_func = None
+
 
     def is_valid(self):
         """
@@ -66,13 +69,13 @@ class CheckType(GenericCheck):
         """
         msg = None
         self.msg_level = 'error'
-
         if self.type not in str(type(self.value)):
                 valid = False
                 msg = "Expecting {0} received {1}".format(self.type,str(self.value))
         else:
             valid = True
         return valid,msg
+
 
     def cast(self):
         return self.type_func(self.value)
@@ -85,7 +88,6 @@ class CheckDatetime(CheckType):
 
     def __init__(self,**kwargs):
         super(CheckDatetime,self).__init__(**kwargs)
-        self.msg_level = 'error'
         self.type_func = to_datetime
 
     def is_valid(self):
@@ -172,9 +174,7 @@ class CheckPath(CheckType):
         if self.value != None and self.root_loc != None:
             if not os.path.isabs(self.value):
                 p = os.path.abspath(os.path.expanduser(os.path.dirname(self.root_loc)))
-                self.full_path = os.path.join(p,self.value)
-        else:
-            self.full_path = self.value
+                self.value = os.path.join(p,self.value)
 
     def is_valid(self):
         """
@@ -190,10 +190,7 @@ class CheckPath(CheckType):
         return exists
 
     def cast(self):
-        if os.path.isabs(self.value):
-            return self.full_path
-        else:
-            return self.value
+        return self.value
 
 
 class CheckDirectory(CheckPath):

@@ -1,8 +1,8 @@
 import os
 from . config import UserConfig, MasterConfig
-from . utilities import mk_lst, cast_variable, get_checkers,pcfg
+from . utilities import mk_lst, get_checkers,pcfg
 
-def check_config(config_obj,checkers = None):
+def check_config(config_obj):
             """
             looks at the users provided config file and checks it to a master config file
             looking at correctness and missing info.
@@ -18,9 +18,16 @@ def check_config(config_obj,checkers = None):
             msg = "{: <20} {: <30} {: <60}"
             errors = []
             warnings = []
+
             master = config_obj.mcfg.cfg
             cfg = config_obj.cfg
+
             standard_funcs = get_checkers()
+
+            #Add any checker modules if provided
+            if config_obj.mcfg.checker_module != None:
+                funcs = standard_funcs.update(get_checkers(module = config_obj.mcfg.checker_module))
+
             #Compare user config file to our master config
             for section, configured in cfg.items():
 
@@ -31,8 +38,6 @@ def check_config(config_obj,checkers = None):
                     #Is the item known as a configurable item?
                     if litem not in master[section].keys():
                         wrn = "Not a registered option."
-                        if section.lower() == 'wind':
-                            wrn +=  " Common for station names."
                         warnings.append(msg.format(section,item, wrn))
                     else:
                         #Did the user provide a list value or single value
@@ -42,29 +47,25 @@ def check_config(config_obj,checkers = None):
                             if v != None:
                                 # Do we have an idea of what to expect (type and options)?
                                 options_type = master[section][item].type
-
                                 for name,fn in standard_funcs.items():
 
+                                    # Check for type checkers
                                     if options_type == name.lower():
                                         b = fn(value = v, config = config_obj)
                                         issue = b.check()
                                         if issue != None:
                                             full_msg = msg.format(section,item,issue)
-                                            print(name,fn,issue)
                                             if b.msg_level == 'error':
                                                 errors.append(full_msg)
                                             elif b.msg_level == 'warning':
                                                 warnings.append(full_msg)
-                                        break
+                                            break
                                     else:
                                         issue = None
-
-
-
             return warnings,errors
 
 
-def cast_all_variables(config_obj,mcfg_obj, other_types = None):
+def cast_all_variables(config_obj,mcfg_obj):
     """
     Cast all values into the appropiate type using checkers, other_types
     and the master config.
@@ -85,29 +86,42 @@ def cast_all_variables(config_obj,mcfg_obj, other_types = None):
     all_checks = get_checkers()
 
     #add in other type casting
-    if other_types != None:
-        all_checks.update(other_types)
+    if mcfg_obj.checker_module != None:
+        all_checks.update(get_checkers(module=mcfg_obj.checker_module))
 
     #Cast all variables
     for s in ucfg.keys():
         for i in ucfg[s].keys():
             values = []
+
             #Ensure it is something we can check
             if i in mcfg[s].keys():
-                type_value = mcfg[s][i].type
-                for z,v in enumerate(ucfg[s][i]):
-                        #Use all the checks available to cast
-                        for name,fn in all_checks.items():
-                            if type_value in name:
-                                b = fn(value = v, config = config_obj)
-                                values.append(b.cast())
-                                option_found = True
-                                break
+                type_value = (mcfg[s][i].type).lower()
+                if type_value.lower() not in all_checks.keys():
+                    raise ValueError("Type {0} is undefined and has no checker"
+                                     " associated".format(type_value))
 
-                        if not option_found:
-                            raise ValueError("Unknown type_value prescribed. ----> {0}".format(type_value))
+                for z,v in enumerate(mk_lst(ucfg[s][i])):
+                    option_found = False
+                    #Use all the checks available to cast
+                    for name,fn in all_checks.items():
+                        if  type_value == name.lower():
+                            b = fn(value = v, config = config_obj)
+                            if v in [None,'none','None']:
+                                values.append(None)
+                            else:
+                                values.append(b.cast())
+                            option_found = True
+                            break
+
+                    if not option_found:
+                        raise ValueError("Unknown type_value prescribed."
+                                         " ----> {0}".format(type_value))
+            else:
+                values = ucfg[s][i]
 
             ucfg[s][i] = mk_lst(values, unlst=True)
+
     config_obj.cfg = ucfg
     return config_obj
 
@@ -137,8 +151,8 @@ def get_user_config(config_file,master_files = None, module= None, mcfg = None):
         mcfg = MasterConfig(path = master_files, module = module)
 
         ucfg = UserConfig(config_file, mcfg = mcfg)
+        ucfg.apply_recipes()
         ucfg = cast_all_variables(ucfg,mcfg)
-        #pcfg(ucfg.cfg)
 
 
     else:

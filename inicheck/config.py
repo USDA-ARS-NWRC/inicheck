@@ -1,5 +1,5 @@
 from .iniparse import read_config
-from .utilities import mk_lst, pcfg, get_checkers
+from .utilities import mk_lst, pcfg, get_checkers, get_relative_to_cfg
 from .entries import ConfigEntry, RecipeSection
 from . checkers import *
 from . import __recipe_keywords__
@@ -12,7 +12,7 @@ import importlib
 import inspect
 
 
-DEBUG = True
+DEBUG = False
 FULL_DEBUG = False
 
 class UserConfig():
@@ -121,7 +121,8 @@ class UserConfig():
                     if value.lower()=='true':
 
                         if section in result.keys():
-                            print("removed section: {0}".format(section))
+                            if DEBUG:
+                                print("removed section: {0}".format(section))
                             del result[section]
 
                 else:
@@ -154,18 +155,20 @@ class UserConfig():
                     if item == 'remove_item':
                         if s in result.keys():
                             if i in result[s].keys():
-                                print("Removed: {0} {1}".format(s,i))
+                                if DEBUG:
+                                    print("Removed: {0} {1}".format(s,i))
                                 del result[s][i]
 
                     elif s in result.keys():
                         #Check for empty dictionaries, add them if not removing
                         if not bool(result[s]):
-                            print("Adding section {0}".format(s))
+                            if DEBUG:
+                                print("Adding section {0}".format(s))
                             result[s] = {}
                         else:
                             if i not in result[s].keys():
-                                print("Adding {0} {1} {2}".format(s,i,v))
-                                #result[s][i]=cast_variable(v,self.mcfg.cfg[s][i].type)
+                                if DEBUG:
+                                    print("Adding {0} {1} {2}".format(s,i,v))
                                 result[s][i]=v
 
         return result
@@ -245,10 +248,9 @@ class UserConfig():
                         m = mcfg[section][item]
                         #Any paths
                         if m.type == 'filename' or  m.type == 'directory':
-                            if not os.path.isabs(cfg[section][item]):
-                                path = os.path.abspath(os.path.join(os.path.dirname(user_cfg_path),cfg[section][item]))
-                                cfg[section][item] = path
+                            cfg[section][item] = get_relative_to_cfg(cfg[section][item], self.filename)
             return cfg
+
 
 class MasterConfig():
     def __init__(self, path=None, module=None):
@@ -263,24 +265,33 @@ class MasterConfig():
         self.recipes = []
         self.titles = None
         self.header = None
+        self.checker_module = None
 
         if module != None:
             i = importlib.import_module(module)
             path.append(os.path.abspath(os.path.join(i.__file__, i.__core_config__)))
 
+            #Search for possible recipes provided in the module
             if hasattr(i,'__recipes__'):
                 path.append(i.__recipes__)
 
+            #Search for possible section titles provided in the module
             if hasattr(i,'__config_titles__'):
                 self.titles = getattr(i,'__config_titles__')
 
+            #Search for config headers provided in the module
             if hasattr(i,'__config_header__'):
                 self.header = getattr(i,'__config_header__')
+
+            #Search for custom checkers
+            if hasattr(i,'__config_checkers__'):
+                self.checker_module = module+'.'+ getattr(i,'__config_checkers__')
 
         if len(path)==0:
             raise ValueError("No file was either provided or found when initiating a master config file")
 
         self.cfg = self.add_files(path)
+
 
     def add_files(self,paths):
         """
@@ -318,12 +329,14 @@ class MasterConfig():
         cfg = OrderedDict()
         #Read in will automatically get the configurable key added
         raw_config = read_config(master_config_file)
+
         for section in raw_config.keys():
             sec = {}
             for word in __recipe_keywords__:
                 if word in section:
                     self.recipes.append(RecipeSection(raw_config[section], name = section))
                     break
+
                 else:
                     for item in raw_config[section].keys():
                         sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])

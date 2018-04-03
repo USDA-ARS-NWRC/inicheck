@@ -35,7 +35,6 @@ def parse_entry(info,valid_names=None):
                             'entry'.format(info))
 
         name = (a[0].lower()).strip()
-
         #Check for constraints on potential names of entries
         if valid_names != None and name not in valid_names:
             raise ValueError("Invalid option set in the master config File for "

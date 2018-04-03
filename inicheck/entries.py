@@ -1,6 +1,5 @@
 from collections import OrderedDict
-from .utilities import cast_variable
-from .iniparse import parse_entry
+from . iniparse import parse_entry
 from . import __trigger_keywords__, __recipe_keywords__
 
 class RecipeSection:
@@ -25,6 +24,7 @@ class RecipeSection:
                 item_dict = parse_entry(entry)
 
                 self.adj_config[item] = item_dict
+
 
 class TriggerEntry:
     """
@@ -80,6 +80,7 @@ class TriggerEntry:
 
             self.conditions.append(result)
 
+
 class ConfigEntry:
     """
     ConfigEntry designed to aid in parsing master config file entries.
@@ -102,10 +103,10 @@ class ConfigEntry:
 
     Config entry then will parse the strings looking for space separated lists,
     values denoted with =, and will only recieve type,default,options,and
-    description
+    description.
     """
 
-    def __init__(self, name=None, value=None, default = None, entry_type='string',
+    def __init__(self, name=None, value=None, default=None, entry_type='string',
                  options=[], parseable_line=None):
         self.name = name
         self.value = value
@@ -115,26 +116,27 @@ class ConfigEntry:
         self.type = entry_type
         self.valid_names = ['default','type','options','description']
 
+        #if name == 'type':
         if parseable_line != None:
             parsed_dict = parse_entry(parseable_line, valid_names = self.valid_names)
             for name,value in parsed_dict.items():
                 setattr(self,name,value)
-
-        self.default = self.convert_type(self.default)
-
-        self.options = self.convert_type(self.options)
+        # self.default = self.convert_type(self.default)
+        #
+        # self.options = self.convert_type(self.options)
 
         #Options should always be a list
         if type(self.options) != list:
             self.options = [self.options]
 
 
-    def convert_type(self,value):
-        if str(value).lower() == 'none':
-            value = None
-
-        else:
-            if self.type not in str(type(value)):
-                value = cast_variable(value,self.type)
-
-        return value
+    #
+    # def convert_type(self,value):
+    #     if str(value).lower() == 'none':
+    #         value = None
+    #
+    #     else:
+    #         if self.type not in str(type(value)):
+    #             value = cast_variable(value,self.type)
+    #
+    #     return value
