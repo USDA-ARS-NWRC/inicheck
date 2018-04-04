@@ -106,7 +106,7 @@ def print_config_report(warnings, errors, logger= None):
         out = print_out
 
 
-    msg_len = 110
+    msg_len = 90
     out(" ")
     out(" ")
     out("Configuration File Status Report:")
@@ -154,7 +154,7 @@ def print_recipe_summary(lst_recipes):
     Prints out the recipes found and how they are interpretted
     """
     #len of recipe separators
-    msg_len = 110
+    msg_len = 80
     header = "="*msg_len
     recipe_hdr = "-"*msg_len
     r_msg = "\n{: <20}\n"+recipe_hdr
@@ -163,6 +163,7 @@ def print_recipe_summary(lst_recipes):
     msg = "\t\t{: <20} {: <25}"
 
     print('\n\n')
+    print("Below are the recipes applied to the config file:")
     print("Recipes Summary:")
     print(header)
     for r in lst_recipes:
@@ -175,10 +176,11 @@ def print_recipe_summary(lst_recipes):
                 else:
                     print(msg.format("",c))
 
-        print_cfg_for_recipe(r.add_config,cfg_msg,hdr="\n\tAdds:")
-        print_cfg_for_recipe(r.remove_config,cfg_msg,hdr="\n\tRemoves:")
+        print_cfg_for_recipe(r.adj_config,cfg_msg,hdr="\n\tEdits:")
+        #print_cfg_for_recipe(r.remove_config,cfg_msg,hdr="\n\tRemoves:")
         print('\n')
     print('\n')
+
 
 def print_cfg_for_recipe(cfg,fmt,hdr = None):
     if hdr !=None:
@@ -187,3 +189,45 @@ def print_cfg_for_recipe(cfg,fmt,hdr = None):
     for section in cfg.keys():
         for item, value in cfg[section].items():
             print(fmt.format(section,item,value))
+
+def print_details(details, mcfg):
+    """
+    Prints out the details for a list of provided options
+    """
+
+    msg = "{: <20} {: <25} {: <25} {: <25} {: <60}"
+    hdr  = '\n'+msg.format('Section','Item','Default','Options','Description')
+    print(hdr)
+    print('='*len(hdr))
+    nopts = len(details)
+    #At least a section was provided
+    if nopts >= 1:
+        if details[0] in mcfg.keys():
+            # A section and item was provided
+            if nopts == 2:
+                if details[1] in mcfg[details[0]].keys():
+                    print(msg.format(details[0],details[1],
+                                    mcfg[details[0]][details[1]].default,
+                                    mcfg[details[0]][details[1]].options,
+                                    mcfg[details[0]][details[1]].description))
+                else:
+                    print("Item {0} in not a registered item.".format(details[1]))
+                    sys.exit()
+
+            # Print the whole section
+            else:
+                for k,v in mcfg[details[0]].items():
+                    print(msg.format(details[0],k,
+                                    v.default,
+                                    v.options,
+                                    v.description))
+
+        #Section does not exist
+        else:
+            print("Section {0} in not a valid section.".format(details[0]))
+            sys.exit()
+
+
+    else:
+        print("Please provide at least a section for information")
+        sys.exit()
