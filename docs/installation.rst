@@ -23,7 +23,7 @@ you through the process.
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
 
-From sources
+From source
 ------------
 
 The sources for inicheck can be downloaded from the `Github repo`_.

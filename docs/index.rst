@@ -8,6 +8,7 @@ Contents:
 
    readme
    installation
+   master_config
    usage
    modules
    contributing

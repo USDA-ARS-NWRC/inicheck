@@ -35,7 +35,7 @@ codes that required config files that could easily have 1000 different
 configurations. So from that need inicheck has been born.
 
 Basic Principles
----------------
+----------------
 
 inicheck requires a master config file to operate. The master config file is
 a gold standard files provided by the developer of a package. The master config
@@ -60,7 +60,7 @@ scenarios.
 Features
 --------
 
-*.ini file generating
+* .ini file generating
 * Config file checking
 * Config file warning and error reporting
 * Command line interface
