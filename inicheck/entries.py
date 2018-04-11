@@ -75,7 +75,7 @@ class TriggerEntry:
         heirarcy = ['section', 'item', 'value']
 
         parsed_dict = parse_entry(parseable_line,
-                                  valid_name=self.valid_names)
+                                  valid_names=self.valid_names)
 
         # There can be multiple conditions returned
         for name,value in parsed_dict.items():
@@ -117,7 +117,7 @@ class ConfigEntry:
         }
 
     Config entry then will parse the strings looking for space separated
-    lists,values denoted with =, and will only recieve type,default,
+    lists,values denoted with =, and will only recieve type, default,
     options,and description.
     """
 
@@ -134,7 +134,7 @@ class ConfigEntry:
 
         if parseable_line != None:
             parsed_dict = parse_entry(parseable_line,
-                                      valid_name=self.valid_names)
+                                      valid_names=self.valid_names)
             for name,value in parsed_dict.items():
                 setattr(self,name,value)
 

@@ -101,8 +101,9 @@ def cast_all_variables(config_obj, mcfg_obj):
             if i in mcfg[s].keys():
                 type_value = (mcfg[s][i].type).lower()
                 if type_value.lower() not in all_checks.keys():
-                    raise ValueError("Type {0} is undefined and has no checker"
-                                     " associated".format(type_value))
+                    raise ValueError("Type {0} is undefined and has no"
+                                    " checker associated"
+                                    "".format(type_value))
 
                 for z, v in enumerate(mk_lst(ucfg[s][i])):
                     option_found = False

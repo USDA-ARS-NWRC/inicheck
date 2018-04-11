@@ -24,7 +24,8 @@ def generate_config(config_obj, fname, package_header=None, inicheck=False,
         None
     """
     header_len = 80
-    pg_sep = '# '*header_len
+    pg_sep = '#' * header_len
+
     # Header surround each commented titles in the ini file
     section_header = pg_sep + '\n' + ('# {0}\n') + pg_sep
 
@@ -36,7 +37,7 @@ def generate_config(config_obj, fname, package_header=None, inicheck=False,
     if config_obj.mcfg.header != None:
         header = config_obj.mcfg.header.split('\n')
         for line in header:
-            config_str += ('\n# '+line)
+            config_str += ('\n# ' + line)
     else:
         config_str += "\n# Configuration File "
 
@@ -45,19 +46,18 @@ def generate_config(config_obj, fname, package_header=None, inicheck=False,
 
     # Generated with inicheck
     if inicheck:
-        config_str += "\n# Generated using: inicheck <filename> -w "
+        config_str += "\n# Generated using: inicheck <filename> -w"
 
-    config_str += """
-# For more inicheck help see:
-# http://inicheck.readthedocs.io/en/latest/
-"""
+    config_str += "\n# For more inicheck help see:" + \
+                  "\n# http://inicheck.readthedocs.io/en/latest/\n"
+
     config = config_obj.cfg
     mcfg = config_obj.mcfg.cfg
 
     # Generate the string for the file, creating them in order.
     for section in mcfg.keys():
         if section in config.keys():
-            config_str += '\n'*2
+            config_str += '\n' * 2
 
             if section_titles != None:
                 # Add the header
@@ -145,6 +145,7 @@ def print_config_report(warnings, errors, logger=None):
     if not any_errors and not any_warnings:
         out("No errors or warnings were reported with the config file.\n")
 
+
 def print_out(out_str):
     """
     wrapper for print so we can use either a logger or a stdout
@@ -192,6 +193,7 @@ def print_cfg_for_recipe(cfg, fmt, hdr=None):
     for section in cfg.keys():
         for item, value in cfg[section].items():
             print(fmt.format(section, item, value))
+
 
 def print_details(details, mcfg):
     """

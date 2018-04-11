@@ -2,6 +2,7 @@ import os
 from .utilities import  remove_chars
 from collections import OrderedDict
 
+
 def read_config(filename):
     """
     Opens and reads in the config file in its most raw form.
@@ -20,7 +21,7 @@ def read_config(filename):
     return config
 
 
-def parse_entry(info,valid_names=None):
+def parse_entry(info, valid_names=None):
     properties = OrderedDict()
     if type(info) != list:
         info = [info]
@@ -85,8 +86,8 @@ def parse_sections(fname):
         line = line.strip()
 
         # Comment checking
-        if '# ' in line:
-            line = line.split('# ')[0]
+        if '#' in line:
+            line = line.split('#')[0]
 
         elif ';' in line:
             line = line.split(';')[0]
@@ -103,10 +104,11 @@ def parse_sections(fname):
 
             else:
                 result[section].append(lines[i])
+
     return result
 
 
-def parse_items(parsed_sections_dict,mcfg=None):
+def parse_items(parsed_sections_dict, mcfg=None):
     """
     Takes the output from parse_sections and parses the items in each
     section
@@ -152,6 +154,7 @@ def parse_items(parsed_sections_dict,mcfg=None):
 
     return result
 
+
 def parse_values(parsed_items):
         """
         Takes the output from parse_items and parses any values or
@@ -171,9 +174,9 @@ def parse_values(parsed_items):
             result[section] = OrderedDict()
             for item,val in parsed_items[section].items():
                 value = val.strip()
-                if ', ' in val:
+                if ',' in val:
                     result[section][item] = \
-                    [v.strip() for v in value.split(', ')]
+                    [v.strip() for v in value.split(',')]
 
                 else:
                     result[section][item] = [value]
