@@ -1,18 +1,31 @@
 from collections import OrderedDict
 from . iniparse import parse_entry
-from . import __trigger_keywords__, __recipe_keywords__
+from . import __trigger_keywords__
 
 class RecipeSection:
-    """docstring for RecipeSection."""
+    """
+    The RecipeSection enables the master config file to parses a section
+    that is actually a recipe. Operates using keywords provided n the name
+    of the section. It collects triggers and adjustments to the config file
+    and assigns them to this class. Trigger represent the conditional
+    statements to apply the adjustments listed  below. If an item in the
+    section doesn't contain any trigger keyword then it is assumed to be
+    an adjustment to be made.
 
-    def __init__(self, recipe_section_dict, name = None):
-        self.name = name
-        #Conditions to be met
+    """
+
+    def __init__(self, recipe_section_dict):
+        """
+            Args:
+                recipe_section_dict: a dictionary containing the triggers
+                                     and config file adjustments.
+        """
+        # Conditions to be met
         self.triggers = OrderedDict()
-        #Config file to apply if conditions are met
+        # Config file to apply if conditions are met
         self.adj_config = OrderedDict()
 
-        for item,entry in recipe_section_dict.items():
+        for item, entry in recipe_section_dict.items():
             # Check item for action keywords
             for word in __trigger_keywords__:
                 if word in item:
@@ -49,35 +62,37 @@ class TriggerEntry:
                      ]
         }
 
-    Recipe entry then will parse the strings looking for space separated lists,
-    values denoted with = and will only accept has_section, has_item, has_item_any
-    has_value
+    Recipe entry then will parse the strings looking for space separated
+    lists, values denoted with = and will only accept has_section,
+    has_item, has_item_any has_value
     """
-    def __init__(self, parseable_line, name = None):
+
+    def __init__(self, parseable_line, name=None):
 
         self.conditions = []
 
-        self.valid_names = ['has_section','has_item','has_value']
-        parsed_dict = parse_entry(parseable_line, valid_names = self.valid_names)
-        heirarcy = ['section','item','value']
+        self.valid_names = ['has_section', 'has_item', 'has_value']
+        heirarcy = ['section', 'item', 'value']
 
-        #There can be multiple conditions returned
+        parsed_dict = parse_entry(parseable_line,
+                                  valid_name=self.valid_names)
+
+        # There can be multiple conditions returned
         for name,value in parsed_dict.items():
-            result = ['any','any','any']
+            result = ['any', 'any', 'any']
             if type(value) == list:
-                #easy assignment to result using [section  item value syntax]
+                # easy assignment to result using [section  item value syntax]
                 for i,v in enumerate(value):
                     result[i] = v
 
-            #If single item provided
+            # If single item provided
             else:
                 for i,keyword in enumerate(heirarcy):
                     if keyword in name:
                         result[i] = value
 
-        #If result is all any, then clear it
+        # If result is all any, then clear it
         if len([True for i in result if i == 'any']) != len(result):
-
             self.conditions.append(result)
 
 
@@ -101,42 +116,28 @@ class ConfigEntry:
              "description=text describing entry"]
         }
 
-    Config entry then will parse the strings looking for space separated lists,
-    values denoted with =, and will only recieve type,default,options,and
-    description.
+    Config entry then will parse the strings looking for space separated
+    lists,values denoted with =, and will only recieve type,default,
+    options,and description.
     """
 
-    def __init__(self, name=None, value=None, default=None, entry_type='string',
-                 options=[], parseable_line=None):
+    def __init__(self, name=None, value=None, default=None,
+                 entry_type='string', options=[], parseable_line=None):
+
         self.name = name
         self.value = value
         self.default = default
         self.options = options
         self.description = ''
         self.type = entry_type
-        self.valid_names = ['default','type','options','description']
+        self.valid_names = ['default', 'type', 'options', 'description']
 
-        #if name == 'type':
         if parseable_line != None:
-            parsed_dict = parse_entry(parseable_line, valid_names = self.valid_names)
+            parsed_dict = parse_entry(parseable_line,
+                                      valid_name=self.valid_names)
             for name,value in parsed_dict.items():
                 setattr(self,name,value)
-        # self.default = self.convert_type(self.default)
-        #
-        # self.options = self.convert_type(self.options)
 
-        #Options should always be a list
+        # Options should always be a list
         if type(self.options) != list:
             self.options = [self.options]
-
-
-    #
-    # def convert_type(self,value):
-    #     if str(value).lower() == 'none':
-    #         value = None
-    #
-    #     else:
-    #         if self.type not in str(type(value)):
-    #             value = cast_variable(value,self.type)
-    #
-    #     return value

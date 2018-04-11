@@ -1,35 +1,41 @@
 from .iniparse import read_config
-from .utilities import mk_lst, pcfg, get_checkers, get_relative_to_cfg
+from .utilities import mk_lst, get_relative_to_cfg
 from .entries import ConfigEntry, RecipeSection
-from . checkers import *
 from . import __recipe_keywords__
-from pandas import to_datetime
 from collections import OrderedDict
 import os
-import sys
 import copy
 import importlib
-import inspect
 
 
 DEBUG = False
 FULL_DEBUG = False
 
 class UserConfig():
+    """
+    Class meant for managing the the users config, here we operate on the
+    config repeatedly making it available through the attribute self.cfg
+    """
 
-    def __init__(self,filename, mcfg=None):
+    def __init__(self, filename, mcfg=None):
+        """
+        Args:
+            filename: String to path containing config in .ini format
+            mcfg: Object of the master config
+        """
         self.filename = filename
         self.recipes = []
         self.cfg = read_config(filename)
-        self.sections,self.items,self.values = self.get_unique_entries(self.cfg)
+        self.sections, self.items, self.values = \
+        self.get_unique_entries(self.cfg)
 
         if mcfg != None:
             self.mcfg = mcfg
 
     def apply_recipes(self):
         """
-        Look through the users config file and section by section add in missing
-        parameters to add defaults
+        Look through the users config file and section by section add in
+        missing parameters to add defaults
 
         Returns:
             user_cfg: User config dictionary with defaults added.
@@ -37,7 +43,7 @@ class UserConfig():
 
         for r in self.mcfg.recipes:
 
-            for trigger,recipe_entry in r.triggers.items():
+            for trigger, recipe_entry in r.triggers.items():
                 conditions_met = 0
                 triggered = False
                 #All conditions must be met if to be applied
@@ -62,50 +68,63 @@ class UserConfig():
                                 if (condition[0] == 'any' or
                                     condition[0] == section):
                                    if FULL_DEBUG:
-                                       print("Section Gate {0} == {1}".format(condition[0],section))
+                                       print("Section Gate {0} == {1}"
+                                             "".format(condition[0],
+                                             section))
 
                                    if (condition[1] == 'any' or
                                        condition[1] == item):
                                       if FULL_DEBUG:
-                                          print("\t\tItem Gate {0} == {1}".format(condition[1],item))
+                                          print("\t\tItem Gate {0} == {1}"
+                                                "".format(condition[1],
+                                                          item))
 
                                       if (condition[2] == 'any' or
                                           condition[2] == v):
                                           if FULL_DEBUG:
-                                             print("\t\t\t\tValue Gate {0} == {1}".format(condition[2],v))
+                                             print("\t\t\t\tValue Gate {0}"
+                                                   " == {1}"
+                                                   "".format(condition[2],
+                                                             v))
 
-                                          #Note conditions cannot be [any any any]
-                                          conditions_triggered.append((section,item,v))
+                                          # No conditions == [any any any]
+                                          conditions_triggered.append(
+                                                        (section, item, v))
                                           triggered = True
 
-                    #Determine if the condition was met.
-                    #print("NGates: {0} NPassed {1}".format(len(recipe_entry.conditions),conditions_met))
+                    # Determine if the condition was met.
                     if triggered:
-                        conditions_met +=1
+                        conditions_met += 1
                         triggered = False
 
-                if (conditions_met==len(recipe_entry.conditions) and
+                if (conditions_met == len(recipe_entry.conditions) and
                     len(recipe_entry.conditions) != 0):
                     conditions_met = 0
                     self.recipes.append(r)
 
                     if DEBUG:
-                        print "\nDEBUG: Trigger: {0} {1} was met!".format(trigger,condition)
+                        print("\nDEBUG: Trigger: {0} {1} was met!"
+                        "".format(trigger, condition))
 
-                    #Iterate through the conditions found and apply changes
+                    # Iterate through the conditions found and apply
                     for situation in conditions_triggered:
-                        #Insert the recipe into the users config for each situation
-                        self.cfg = self.interpret_recipes(r.adj_config, situation)
+                        # Insert the recipe into the users config
+                        self.cfg = self.interpret_recipes(r.adj_config,
+                                                          situation)
                 else:
                     if DEBUG:
-                        print "\nDEBUG: Trigger: {0} not met. gates = {1} and gates_passed = {2}".format(trigger,condition,conditions_met)
+                        print("\nDEBUG: Trigger: {0} not met. gates = {1}"
+                              " and gates_passed = {2}"
+                              "".format(trigger, condition,
+                                        conditions_met))
                         print('\n\n')
 
 
-    def interpret_recipes(self,partial_cfg, situation):
+    def interpret_recipes(self, partial_cfg, situation):
         """
-        User inserts a partial config by using each situation that triggered a
-        recipe. A situation consists of a tuple of (section,item,value).
+        User inserts a partial config by using each situation that
+        triggered a recipe. A situation consists of a tuple of
+        (section, item, value).
         """
         result = copy.deepcopy(self.cfg)
 
@@ -114,21 +133,22 @@ class UserConfig():
                 remove = False
                 value = partial_cfg[section][item]
 
-                if item =='apply_defaults':
-                    result = self.add_defaults(result, sections = section)
+                if item == 'apply_defaults':
+                    result = self.add_defaults(result, sections=section)
 
                 elif item == 'remove_section':
-                    if value.lower()=='true':
+                    if value.lower() == 'true':
 
                         if section in result.keys():
                             if DEBUG:
-                                print("removed section: {0}".format(section))
+                                print("removed section: {0}"
+                                      "".format(section))
                             del result[section]
 
                 else:
 
                     #Normal operation
-                    if section =='any':
+                    if section == 'any':
                         s = situation[0]
 
                     else:
@@ -146,7 +166,8 @@ class UserConfig():
                     if value == 'any':
                         v = situation[2]
 
-                    elif value == 'default' and i in self.mcfg.cfg[s].keys():
+                    elif (value == 'default' and
+                          i in self.mcfg.cfg[s].keys()):
                         v = self.mcfg.cfg[s][i].default
 
                     else:
@@ -156,11 +177,11 @@ class UserConfig():
                         if s in result.keys():
                             if i in result[s].keys():
                                 if DEBUG:
-                                    print("Removed: {0} {1}".format(s,i))
+                                    print("Removed: {0} {1}".format(s, i))
                                 del result[s][i]
 
                     elif s in result.keys():
-                        #Check for empty dictionaries, add them if not removing
+                        # Check for empty dictionaries
                         if not bool(result[s]):
                             if DEBUG:
                                 print("Adding section {0}".format(s))
@@ -168,17 +189,18 @@ class UserConfig():
                         else:
                             if i not in result[s].keys():
                                 if DEBUG:
-                                    print("Adding {0} {1} {2}".format(s,i,v))
-                                result[s][i]=v
+                                    print("Adding {0} {1} {2}"
+                                          "".format(s, i, v))
+                                result[s][i] = v
 
         return result
 
 
-    def get_unique_entries(self,cfg):
+    def get_unique_entries(self, cfg):
         """
         Appends all the values in the user config to respectives lists of
-        section names, item names, and values. Afterwards any copy is removed
-        so all is left is a unique list of names and values
+        section names, item names, and values. Afterwards any copy is
+        removed so all is left is a unique list of names and values
         """
 
         unique_sections = []
@@ -186,7 +208,7 @@ class UserConfig():
         unique_values = []
 
         for section in cfg.keys():
-            for item,value in cfg[section].items():
+            for item, value in cfg[section].items():
                 if type(value) != list:
                     vals = [value]
                 else:
@@ -197,17 +219,18 @@ class UserConfig():
                     unique_items.append(item)
                     unique_values.append(v)
 
-        return set(unique_sections),set(unique_items), set(unique_values)
+        return set(unique_sections), set(unique_items), set(unique_values)
 
 
-    def add_defaults(self, cfg, sections = None):
+    def add_defaults(self, cfg, sections=None):
         """
-        Look through the users config file and section by section add in missing
-        parameters to add defaults
+        Look through the users config file and section by section add in
+        missing parameters to add defaults
 
         Args:
-            sections: Single section name or a list of sections to apply (optional)
-                      otherwise uses all sections in users config
+            sections: Single section name or a list of sections to apply
+                      (optional) otherwise uses all sections in users
+                      config
         Returns:
             user_cfg: User config dictionary with defaults added.
 
@@ -223,15 +246,15 @@ class UserConfig():
 
         for section in sections:
             configured = result[section]
-            for k,v in master[section].items():
+            for k, v in master[section].items():
                 if v.name not in configured.keys():
-                    result[section][k]=v.default
+                    result[section][k] = v.default
         return result
 
-    def update_config_paths(self,user_cfg_path = None):
+    def update_config_paths(self, user_cfg_path=None):
             """
-            Sets all paths so that they are always relative to the config file or
-            absolute.
+            Sets all paths so that they are always relative to the config
+            file or absolute.
             """
             if user_cfg_path == None:
                 user_cfg_path = self.filename
@@ -248,7 +271,9 @@ class UserConfig():
                         m = mcfg[section][item]
                         #Any paths
                         if m.type == 'filename' or  m.type == 'directory':
-                            cfg[section][item] = get_relative_to_cfg(cfg[section][item], self.filename)
+                            cfg[section][item] = \
+                            get_relative_to_cfg(cfg[section][item],
+                                                self.filename)
             return cfg
 
 
@@ -269,40 +294,44 @@ class MasterConfig():
 
         if module != None:
             i = importlib.import_module(module)
-            path.append(os.path.abspath(os.path.join(i.__file__, i.__core_config__)))
+            path.append(os.path.abspath(os.path.join(i.__file__,
+                                                     i.__core_config__)))
 
             #Search for possible recipes provided in the module
-            if hasattr(i,'__recipes__'):
+            if hasattr(i, '__recipes__'):
                 path.append(i.__recipes__)
 
             #Search for possible section titles provided in the module
-            if hasattr(i,'__config_titles__'):
-                self.titles = getattr(i,'__config_titles__')
+            if hasattr(i, '__config_titles__'):
+                self.titles = getattr(i, '__config_titles__')
 
             #Search for config headers provided in the module
-            if hasattr(i,'__config_header__'):
-                self.header = getattr(i,'__config_header__')
+            if hasattr(i, '__config_header__'):
+                self.header = getattr(i, '__config_header__')
 
             #Search for custom checkers
-            if hasattr(i,'__config_checkers__'):
-                self.checker_module = module+'.'+ getattr(i,'__config_checkers__')
+            if hasattr(i, '__config_checkers__'):
+                self.checker_module = module+'.' + \
+                getattr(i, '__config_checkers__')
 
-        if len(path)==0:
-            raise ValueError("No file was either provided or found when initiating a master config file")
+        if len(path) == 0:
+            raise ValueError("No file was either provided or found when"
+                             " initiating a master config file.")
 
         self.cfg = self.add_files(path)
 
 
-    def add_files(self,paths):
+    def add_files(self, paths):
         """
-        Designed to  add to the master config file if the user has split up files
-        to reduce the amount of info in a master file. e.g. recipes are stored in a
-        other file
+        Designed to  add to the master config file if the user has split
+        up files to reduce the amount of info in a master file. e.g.
+        recipes are stored in another file.
 
         Args:
             paths: list of real path to another cfg.ini
         Returns:
-            config: Original config with appended information found in the extra cfg
+            config: Original config with appended information found in the
+                    extra cfg
         """
 
         result = OrderedDict()
@@ -316,14 +345,15 @@ class MasterConfig():
 
     def _read(self, master_config_file):
         """
-        Reads in the core config file which has special syntax for specifying options
+        Reads in the core config file which has special syntax for
+        specifying options
 
         Args:
             master_config_file: String path to the master config file.
 
         Returns:
-            config: Dictionary of dictionaries representing the defaults and available
-                    options. Based on the Core Config file.
+            config: Dictionary of dictionaries representing the defaults
+                    and available options. Based on the Core Config file.
         """
 
         cfg = OrderedDict()
@@ -334,12 +364,13 @@ class MasterConfig():
             sec = OrderedDict()
             for word in __recipe_keywords__:
                 if word in section:
-                    self.recipes.append(RecipeSection(raw_config[section], name = section))
+                    self.recipes.append(RecipeSection(raw_config[section]))
                     break
 
                 else:
                     for item in raw_config[section].keys():
-                        sec[item] = ConfigEntry(name = item, parseable_line=raw_config[section][item])
+                        sec[item] = ConfigEntry(name=item,
+                                  parseable_line=raw_config[section][item])
 
                     cfg[section] = sec
 

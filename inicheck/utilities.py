@@ -1,4 +1,3 @@
-from pandas import to_datetime
 import inspect
 import sys
 import os
@@ -15,12 +14,12 @@ def mk_lst(values, unlst=False):
         values = [values]
     else:
         if unlst:
-            if len(values)==1:
+            if len(values) == 1:
                 values = values[0]
-                
+
     return values
 
-def remove_chars(orig_str,char_str, replace_str=None):
+def remove_chars(orig_str, char_str, replace_str=None):
     """
     Removes all character in orig_str that are in char_str
 
@@ -40,7 +39,7 @@ def remove_chars(orig_str,char_str, replace_str=None):
     return "".join(clean_str)
 
 
-def get_checkers(module = 'inicheck.checkers', keywords = []):
+def get_checkers(module='inicheck.checkers', keywords=[]):
     """
     Args:
         module: The module to search for the classes
@@ -51,13 +50,13 @@ def get_checkers(module = 'inicheck.checkers', keywords = []):
 
     funcs = inspect.getmembers(sys.modules[module], inspect.isclass)
     func_dict = {}
-    for name,fn in funcs:
+    for name, fn in funcs:
         checker_found = False
         k = name.lower()
-        #Remove any keywords
+        # Remove any keywords
         for w in keywords:
             if w in k:
-                k = k.replace(w,'')
+                k = k.replace(w, '')
                 checker_found = True
                 break
 
@@ -66,10 +65,12 @@ def get_checkers(module = 'inicheck.checkers', keywords = []):
 
     return func_dict
 
-def get_relative_to_cfg(path,user_cfg_path):
+
+def get_relative_to_cfg(path, user_cfg_path):
     if not os.path.isabs(path):
-        path = os.path.abspath(os.path.join(os.path.dirname(user_cfg_path),path))
+        path = os.path.abspath(os.path.join(os.path.dirname(user_cfg_path), path))
     return path
+
 
 def pcfg(cfg):
     """
@@ -84,16 +85,17 @@ def pcfg(cfg):
         print(repr(sec))
         try:
             for item in cfg[sec].keys():
-                print('\t'+item)
+                print('\t' + item)
                 values = cfg[sec][item]
 
-                if type(cfg[sec][item])==list:
+                if type(cfg[sec][item]) == list:
                     out = ", ".join(cfg[sec][item])
                 else:
                     out = cfg[sec][item]
-                print('\t\t'+repr(out))
+                print('\t\t' + repr(out))
         except:
             print('\t recipe')
+
 
 def pmcfg(cfg):
     """
@@ -107,14 +109,14 @@ def pmcfg(cfg):
     for sec in cfg.keys():
         print(repr(sec))
         for item in cfg[sec].keys():
-            print('\t'+item)
+            print('\t' + item)
             obj = cfg[sec][item]
-            for att in ['type','options','default','description']:
-                value = getattr(obj,att)
-                print('\t\t'+att)
+            for att in ['type', 'options', 'default', 'description']:
+                value = getattr(obj, att)
+                print('\t\t' + att)
 
-                if type(value)==list:
+                if type(value) == list:
                     out = ", ".join(value)
                 else:
                     out = value
-                print('\t\t\t'+repr(out))
+                print('\t\t\t' + repr(out))

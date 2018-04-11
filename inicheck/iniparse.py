@@ -1,5 +1,5 @@
 import os
-from .utilities import  pcfg,remove_chars
+from .utilities import  remove_chars
 from collections import OrderedDict
 
 def read_config(filename):
@@ -13,11 +13,10 @@ def read_config(filename):
         config: dict of dicts containing the info in a config file
     """
 
-    sections = parse_sections(fname = filename)
+    sections = parse_sections(fname=filename)
     sec_and_items = parse_items(sections)
     config = parse_values(sec_and_items)
 
-    #pcfg(config)
     return config
 
 
@@ -30,15 +29,15 @@ def parse_entry(info,valid_names=None):
         if '=' in s:
             a = s.split('=')
         else:
-            raise ValueError('Master Config file missing an equals sign in '
-                            'entry {0}\n or missing a comma above this '
-                            'entry'.format(info))
+            raise ValueError('Master Config file missing an equals sign in'
+                            ' entry {0}\n or missing a comma above this'
+                            ' entry'.format(info))
 
         name = (a[0].lower()).strip()
-        #Check for constraints on potential names of entries
+        # Check for constraints on potential names of entries
         if valid_names != None and name not in valid_names:
-            raise ValueError("Invalid option set in the master config File for "
-                             "entry -----> {0}".format(name))
+            raise ValueError("Invalid option set in the master config File"
+                            " for entry -----> {0}".format(name))
 
         value = a[1].strip()
 
@@ -49,7 +48,8 @@ def parse_entry(info,valid_names=None):
         # Is there a list of values provided?
         if '[' in value:
             if ']' not in value:
-                raise ValueError("Missing bracket in config file under {0}".format(name))
+                raise ValueError("Missing bracket in config file under"
+                                 " {0}".format(name))
             else:
                 value = (''.join(c for c in value if c not in '[]'))
                 value = value.split(' ')
@@ -78,28 +78,28 @@ def parse_sections(fname):
 
     result = OrderedDict()
     section = None
-    i=0
+    i = 0
 
     for i in range(len(lines)):
         line = remove_chars(lines[i],'\t')
         line = line.strip()
 
-        #Comment checking
-        if '#' in line:
-            line = line.split('#')[0]
+        # Comment checking
+        if '# ' in line:
+            line = line.split('# ')[0]
 
         elif ';' in line:
             line = line.split(';')[0]
 
-        #check for empty line first
+        # check for empty line first
         if line and line not in os.linesep:
-            #Look for section
+            # Look for section
             if line.startswith('['):
-                #look for open brackets
+                # look for open brackets
                 if line.endswith(']'):
-                    #Ensure this line is not a list provided under an item
+                    # Ensure this line is not a list provided under an item
                     section = (remove_chars(line,'[]')).lower()
-                    result[section]=[]
+                    result[section] = []
 
             else:
                 result[section].append(lines[i])
@@ -108,14 +108,15 @@ def parse_sections(fname):
 
 def parse_items(parsed_sections_dict,mcfg=None):
     """
-    Takes the output from parse_sections and parses the items in each section
+    Takes the output from parse_sections and parses the items in each
+    section
 
     Args:
-        parsed_sections_dict: dictionary containing keys as the sections and
-                              values as a continuous string of the
+        parsed_sections_dict: dictionary containing keys as the sections
+                              and values as a continuous string of the
     Returns:
-        result: dictionary of dictionaries containing sections,items, and their
-                values
+        result: dictionary of dictionaries containing sections,items, and
+                their values
     """
     result = OrderedDict()
 
@@ -124,53 +125,55 @@ def parse_items(parsed_sections_dict,mcfg=None):
         result[k] = OrderedDict()
         for i,val in enumerate(v):
             val = val.lstrip()
-            #Look for item notation
+            # Look for item notation
 
             if ':' in val:
                 # Only split on the first colon to avoid collisions with datetime
                 parse_loc = val.index(':')
-                parseable = [val[0:parse_loc],val[parse_loc+1:]]
+                parseable = [val[0:parse_loc],val[parse_loc + 1:]]
                 item = parseable[0].lower()
 
                 result[k][item] = ''
 
-                #Check for a value right after the item name
-                potential_value = (parseable[-1].replace('\n',' ')).lstrip()
+                # Check for a value right after the item name
+                potential_value = (parseable[-1].replace('\n', ' ')).lstrip()
 
-                #Avoid stashing properties in line with the item
+                # Avoid stashing properties in line with the item
                 if '=' not in potential_value:
-                    result[k][item]=potential_value.lstrip()
+                    result[k][item] = potential_value.lstrip()
 
-                #Property value provided in line with item
+                # Property value provided in line with item
                 else:
-                    result[k][item]+=potential_value
+                    result[k][item] += potential_value
 
-            #User added line returns likely for readability
+            # User added line returns likely for readability
             else:
-                result[k][item]+=val.lstrip()
+                result[k][item] += val.lstrip()
 
     return result
 
 def parse_values(parsed_items):
         """
-        Takes the output from parse_items and parses any values or properties
-        provided in each item placing the strings into a list. If no properties
-        are defined then it will clean up values provided and put them in a list of len one.
+        Takes the output from parse_items and parses any values or
+        properties provided in each item placing the strings into a list.
+        If no properties are defined then it will clean up values provided
+        and put them in a list of len one.
 
         Args:
-            parsed_sections_dict: dict of dicts containing joined strings found
-                                  under each item
+            parsed_sections_dict: dict of dicts containing joined strings
+                                  found under each item
         Returns:
-            result: dictionary of dictionaries containing sections,items, and
-                    the values provided as a list
+            result: dictionary of dictionaries containing sections, items,
+                    and the values provided as a list
         """
         result = OrderedDict()
         for section in parsed_items.keys():
             result[section] = OrderedDict()
             for item,val in parsed_items[section].items():
                 value = val.strip()
-                if ',' in val:
-                    result[section][item] = [v.strip()  for v in value.split(',')]
+                if ', ' in val:
+                    result[section][item] = \
+                    [v.strip() for v in value.split(', ')]
 
                 else:
                     result[section][item] = [value]
