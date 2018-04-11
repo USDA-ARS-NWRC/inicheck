@@ -65,8 +65,7 @@ def main():
         else:
             f = os.path.abspath(args.config_file)
             ucfg = get_user_config(f, master_files = args.master, module = args.module)
-            #ucfg.apply_recipes()
-            pcfg(ucfg.cfg)
+
             warnings, errors = check_config(ucfg)
 
             print_config_report(warnings,errors)
