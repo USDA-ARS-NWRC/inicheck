@@ -35,6 +35,7 @@ def main():
     parser.add_argument('-r','--recipes', dest='recipes', action='store_true',
                         help="Prints out the recipe summary")
 
+
     parser.add_argument('--details','-d', type=str, nargs='+', help = "Provide section item and value for details regarding them")
     args = parser.parse_args()
 
@@ -46,7 +47,7 @@ def main():
 
     #Normal operation
     else:
-        #Requesting details for a section and item
+        # Requesting details for a section and item
         if args.details != None:
             if len(args.details) == 1:
                 print("Providing details for section {0}...".format(args.details[0]))
@@ -64,19 +65,14 @@ def main():
         else:
             f = os.path.abspath(args.config_file)
             ucfg = get_user_config(f, master_files = args.master, module = args.module)
-
-            #pmcfg(ucfg.mcfg.cfg)
-            ucfg.apply_recipes()
-
+            #ucfg.apply_recipes()
+            pcfg(ucfg.cfg)
             warnings, errors = check_config(ucfg)
-            #pcfg(ucfg.cfg)
-            #pmcfg(ucfg.mcfg.cfg)
 
             print_config_report(warnings,errors)
 
             if args.recipes:
                 print_recipe_summary(ucfg.recipes)
-
 
             if args.write:
                 out_f = './{0}_full.ini'.format(os.path.basename(f).split('.')[0])

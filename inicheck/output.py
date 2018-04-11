@@ -69,7 +69,7 @@ def generate_config(config_obj,fname, package_header=None, inicheck = False,
             config_str+='\n[{0}]\n'.format(section)
 
             #Add section items and values
-            for k in sorted(config[section].keys()):
+            for k in config[section].keys():
                 v = config[section][k]
                 if type(v) == list:
                     astr = ", ".join(str(c.strip()) for c in v)

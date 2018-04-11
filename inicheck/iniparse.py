@@ -22,7 +22,7 @@ def read_config(filename):
 
 
 def parse_entry(info,valid_names=None):
-    properties = {}
+    properties = OrderedDict()
     if type(info) != list:
         info = [info]
 
@@ -166,7 +166,7 @@ def parse_values(parsed_items):
         """
         result = OrderedDict()
         for section in parsed_items.keys():
-            result[section] = {}
+            result[section] = OrderedDict()
             for item,val in parsed_items[section].items():
                 value = val.strip()
                 if ',' in val:

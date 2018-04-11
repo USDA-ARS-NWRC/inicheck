@@ -10,7 +10,7 @@ class RecipeSection:
         #Conditions to be met
         self.triggers = OrderedDict()
         #Config file to apply if conditions are met
-        self.adj_config = {}
+        self.adj_config = OrderedDict()
 
         for item,entry in recipe_section_dict.items():
             # Check item for action keywords

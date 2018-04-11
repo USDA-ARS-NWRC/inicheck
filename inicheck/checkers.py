@@ -140,9 +140,9 @@ class CheckBool(CheckType):
         self.type = 'bool'
 
     def cast(self):
-        if self.value in ['y','yes','true']:
+        if self.value.lower() in ['y','yes','true']:
             self.value = True
-        elif self.value in ['n','no','false']:
+        elif self.value.lower() in ['n','no','false']:
             self.value = False
 
         return self.value

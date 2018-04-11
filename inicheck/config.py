@@ -115,7 +115,7 @@ class UserConfig():
                 value = partial_cfg[section][item]
 
                 if item =='apply_defaults':
-                    result = self.add_defaults(result,sections = section)
+                    result = self.add_defaults(result, sections = section)
 
                 elif item == 'remove_section':
                     if value.lower()=='true':
@@ -164,7 +164,7 @@ class UserConfig():
                         if not bool(result[s]):
                             if DEBUG:
                                 print("Adding section {0}".format(s))
-                            result[s] = {}
+                            result[s] = OrderedDict()
                         else:
                             if i not in result[s].keys():
                                 if DEBUG:
@@ -331,7 +331,7 @@ class MasterConfig():
         raw_config = read_config(master_config_file)
 
         for section in raw_config.keys():
-            sec = {}
+            sec = OrderedDict()
             for word in __recipe_keywords__:
                 if word in section:
                     self.recipes.append(RecipeSection(raw_config[section], name = section))
