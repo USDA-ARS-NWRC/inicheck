@@ -157,7 +157,7 @@ def print_out(out_str):
     """
     wrapper for print so we can use either a logger or a stdout
     """
-    print out_str
+    print(out_str)
 
 
 def print_recipe_summary(lst_recipes):
