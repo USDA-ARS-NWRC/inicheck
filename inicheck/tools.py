@@ -167,3 +167,82 @@ def get_user_config(config_file, master_files=None, module=None,
                       "".format(config_file))
 
     return ucfg
+
+
+def config_documentation(out_f, paths=None, module=None,
+                        section_link_dict=None):
+    """
+    Auto documents the core config file. Outputs to a file which is can then be
+    used for documentation. Specifically formulated for sphinx
+    """
+
+    if paths == None and module == None:
+        raise ValueError("inicheck function config_documentation args paths or"
+                        " module must be specified!")
+
+
+    master = MasterConfig(path=paths, module=module)
+    mcfg = master.cfg
+
+    #RST header
+    config_doc = "Configuration File Reference\n"
+    config_doc += "============================\n"
+    config_doc += "\nFor configuration file syntax information please visit"
+    config_doc += " http://inicheck.readthedocs.io/en/latest/"
+
+    for section in mcfg.keys():
+        # Section header
+        config_doc += " \n"
+        config_doc += "{0}\n".format(section)
+        config_doc += "-" * len(section) + '\n'
+
+        # Allow for custom info in a description about the section, useful
+        # for linking modules for auto documenting
+        if section in section_link_dict.keys():
+            intro = section_link_dict[section]
+        else:
+            intro = ''
+
+        config_doc += intro
+        config_doc += "\n"
+
+        # Auto document config file according to master config contents
+        for item,v in sorted(mcfg[section].items()):
+            # Check for attributes that are lists
+            for att in ['default', 'options']:
+                z = getattr(v,att)
+                if type(z) == list:
+                    combo = ' '
+                    doc_s = combo.join([str(s) for s in z])
+                    setattr(v,att,doc_s)
+
+            # Bold item with definition
+            config_doc += "| **{0}**\n".format(item)
+
+            # Add the item description
+            config_doc += "| \t{0}\n".format(v.description)
+
+            # Default
+            config_doc += "| \t\t*Default: {0}*\n".format(v.default)
+
+            # Add expected type
+            config_doc += "| \t\t*Type: {0}*\n".format(v.type)
+
+            # Print options should they be available
+            if v.options:
+                config_doc += "| \t\t*Options:*\n *{0}*\n".format(v.options)
+
+            config_doc += "| \n"
+
+            config_doc += "\n"
+
+    path = os.path.abspath(out_f)
+    if not os.path.isfile(path):
+        raise IOError("Config Documentation output file does not exist."
+                      "\n{0}".format(out_f))
+
+    print("Writing auto documentation for config file to:\n{0}".format(path))
+
+    with open(path,'w+') as f:
+        f.writelines(config_doc)
+    f.close()

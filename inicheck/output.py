@@ -2,23 +2,23 @@ from datetime import date
 import os
 
 
-def generate_config(config_obj, fname, package_header=None, inicheck=False,
+def generate_config(config_obj, fname, package_header=None, cli=False,
                     section_titles=None):
     """
     Generates a list of strings to be written and then writes them in the ini
     file
 
     Args:
-        config - Config file dictionary created by
+        config: Config file dictionary created by
                  :func:`~inicheck.config.UserConfig'.
-        fname - String path to the output location for the new config file.
-        package_header - This is string that enables the user to customize
+        fname: String path to the output location for the new config file.
+        package_header: This is string that enables the user to customize
                          config files with their own titles. Creating a string
                          at the top that says "Configuration File for
                          <package_header>"
 
-        inicheck - Boolean value that adds the line "file generated using
-                   inicheck to config file, Default = False
+        cli: Boolean value that adds the line "file generated using
+                   inicheck.cli, Default = False
 
     Returns:
         None
@@ -45,7 +45,7 @@ def generate_config(config_obj, fname, package_header=None, inicheck=False,
     config_str += "\n# Date generated: {0}".format(date.today())
 
     # Generated with inicheck
-    if inicheck:
+    if cli:
         config_str += "\n# Generated using: inicheck <filename> -w"
 
     config_str += "\n# For more inicheck help see:" + \

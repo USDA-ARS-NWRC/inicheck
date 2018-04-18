@@ -32,12 +32,14 @@ def main():
                         help="Prints out the recipe summary")
 
 
-    parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide section item and value for details regarding them")
+    parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide
+                        "section item and value for details regarding them")
     args = parser.parse_args()
 
     # Module not provided, or master config
     if args.module == None and args.master == None:
-        print("ERROR: Please provide either a module or a path to a master config, or ask for details on config entries")
+        print("ERROR: Please provide either a module or a path to a master
+             " config, or ask for details on config entries")
         sys.exit()
 
 
@@ -46,10 +48,12 @@ def main():
         # Requesting details for a section and item
         if args.details != None:
             if len(args.details) == 1:
-                print("Providing details for section {0}...".format(args.details[0]))
+                print("Providing details for section {0}..."
+                "".format(args.details[0]))
 
             elif len(args.details) == 2:
-                print("Providing details for section {0} and item {1}...".format(args.details[0], args.details[1]))
+                print("Providing details for section {0} and item {1}...
+                      "".format(args.details[0], args.details[1]))
 
             else:
                 print("Details option can at most recieve section and item ")
@@ -60,7 +64,8 @@ def main():
 
         else:
             f = os.path.abspath(args.config_file)
-            ucfg = get_user_config(f, master_files=args.master, module=args.module)
+            ucfg = get_user_config(f, master_files=args.master,
+                                      module=args.module)
             pcfg(ucfg.cfg)
             warnings, errors = check_config(ucfg)
 
@@ -70,11 +75,15 @@ def main():
                 print_recipe_summary(ucfg.recipes)
 
             if args.write:
-                out_f = './{0}_full.ini'.format(os.path.basename(f).split('.')[0])
-                print("Writing complete config file with all recipes and necessary defaults...")
+                out_f = './{0}_full.ini'
+                ''.format(os.path.basename(f).split('.')[0])
+
+                print("Writing complete config file with all recipes and "
+                      " necessary defaults...")
                 print('{0}'.format(out_f))
 
-                generate_config(ucfg, out_f, section_titles=ucfg.mcfg.titles, inicheck=True)
+                generate_config(ucfg, out_f, section_titles=ucfg.mcfg.titles,
+                                             cli=True)
 
 
 if __name__ == '__main__':
