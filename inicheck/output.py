@@ -41,13 +41,13 @@ def generate_config(config_obj, fname, package_header=None, cli=False):
         config_str += "\n# Configuration File "
 
     # Add in the date generated
-    config_str += "\n\#n# Date generated: {0}".format(date.today())
+    config_str += "\n#\n# Date generated: {0}".format(date.today())
 
     # Generated with inicheck
     if cli:
         config_str += "\n#\n# Generated using: inicheck <filename> -w"
 
-    config_str += "\n\#n# For more inicheck help see:" + \
+    config_str += "\n#\n# For more inicheck help see:" + \
                   "\n# http://inicheck.readthedocs.io/en/latest/\n"
 
     config = config_obj.cfg
