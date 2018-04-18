@@ -2,8 +2,7 @@ from datetime import date
 import os
 
 
-def generate_config(config_obj, fname, package_header=None, cli=False,
-                    section_titles=None):
+def generate_config(config_obj, fname, package_header=None, cli=False):
     """
     Generates a list of strings to be written and then writes them in the ini
     file
@@ -42,29 +41,37 @@ def generate_config(config_obj, fname, package_header=None, cli=False,
         config_str += "\n# Configuration File "
 
     # Add in the date generated
-    config_str += "\n# Date generated: {0}".format(date.today())
+    config_str += "\n\#n# Date generated: {0}".format(date.today())
 
     # Generated with inicheck
     if cli:
-        config_str += "\n# Generated using: inicheck <filename> -w"
+        config_str += "\n#\n# Generated using: inicheck <filename> -w"
 
-    config_str += "\n# For more inicheck help see:" + \
+    config_str += "\n\#n# For more inicheck help see:" + \
                   "\n# http://inicheck.readthedocs.io/en/latest/\n"
 
     config = config_obj.cfg
     mcfg = config_obj.mcfg.cfg
+
+    # Check to see if section titles were provided
+    has_section_titles = hasattr(config_obj.mcfg,'titles')
 
     # Generate the string for the file, creating them in order.
     for section in mcfg.keys():
         if section in config.keys():
             config_str += '\n' * 2
 
-            if section_titles != None:
-                # Add the header
-                config_str += section_header.format(section_titles[section])
-            else:
-                config_str += (pg_sep)
+            # Add a section header
+            s_hdr = pg_sep
+            if has_section_titles:
+                if section in config_obj.mcfg.titles.keys():
+                    # Add the header
+                    s_hdr = section_header.format(config_obj.mcfg.titles[section])
 
+            else:
+                config_str += s_hdr
+
+            config_str += s_hdr
             config_str += '\n'
             config_str += '\n[{0}]\n'.format(section)
 
