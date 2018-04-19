@@ -6,7 +6,7 @@ from . tools import get_user_config, check_config
 import os
 import sys
 from config import MasterConfig
-from . utilities import pcfg
+# from . utilities import pcfg
 
 def main():
 
@@ -32,13 +32,13 @@ def main():
                         help="Prints out the recipe summary")
 
 
-    parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide
+    parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide"
                         "section item and value for details regarding them")
     args = parser.parse_args()
 
     # Module not provided, or master config
     if args.module == None and args.master == None:
-        print("ERROR: Please provide either a module or a path to a master
+        print("ERROR: Please provide either a module or a path to a master"
              " config, or ask for details on config entries")
         sys.exit()
 
@@ -52,7 +52,7 @@ def main():
                 "".format(args.details[0]))
 
             elif len(args.details) == 2:
-                print("Providing details for section {0} and item {1}...
+                print("Providing details for section {0} and item {1}..."
                       "".format(args.details[0], args.details[1]))
 
             else:
@@ -66,7 +66,7 @@ def main():
             f = os.path.abspath(args.config_file)
             ucfg = get_user_config(f, master_files=args.master,
                                       module=args.module)
-            pcfg(ucfg.cfg)
+
             warnings, errors = check_config(ucfg)
 
             print_config_report(warnings, errors)

@@ -40,6 +40,7 @@ class UserConfig():
         Returns:
             user_cfg: User config dictionary with defaults added.
         """
+        print(self.mcfg.recipes)
 
         for r in self.mcfg.recipes:
 
@@ -278,48 +279,55 @@ class UserConfig():
 
 
 class MasterConfig():
-    def __init__(self, path=None, module=None):
+    def __init__(self, path=None, module=None, checkers = None, titles=None):
 
         if path == None:
             path == []
 
         if type(path) != list:
-
             path = [path]
 
         self.recipes = []
-        self.titles = None
+        self.titles = {}
         self.header = None
-        self.checker_module = None
+        self.checker_modules = []
 
+        # If a module was passed
         if module != None:
             i = importlib.import_module(module)
             path.append(os.path.abspath(os.path.join(i.__file__,
                                                      i.__core_config__)))
 
-            #Search for possible recipes provided in the module
+            # Search for possible recipes provided in the module
             if hasattr(i, '__recipes__'):
                 path.append(i.__recipes__)
 
-            #Search for possible section titles provided in the module
+            # Search for possible section titles provided in the module
             if hasattr(i, '__config_titles__'):
                 self.titles = getattr(i, '__config_titles__')
 
-            #Search for config headers provided in the module
+            # Search for config headers provided in the module
             if hasattr(i, '__config_header__'):
                 self.header = getattr(i, '__config_header__')
 
-            #Search for custom checkers
+            # Search for custom checkers
             if hasattr(i, '__config_checkers__'):
-                self.checker_module = module+'.' + \
-                getattr(i, '__config_checkers__')
+                self.checker_modules.append(module+'.' + getattr(i, '__config_checkers__'))
 
-        if len(path) == 0:
+        if checkers != None:
+            if type(checkers) != list:
+                checkers = [checkers]
+            for c in checkers:
+                self.checker_modules.append(c)
+
+        if titles != None:
+            self.titles.update(titles)
+
+        if len(path) == 0 and module == None:
             raise ValueError("No file was either provided or found when"
                              " initiating a master config file.")
 
         self.cfg = self.add_files(path)
-
 
     def add_files(self, paths):
         """
@@ -343,6 +351,17 @@ class MasterConfig():
 
         return result
 
+    def merge(self,mcfg):
+        """
+        Merges the a master config object into the current master config object
+        in place
+        """
+
+        self.recipes+=mcfg.recipes
+        self.checker_modules += mcfg.checker_modules
+        self.titles.update(mcfg.titles)
+        self.cfg.update(mcfg.cfg)
+
     def _read(self, master_config_file):
         """
         Reads in the core config file which has special syntax for
@@ -357,7 +376,8 @@ class MasterConfig():
         """
 
         cfg = OrderedDict()
-        #Read in will automatically get the configurable key added
+
+        # Read in will automatically get the configurable key added
         raw_config = read_config(master_config_file)
 
         for section in raw_config.keys():
@@ -373,6 +393,5 @@ class MasterConfig():
                                   parseable_line=raw_config[section][item])
 
                     cfg[section] = sec
-
 
         return cfg

@@ -25,9 +25,10 @@ def check_config(config_obj):
             standard_funcs = get_checkers()
 
             # Add any checker modules if provided
-            if config_obj.mcfg.checker_module != None:
-                funcs = standard_funcs.update(
-                        get_checkers(module=config_obj.mcfg.checker_module))
+            if config_obj.mcfg.checker_modules:
+                for c in config_obj.mcfg.checker_modules:
+                    funcs = standard_funcs.update(
+                            get_checkers(module=c))
 
             # Compare user config file to our master config
             for section, configured in cfg.items():
@@ -87,10 +88,12 @@ def cast_all_variables(config_obj, mcfg_obj):
     ucfg = config_obj.cfg
     mcfg = mcfg_obj.cfg
     all_checks = get_checkers()
-
-    # add in other type casting
-    if mcfg_obj.checker_module != None:
-        all_checks.update(get_checkers(module=mcfg_obj.checker_module))
+    print(mcfg.keys())
+    # Add any checker modules if provided
+    if config_obj.mcfg.checker_modules:
+        for c in config_obj.mcfg.checker_modules:
+            new_checks = get_checkers(module=c)
+            all_checks.update(new_checks)
 
     # Cast all variables
     for s in ucfg.keys():
@@ -146,18 +149,22 @@ def get_user_config(config_file, master_files=None, module=None,
         ucfg: Users config as an object
     """
 
-    if module == None and master_files == None:
+    if module == None and master_files == None and mcfg == None:
         raise IOError("ERROR: Please provide either a module or a path to a"
-                      "master config")
+                      " master config, or a master config object")
         sys.exit()
 
     if os.path.isfile(config_file):
 
-        master_files = mk_lst(master_files)
 
-        mcfg = MasterConfig(path=master_files, module=module)
+        if master_files != None or module != None:
+            if master_files != None:
+                master_files = mk_lst(master_files)
+
+            mcfg = MasterConfig(path=master_files, module=module)
 
         ucfg = UserConfig(config_file, mcfg=mcfg)
+
         ucfg.apply_recipes()
         ucfg = cast_all_variables(ucfg, mcfg)
 

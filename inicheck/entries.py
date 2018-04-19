@@ -81,7 +81,7 @@ class TriggerEntry:
         for name,value in parsed_dict.items():
             result = ['any', 'any', 'any']
             if type(value) == list:
-                # easy assignment to result using [section  item value syntax]
+                # Easy assignment to result using [section  item value syntax]
                 for i,v in enumerate(value):
                     result[i] = v
 
