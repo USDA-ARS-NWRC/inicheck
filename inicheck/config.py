@@ -40,7 +40,6 @@ class UserConfig():
         Returns:
             user_cfg: User config dictionary with defaults added.
         """
-        print(self.mcfg.recipes)
 
         for r in self.mcfg.recipes:
 
@@ -279,7 +278,8 @@ class UserConfig():
 
 
 class MasterConfig():
-    def __init__(self, path=None, module=None, checkers = None, titles=None):
+    def __init__(self, path=None, modules=None, checkers=None, titles=None,
+                 header=None):
 
         if path == None:
             path == []
@@ -289,30 +289,36 @@ class MasterConfig():
 
         self.recipes = []
         self.titles = {}
-        self.header = None
+        self.header = header
+
         self.checker_modules = []
 
         # If a module was passed
-        if module != None:
-            i = importlib.import_module(module)
-            path.append(os.path.abspath(os.path.join(i.__file__,
-                                                     i.__core_config__)))
+        if modules != None:
+            if type(modules) != list:
+                modules = [modules]
 
-            # Search for possible recipes provided in the module
-            if hasattr(i, '__recipes__'):
-                path.append(i.__recipes__)
+            for m in modules:
+                i = importlib.import_module(m)
+                path.append(os.path.abspath(os.path.join(i.__file__,
+                                                         i.__core_config__)))
 
-            # Search for possible section titles provided in the module
-            if hasattr(i, '__config_titles__'):
-                self.titles = getattr(i, '__config_titles__')
+                # Search for possible recipes provided in the module
+                if hasattr(i, '__recipes__'):
+                    path.append(i.__recipes__)
 
-            # Search for config headers provided in the module
-            if hasattr(i, '__config_header__'):
-                self.header = getattr(i, '__config_header__')
+                # Search for possible section titles provided in the module
+                if hasattr(i, '__config_titles__'):
+                    self.titles.update(getattr(i, '__config_titles__'))
 
-            # Search for custom checkers
-            if hasattr(i, '__config_checkers__'):
-                self.checker_modules.append(module+'.' + getattr(i, '__config_checkers__'))
+                # Search for config headers provided in the module
+                if hasattr(i, '__config_header__'):
+                    self.header = getattr(i, '__config_header__')
+
+                # Search for custom checkers
+                if hasattr(i, '__config_checkers__'):
+                    self.checker_modules.append(m+'.' +
+                                              getattr(i, '__config_checkers__'))
 
         if checkers != None:
             if type(checkers) != list:
@@ -322,6 +328,9 @@ class MasterConfig():
 
         if titles != None:
             self.titles.update(titles)
+
+        if header != None:
+            self.header = header
 
         if len(path) == 0 and module == None:
             raise ValueError("No file was either provided or found when"

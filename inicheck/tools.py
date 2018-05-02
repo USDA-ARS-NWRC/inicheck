@@ -88,7 +88,7 @@ def cast_all_variables(config_obj, mcfg_obj):
     ucfg = config_obj.cfg
     mcfg = mcfg_obj.cfg
     all_checks = get_checkers()
-    print(mcfg.keys())
+
     # Add any checker modules if provided
     if config_obj.mcfg.checker_modules:
         for c in config_obj.mcfg.checker_modules:
@@ -133,7 +133,7 @@ def cast_all_variables(config_obj, mcfg_obj):
     return config_obj
 
 
-def get_user_config(config_file, master_files=None, module=None,
+def get_user_config(config_file, master_files=None, modules=None,
                     mcfg=None):
     """
     Returns the users config as the object UserConfig.
@@ -141,7 +141,7 @@ def get_user_config(config_file, master_files=None, module=None,
     Args:
         config_file: real path to existing config file
         master_file: real path to a Core Config file
-        module: a module with a string attribute __CoreConfig__ which is the
+        modules: a module or list of modules with a string attribute __CoreConfig__ which is the
                 path to a CoreConfig
         mcfg: the master config object after it has been read in.
 
@@ -149,7 +149,7 @@ def get_user_config(config_file, master_files=None, module=None,
         ucfg: Users config as an object
     """
 
-    if module == None and master_files == None and mcfg == None:
+    if modules == None and master_files == None and mcfg == None:
         raise IOError("ERROR: Please provide either a module or a path to a"
                       " master config, or a master config object")
         sys.exit()
@@ -157,11 +157,11 @@ def get_user_config(config_file, master_files=None, module=None,
     if os.path.isfile(config_file):
 
 
-        if master_files != None or module != None:
+        if master_files != None or modules != None:
             if master_files != None:
                 master_files = mk_lst(master_files)
 
-            mcfg = MasterConfig(path=master_files, module=module)
+            mcfg = MasterConfig(path=master_files, modules=modules)
 
         ucfg = UserConfig(config_file, mcfg=mcfg)
 
@@ -176,19 +176,19 @@ def get_user_config(config_file, master_files=None, module=None,
     return ucfg
 
 
-def config_documentation(out_f, paths=None, module=None,
+def config_documentation(out_f, paths=None, modules=None,
                         section_link_dict=None):
     """
     Auto documents the core config file. Outputs to a file which is can then be
     used for documentation. Specifically formulated for sphinx
     """
 
-    if paths == None and module == None:
+    if paths == None and modules == None:
         raise ValueError("inicheck function config_documentation args paths or"
                         " module must be specified!")
 
 
-    master = MasterConfig(path=paths, module=module)
+    master = MasterConfig(path=paths, modules=modules)
     mcfg = master.cfg
 
     #RST header

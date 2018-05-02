@@ -19,8 +19,8 @@ def main():
     parser.add_argument('--master', '-c', metavar='MF', type=str,
                         help='Path to a config file that used to check against')
 
-    parser.add_argument('--module', '-m', metavar='M', type=str,
-                        help="Module name with an attribute __CoreConfig__ that"
+    parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
+                        help="Modules name with an attribute __CoreConfig__ that"
                              " is a path to a master config file for checking"
                              " against")
 
@@ -37,7 +37,7 @@ def main():
     args = parser.parse_args()
 
     # Module not provided, or master config
-    if args.module == None and args.master == None:
+    if args.modules == None and args.master == None:
         print("ERROR: Please provide either a module or a path to a master"
              " config, or ask for details on config entries")
         sys.exit()
@@ -59,13 +59,13 @@ def main():
                 print("Details option can at most recieve section and item ")
                 sys.exit()
 
-            mcfg = MasterConfig(path=args.master, module=args.module)
+            mcfg = MasterConfig(path=args.master, modules=args.modules)
             print_details(args.details, mcfg.cfg)
 
         else:
             f = os.path.abspath(args.config_file)
             ucfg = get_user_config(f, master_files=args.master,
-                                      module=args.module)
+                                      modules=args.modules)
 
             warnings, errors = check_config(ucfg)
 
@@ -75,15 +75,14 @@ def main():
                 print_recipe_summary(ucfg.recipes)
 
             if args.write:
-                out_f = './{0}_full.ini'
-                ''.format(os.path.basename(f).split('.')[0])
+                out_f = './{0}_full.ini'.format(
+                                              os.path.basename(f).split('.')[0])
 
                 print("Writing complete config file with all recipes and "
                       " necessary defaults...")
                 print('{0}'.format(out_f))
 
-                generate_config(ucfg, out_f, section_titles=ucfg.mcfg.titles,
-                                             cli=True)
+                generate_config(ucfg, out_f, cli=True)
 
 
 if __name__ == '__main__':

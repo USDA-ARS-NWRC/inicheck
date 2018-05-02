@@ -1,23 +1,19 @@
 from datetime import date
 import os
+import sys
 
-
-def generate_config(config_obj, fname, package_header=None, cli=False):
+def generate_config(config_obj, fname, cli=False):
     """
-    Generates a list of strings to be written and then writes them in the ini
+    Generates a list of strings using the config data then its written to an ini
     file
 
     Args:
         config: Config file dictionary created by
                  :func:`~inicheck.config.UserConfig'.
         fname: String path to the output location for the new config file.
-        package_header: This is string that enables the user to customize
-                         config files with their own titles. Creating a string
-                         at the top that says "Configuration File for
-                         <package_header>"
 
         cli: Boolean value that adds the line "file generated using
-                   inicheck.cli, Default = False
+             inicheck.cli", Default = False
 
     Returns:
         None
