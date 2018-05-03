@@ -195,11 +195,11 @@ def config_documentation(out_f, paths=None, modules=None,
     config_doc = "Configuration File Reference\n"
     config_doc += "============================\n"
     config_doc += "\nFor configuration file syntax information please visit"
-    config_doc += " http://inicheck.readthedocs.io/en/latest/"
+    config_doc += " http://inicheck.readthedocs.io/en/latest/\n\n"
 
     for section in mcfg.keys():
         # Section header
-        config_doc += " \n"
+        config_doc += "\n"
         config_doc += "{0}\n".format(section)
         config_doc += "-" * len(section) + '\n'
 
