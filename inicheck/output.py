@@ -185,7 +185,7 @@ def print_recipe_summary(lst_recipes):
                     print(msg.format("", c))
 
         print_cfg_for_recipe(r.adj_config, cfg_msg, hdr="\n\tEdits:")
-        print('\n')
+        #print('\n')
     print('\n')
 
 

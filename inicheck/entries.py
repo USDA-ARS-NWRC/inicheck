@@ -14,12 +14,13 @@ class RecipeSection:
 
     """
 
-    def __init__(self, recipe_section_dict):
+    def __init__(self, recipe_section_dict, name = None):
         """
             Args:
                 recipe_section_dict: a dictionary containing the triggers
                                      and config file adjustments.
         """
+        self.name = name
         # Conditions to be met
         self.triggers = OrderedDict()
         # Config file to apply if conditions are met

@@ -123,8 +123,9 @@ class UserConfig():
     def interpret_recipes(self, partial_cfg, situation):
         """
         User inserts a partial config by using each situation that
-        triggered a recipe. A situation consists of a tuple of
-        (section, item, value).
+        triggered a recipe. A triggering situation consists of a tuple of
+        (section, item, value) that represent the specific settings that trigger
+        the recipe.
         """
         result = copy.deepcopy(self.cfg)
 
@@ -393,7 +394,7 @@ class MasterConfig():
             sec = OrderedDict()
             for word in __recipe_keywords__:
                 if word in section:
-                    self.recipes.append(RecipeSection(raw_config[section]))
+                    self.recipes.append(RecipeSection(raw_config[section], name = section))
                     break
 
                 else:
