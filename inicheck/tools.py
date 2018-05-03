@@ -4,9 +4,12 @@ from . utilities import mk_lst, get_checkers
 
 def check_config(config_obj):
             """
-            looks at the users provided config file and checks it to a master
+            Looks at the users provided config file and checks it to a master
             config file looking at correctness and missing info.
 
+            Args:
+                config_obj - UserConfig object produced by
+                             :class:`~inicheck.config.UserConfig`
             Returns:
                 tuple:
                 - **warnings** - Returns a list of string messages that are
@@ -75,7 +78,7 @@ def cast_all_variables(config_obj, mcfg_obj):
     and the master config.
 
     Args:
-        config_obj: The object of the user config from class UserConfig
+        config_obj: The object of the user config from
         mcfg_obj: The object used for manage the master config from
                   class MasterConfig
         other_types: User provided list to add any custom types
