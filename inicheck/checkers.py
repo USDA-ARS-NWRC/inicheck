@@ -179,9 +179,8 @@ class CheckPath(CheckType):
         # Path should alsways be absolute or relative to the config file path
         if self.value != None and self.root_loc != None:
             if not os.path.isabs(self.value):
-                p = os.path.abspath(
-                            os.path.expanduser(os.path.dirname(self.root_loc)))
-                self.value = os.path.join(p, self.value)
+                p = os.path.expanduser(os.path.dirname(self.root_loc))
+                self.value = os.path.abspath(os.path.join(p, self.value))
 
     def is_valid(self):
         """
