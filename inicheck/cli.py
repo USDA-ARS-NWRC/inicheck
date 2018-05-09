@@ -5,7 +5,7 @@ from . output import print_config_report, generate_config, print_recipe_summary,
 from . tools import get_user_config, check_config
 import os
 import sys
-from config import MasterConfig
+from . config import MasterConfig
 # from . utilities import pcfg
 
 def main():
