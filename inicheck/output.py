@@ -203,7 +203,7 @@ def print_details(details, mcfg):
     Prints out the details for a list of provided options
     """
 
-    msg = "{: <20} {: <25} {: <25} {: <25} {: <60}"
+    msg = "{: <15} {: <15} {: <15} {: <25} {: <60}"
     hdr  = '\n' + msg.format('Section', 'Item', 'Default', 'Options',
                            'Description')
     print(hdr)
@@ -216,9 +216,9 @@ def print_details(details, mcfg):
             if nopts == 2:
                 if details[1] in mcfg[details[0]].keys():
                     print(msg.format(details[0], details[1],
-                                    mcfg[details[0]][details[1]].default,
-                                    mcfg[details[0]][details[1]].options,
-                                    mcfg[details[0]][details[1]].description))
+                                    str(mcfg[details[0]][details[1]].default),
+                                    str(mcfg[details[0]][details[1]].options),
+                                    str(mcfg[details[0]][details[1]].description)))
                 else:
                     print("Item {0} in not a registered item."
                           "".format(details[1]))
@@ -227,10 +227,12 @@ def print_details(details, mcfg):
             # Print the whole section
             else:
                 for k, v in mcfg[details[0]].items():
-                    print(msg.format(details[0], k,
-                                    v.default,
-                                    v.options,
-                                    v.description))
+
+                    print(msg.format(details[0],
+                                     k,
+                                     str(v.default),
+                                     str(v.options),
+                                     str(v.description)))
 
         # Section does not exist
         else:

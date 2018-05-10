@@ -180,7 +180,7 @@ def get_user_config(config_file, master_files=None, modules=None,
 
 
 def config_documentation(out_f, paths=None, modules=None,
-                        section_link_dict=None):
+                        section_link_dict={}):
     """
     Auto documents the core config file. Outputs to a file which is can then be
     used for documentation. Specifically formulated for sphinx
@@ -195,7 +195,8 @@ def config_documentation(out_f, paths=None, modules=None,
     mcfg = master.cfg
 
     #RST header
-    config_doc = "Configuration File Reference\n"
+    config_doc = ".. _config-file-reference:\n\n"
+    config_doc += "Configuration File Reference\n"
     config_doc += "============================\n"
     config_doc += "\nFor configuration file syntax information please visit"
     config_doc += " http://inicheck.readthedocs.io/en/latest/\n\n"
@@ -247,7 +248,7 @@ def config_documentation(out_f, paths=None, modules=None,
             config_doc += "\n"
 
     path = os.path.abspath(out_f)
-    if not os.path.isfile(path):
+    if not os.path.isdir(os.path.dirname(path)):
         raise IOError("Config Documentation output file does not exist."
                       "\n{0}".format(out_f))
 
