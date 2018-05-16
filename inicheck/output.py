@@ -75,7 +75,7 @@ def generate_config(config_obj, fname, cli=False):
             for k in config[section].keys():
                 v = config[section][k]
                 if type(v) == list:
-                    astr = ", ".join(str(c.strip()) for c in v)
+                    astr = ", ".join(str(c).strip() for c in v)
                 else:
                     astr = str(v)
                 config_str += "{0:<30} {1:<10}\n".format((k+':'), astr)

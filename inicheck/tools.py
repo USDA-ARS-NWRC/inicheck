@@ -184,6 +184,13 @@ def config_documentation(out_f, paths=None, modules=None,
     """
     Auto documents the core config file. Outputs to a file which is can then be
     used for documentation. Specifically formulated for sphinx
+
+    Args:
+        out_f: string path to output location for the auto documentation
+        paths: paths to master config files to use for creating docs
+        modules: modules with attributes __core_config__ for creating docs
+        section_link_dict- dictionary containing special documentation for a section in the config file reference
+
     """
 
     if paths == None and modules == None:
@@ -194,11 +201,8 @@ def config_documentation(out_f, paths=None, modules=None,
     master = MasterConfig(path=paths, modules=modules)
     mcfg = master.cfg
 
-    #RST header
-    config_doc = ".. _config-file-reference:\n\n"
-    config_doc += "Configuration File Reference\n"
-    config_doc += "============================\n"
-    config_doc += "\nFor configuration file syntax information please visit"
+    # Beginning
+    config_doc = "\nFor configuration file syntax information please visit"
     config_doc += " http://inicheck.readthedocs.io/en/latest/\n\n"
 
     for section in mcfg.keys():
