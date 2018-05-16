@@ -58,6 +58,7 @@ def check_config(config_obj):
                                     if options_type == name.lower():
                                         b = fn(value=v, config=config_obj)
                                         issue = b.check()
+
                                         if issue != None:
                                             full_msg = msg.format(section,
                                                                   item,
@@ -72,7 +73,7 @@ def check_config(config_obj):
             return warnings, errors
 
 
-def cast_all_variables(config_obj, mcfg_obj):
+def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
     """
     Cast all values into the appropiate type using checkers, other_types
     and the master config.
@@ -82,6 +83,7 @@ def cast_all_variables(config_obj, mcfg_obj):
         mcfg_obj: The object used for manage the master config from
                   class MasterConfig
         other_types: User provided list to add any custom types
+        checking_later: Enables whether a failure to cast an item will raise an exception
 
     Returns:
         ucfg: The users config dictionary containing the correct value types
@@ -120,7 +122,19 @@ def cast_all_variables(config_obj, mcfg_obj):
                             if v in [None, 'none', 'None']:
                                 values.append(None)
                             else:
-                                values.append(b.cast())
+                                if checking_later:
+                                    try:
+                                        values.append(b.cast())
+                                    except:
+                                        #Assumes the user will be check the
+                                        # value later
+                                        values.append(v)
+
+
+                                else:
+                                    values.append(b.cast())
+
+
                             option_found = True
                             break
 
@@ -137,7 +151,7 @@ def cast_all_variables(config_obj, mcfg_obj):
 
 
 def get_user_config(config_file, master_files=None, modules=None,
-                    mcfg=None):
+                    mcfg=None, checking_later=False):
     """
     Returns the users config as the object UserConfig.
 
@@ -147,6 +161,7 @@ def get_user_config(config_file, master_files=None, modules=None,
         modules: a module or list of modules with a string attribute __CoreConfig__ which is the
                 path to a CoreConfig
         mcfg: the master config object after it has been read in.
+        checking_later: Passes over excpetions when catsing to the right types to be formally checked later
 
     Returns:
         ucfg: Users config as an object
@@ -169,7 +184,7 @@ def get_user_config(config_file, master_files=None, modules=None,
         ucfg = UserConfig(config_file, mcfg=mcfg)
 
         ucfg.apply_recipes()
-        ucfg = cast_all_variables(ucfg, mcfg)
+        ucfg = cast_all_variables(ucfg, mcfg,checking_later=checking_later)
 
 
     else:

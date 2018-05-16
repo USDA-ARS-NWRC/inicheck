@@ -49,9 +49,7 @@ class GenericCheck(object):
         """
 
         msg = None
-        valid = self.is_valid()
-        if not valid:
-            msg = self.message
+        valid, msg = self.is_valid()
         return msg
 
 
@@ -62,7 +60,7 @@ class CheckType(GenericCheck):
 
     def __init__(self, **kwargs):
         super(CheckType, self).__init__(**kwargs)
-        self.type = 'string'
+        self.type = 'str'
         # Function used for casting to types
         self.type_func = None
 
@@ -72,15 +70,23 @@ class CheckType(GenericCheck):
         """
         msg = None
         self.msg_level = 'error'
-        if self.type not in str(type(self.value)):
-                valid = False
-                msg = "Expecting {0} received {1}".format(self.type,
-                                                          str(self.value))
-        else:
+
+        try:
+            print(self.value)
+            self.value = self.cast()
             valid = True
-        return valid, msg
+
+        except:
+            msg = "Expecting {0} received {1}".format(self.type,str(type(self.value)))
+            valid = False
+
+        return valid,msg
 
     def cast(self):
+        """
+        Attempts to return the casted value
+        """
+
         return self.type_func(self.value)
 
 
@@ -90,20 +96,10 @@ class CheckDatetime(CheckType):
     """
 
     def __init__(self, **kwargs):
+
         super(CheckDatetime, self).__init__(**kwargs)
         self.type_func = to_datetime
-
-    def is_valid(self):
-        """
-        Checks for datetime
-        """
-        msg = None
-        try:
-            self.cast()
-            return True, msg
-        except:
-            msg = "Not in datetime format"
-            return False, msg
+        self.type = 'datetime'
 
 
 class CheckFloat(CheckType):
@@ -126,11 +122,8 @@ class CheckInt(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckInt, self).__init__(**kwargs)
-        self.type_func = float
-        self.type = 'float'
-
-    def cast(self):
-        return(self.type_func(self.value))
+        self.type_func = int
+        self.type = 'int'
 
 
 class CheckBool(CheckType):
@@ -143,12 +136,18 @@ class CheckBool(CheckType):
         super(CheckBool, self).__init__(**kwargs)
         self.type_func = bool
         self.type = 'bool'
+        self.affirmatives = ['y', 'yes', 'true']
+        self.negatives = ['n', 'no', 'false']
+        self.all = self.negatives + self.affirmatives
 
     def cast(self):
-        if self.value.lower() in ['y', 'yes', 'true']:
+        if self.value.lower() in self.affirmatives:
             self.value = True
-        elif self.value.lower() in ['n', 'no', 'false']:
+        elif self.value.lower() in self.negatives:
             self.value = False
+        else:
+            raise ValueError("Value {0} not coercable to boolean."
+                             "".format(self.value))
 
         return self.value
 
@@ -171,6 +170,7 @@ class CheckPath(CheckType):
     """
 
     def __init__(self, **kwargs):
+
         super(CheckPath, self).__init__(**kwargs)
         self.root_loc = self.config.filename
 
