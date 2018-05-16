@@ -1,7 +1,7 @@
 import inspect
 import sys
 import os
-
+import inicheck.checkers
 
 def mk_lst(values, unlst=False):
     """
