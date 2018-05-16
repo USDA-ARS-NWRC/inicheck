@@ -50,7 +50,16 @@ def check_config(config_obj):
 
                         for v in val_lst:
                             if v != None:
-                                # Do we have an idea of what to expect?
+                                # 1. Check for contraints by options lists
+                                if master[section][item].options:
+                                    # If it is not in the list, invalid
+                                    if str(v) not in master[section][item].options:
+                                        full_msg = msg.format(section,
+                                                          item,
+                                                          "Not a valid option")
+                                        errors.append(full_msg)
+
+                                # 2. Check the type constraint.
                                 options_type = master[section][item].type
                                 for name, fn in standard_funcs.items():
 

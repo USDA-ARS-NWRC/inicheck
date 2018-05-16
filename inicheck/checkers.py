@@ -7,6 +7,7 @@ from pandas import to_datetime
 
 class GenericCheck(object):
     def __init__(self, **kwargs):
+
         if 'value' not in kwargs.keys():
             raise ValueError("Must provided at least keyword value to "
                              "Checkers.")
@@ -15,7 +16,6 @@ class GenericCheck(object):
                              "Checkers.")
 
         self.message = None
-
         self.msg_level = 'warning'
         self.value = kwargs["value"]
 
@@ -62,7 +62,7 @@ class CheckType(GenericCheck):
         super(CheckType, self).__init__(**kwargs)
         self.type = 'str'
         # Function used for casting to types
-        self.type_func = None
+        self.type_func = str
 
     def is_valid(self):
         """
@@ -72,12 +72,11 @@ class CheckType(GenericCheck):
         self.msg_level = 'error'
 
         try:
-            print(self.value)
             self.value = self.cast()
             valid = True
 
         except:
-            msg = "Expecting {0} received {1}".format(self.type,str(type(self.value)))
+            msg = "Expecting {0} received {1}".format(self.type,type(self.value).__name__)
             valid = False
 
         return valid,msg
@@ -86,7 +85,6 @@ class CheckType(GenericCheck):
         """
         Attempts to return the casted value
         """
-
         return self.type_func(self.value)
 
 
@@ -122,8 +120,19 @@ class CheckInt(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckInt, self).__init__(**kwargs)
-        self.type_func = int
+        self.type_func = self.cast_float_int
         self.type = 'int'
+
+    def cast_float_int(self,value):
+        try:
+            self.value = int(self.value)
+        #try to cast as a float and report the difference as such
+        except:
+
+            self.value = int(float(self.value))
+            self.msg_level = 'warning'
+
+        return self.value
 
 
 class CheckBool(CheckType):
@@ -138,12 +147,14 @@ class CheckBool(CheckType):
         self.type = 'bool'
         self.affirmatives = ['y', 'yes', 'true']
         self.negatives = ['n', 'no', 'false']
-        self.all = self.negatives + self.affirmatives
 
     def cast(self):
-        if self.value.lower() in self.affirmatives:
+
+        v = str(self.value).lower()
+        if v in self.affirmatives:
             self.value = True
-        elif self.value.lower() in self.negatives:
+
+        elif v in self.negatives:
             self.value = False
         else:
             raise ValueError("Value {0} not coercable to boolean."
@@ -193,7 +204,7 @@ class CheckPath(CheckType):
         else:
             exists = os.path.isfile(self.value)
 
-        return exists
+        return exists,self.message
 
     def cast(self):
         return self.value
