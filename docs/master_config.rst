@@ -151,6 +151,7 @@ triggered. If a keyword is not used then values are treated like section > item
 Edits can be prescribed by section and item names under a recipe:
 
 Example::
+  
   [my_recipe]
     some_trigger:   has_section = test_section
 
