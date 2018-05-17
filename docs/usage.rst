@@ -4,7 +4,7 @@ Usage
 
 To use inicheck in a project you will need to create a master config file for
 all your configuration files to be checked against. To get started with writing
-a master configuration file see master-config_.
+a master configuration file see :ref:`MasterConfig`.
 
 Command Line
 ============

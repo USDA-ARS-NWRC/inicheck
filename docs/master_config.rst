@@ -1,4 +1,4 @@
-.. _master-config:
+.. _MasterConfig:
 
 =========================
 Master Configuration File
@@ -107,7 +107,7 @@ add more keywords. Recipe triggers have only a couple key words available:
 
 * **has_section** - if the configuration file has this section
 * **has_value** - This is the most flexible trigger provided. It is provded using
-                  a bracketed, *space delimited* list in section > item > value order.
+                  a bracketed, **space delimited** list in section > item > value order.
 
 Below is an example showing how a trigger can have multiple criteria that can
 create very specific conditions. Trigger entries can be provided in a comma
