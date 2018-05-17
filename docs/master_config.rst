@@ -85,6 +85,7 @@ Example::
 
 Recipes
 --------
+
 The master config can have recipes to generate certain adding or removing of
 entries in the users configuration file automatically.This can really help with
 config file bloat on the users end by only entering the information that matters
