@@ -183,7 +183,6 @@ def get_user_config(config_file, master_files=None, modules=None,
 
     if os.path.isfile(config_file):
 
-
         if master_files != None or modules != None:
             if master_files != None:
                 master_files = mk_lst(master_files)
@@ -193,8 +192,7 @@ def get_user_config(config_file, master_files=None, modules=None,
         ucfg = UserConfig(config_file, mcfg=mcfg)
 
         ucfg.apply_recipes()
-        ucfg = cast_all_variables(ucfg, mcfg,checking_later=checking_later)
-
+        ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
 
     else:
         raise IOError("Config file path {0} doesn't exist."

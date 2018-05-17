@@ -62,11 +62,12 @@ def main():
             mcfg = MasterConfig(path=args.master, modules=args.modules)
             print_details(args.details, mcfg.cfg)
 
+        # Requesting a check on a config file
         else:
             f = os.path.abspath(args.config_file)
             ucfg = get_user_config(f, master_files=args.master,
                                       modules=args.modules,
-                                      checking_later=False)
+                                      checking_later=True)
 
             warnings, errors = check_config(ucfg)
 

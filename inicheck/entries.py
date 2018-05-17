@@ -46,15 +46,19 @@ class TriggerEntry:
     a recipe.
     This is meant to parse:
 
-    ------------------------------------------------------------
-    item_trigger:
-                    has_section_name = <value>,
-                    has_value = [<section name> <item name>, <value>],
-                    has_item_name = <value>
+    Example::
 
-    -------------------------------------------------------------
+        ------------------------------------------------------------
+        item_trigger:
+                        has_section_name = <value>,
+                        has_value = [<section name> <item name>, <value>],
+                        has_item_name = <value>
+
+        -------------------------------------------------------------
 
     Config entry expects to recieve the above in the following format:
+
+    .. code-block:: python
 
         {item_trigger:
                     ["has_section = <value>",
@@ -63,9 +67,14 @@ class TriggerEntry:
                      ]
         }
 
-    Recipe entry then will parse the strings looking for space separated
-    lists, values denoted with = and will only accept has_section,
-    has_item, has_item_any has_value
+    Recipe entry then will parse the strings looking for space separated lists,
+    values denoted with = and will only accept keyword
+
+        * has_section
+        * has_item
+        * has_item_any
+        * has_value
+
     """
 
     def __init__(self, parseable_line, name=None):
@@ -102,14 +111,18 @@ class ConfigEntry:
     ConfigEntry designed to aid in parsing master config file entries.
     This is meant to parse:
 
-    ------------------------------------------------------------
-    item:
-                    type = <value>,
-                    options = [<value> <value>],
-                    description = text describing entry
-    -------------------------------------------------------------
+    Example::
+
+        ------------------------------------------------------------
+        item:
+                        type = <value>,
+                        options = [<value> <value>],
+                        description = text describing entry
+        -------------------------------------------------------------
 
     Config entry expects to recieve the above in the following format:
+
+    .. code-block:: python
 
         {item:
             ["type = <value>",
@@ -118,8 +131,13 @@ class ConfigEntry:
         }
 
     Config entry then will parse the strings looking for space separated
-    lists,values denoted with =, and will only recieve type, default,
-    options,and description.
+    lists,values denoted with =, and will only recieve:
+
+        * type
+        * default,
+        * options
+        * description.
+
     """
 
     def __init__(self, name=None, value=None, default=None,

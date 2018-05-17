@@ -8,8 +8,8 @@ Contents:
 
    readme
    installation
-   master_config
    usage
+   master_config
    modules
    contributing
    authors

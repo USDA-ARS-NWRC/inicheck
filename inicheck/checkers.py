@@ -123,14 +123,25 @@ class CheckInt(CheckType):
         self.type_func = self.cast_float_int
         self.type = 'int'
 
-    def cast_float_int(self,value):
-        try:
-            self.value = int(self.value)
-        #try to cast as a float and report the difference as such
-        except:
 
-            self.value = int(float(self.value))
-            self.msg_level = 'warning'
+    def cast_float_int(self,value):
+        """
+        When expecting an integer, it is convenient to automatically convert
+        floats to integers (e.g. 6.0 --> 6) but its pertinent to catch when the
+        input has a non-zero decimal and warn user (e.g. avoid 6.5 --> 6)
+
+        Args:
+            value: The value to be casted to integer
+        Returns:
+            self.value: the value converted
+        """
+
+        self.value = float(value)
+
+        if self.value.is_integer():
+            self.value = int(self.value)
+        else:
+            raise ValueError("Expecting integer and received float with non-zero decimal")
 
         return self.value
 

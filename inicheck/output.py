@@ -4,19 +4,16 @@ import sys
 
 def generate_config(config_obj, fname, cli=False):
     """
-    Generates a list of strings using the config data then its written to an ini
-    file
+    Generates a list of strings using the config data then its written to an
+    .ini file
 
     Args:
-        config: Config file dictionary created by
-                 :func:`~inicheck.config.UserConfig'.
-        fname: String path to the output location for the new config file.
-
+        config_obj: config object containing data to be outputted
+        fname: String path to the output location for the new config file
         cli: Boolean value that adds the line "file generated using
-             inicheck.cli", Default = False
+            inicheck.cli", Default = False
 
-    Returns:
-        None
+
     """
     header_len = 80
     pg_sep = '#' * header_len
@@ -92,15 +89,13 @@ def print_config_report(warnings, errors, logger=None):
     print out in a pretty format the issues
 
     Args:
-        warnings - List of non-critical messages returned from
+        warnings: List of non-critical messages returned from
                    :func:`~utilities.check_config'.
-        errors - List of critical messages returned from
+        errors: List of critical messages returned from
                  :func:`~utilities.check_config'.
-        logger - pass in the logger function being used. If no logger is
+        logger: pass in the logger function being used. If no logger is
                  provided, print is used. Default = None
 
-    Returns:
-        None
     """
 
     msg = "{: <20} {: <25} {: <60}"
@@ -159,6 +154,10 @@ def print_out(out_str):
 def print_recipe_summary(lst_recipes):
     """
     Prints out the recipes found and how they are interpretted
+
+    Args:
+        lst_recipes: list of the recipe entry objects
+
     """
     # len of recipe separators
     msg_len = 80
@@ -200,7 +199,16 @@ def print_cfg_for_recipe(cfg, fmt, hdr=None):
 
 def print_details(details, mcfg):
     """
-    Prints out the details for a list of provided options
+    Prints out the details for a list of provided options designed for use
+    with the CLI. Details about a section, or an item can be requested by
+    passing in a list of in the section,item order. If a section is only passed
+    then we the details provided are for the entire section
+
+    Args:
+        details: a list in [section item value] requesting details.
+        mcfg: master config object to gather the details from
+
+
     """
 
     msg = "{: <15} {: <15} {: <15} {: <25} {: <60}"
