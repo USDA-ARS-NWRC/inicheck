@@ -85,7 +85,6 @@ Example::
 
 Recipes
 --------
-
 The master config can have recipes to generate certain adding or removing of
 entries in the users configuration file automatically.This can really help with
 config file bloat on the users end by only entering the information that matters
@@ -108,7 +107,7 @@ add more keywords. Recipe triggers have only a couple key words available:
 
 * **has_section** - if the configuration file has this section
 * **has_value** - This is the most flexible trigger provided. It is provded using
-                  a bracketed, **space delimited** list in section > item > value order.
+                  a bracketed, **space delimited* list in section > item > value order.
 
 Below is an example showing how a trigger can have multiple criteria that can
 create very specific conditions. Trigger entries can be provided in a comma
@@ -151,7 +150,6 @@ triggered. If a keyword is not used then values are treated like section > item
 Edits can be prescribed by section and item names under a recipe:
 
 Example::
-  
   [my_recipe]
     some_trigger:   has_section = test_section
 

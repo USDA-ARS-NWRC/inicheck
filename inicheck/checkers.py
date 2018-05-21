@@ -13,7 +13,7 @@ class GenericCheck(object):
                              "Checkers.")
         if 'config' not in kwargs.keys():
             raise ValueError("Must provided at least keyword config to"
-                             "Checkers.")
+                             " Checkers.")
 
         self.message = None
         self.msg_level = 'warning'
