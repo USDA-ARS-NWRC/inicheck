@@ -73,7 +73,7 @@ def parse_sections(fname):
 
     """
 
-    with open(fname) as f:
+    with open(fname, encoding = 'utf-8') as f:
         lines = f.readlines()
         f.close()
 
