@@ -2,7 +2,7 @@
 import os
 __author__ = """Micah Johnson"""
 __email__ = 'micah.johnson150@gmail.com'
-__version__ = '0.2.10'
+__version__ = '0.2.11'
 
 # Keywords for conditional statements in a master config file
 __trigger_keywords__ = ['trigger']
