@@ -163,10 +163,10 @@ def print_recipe_summary(lst_recipes):
     msg_len = 80
     header = "=" * msg_len
     recipe_hdr = "-" * msg_len
-    r_msg = "\n{: <20}\n"+recipe_hdr
-    cfg_msg = "\t\t{: <20} {: <20} {: <20}"
+    r_msg = "\n{0: <20}\n"+recipe_hdr
+    cfg_msg = "\t\t{0: <20} {1: <20} {2: <20}"
 
-    msg = "\t\t{: <20} {: <25}"
+    msg = "\t\t{0: <20} {1: <25}"
 
     print('\n\n')
     print("Below are the recipes applied to the config file:")
@@ -178,6 +178,8 @@ def print_recipe_summary(lst_recipes):
         print("\tConditionals:")
         for n, t in r.triggers.items():
             for i, c in enumerate(t.conditions):
+                if type(c) == list:
+                    c = ", ".join(c)
                 if i == 0:
                     print(msg.format(n, c))
                 else:

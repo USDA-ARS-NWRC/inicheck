@@ -36,49 +36,53 @@ def check_config(config_obj):
             # Compare user config file to our master config
             for section, configured in cfg.items():
 
-                # In the section check the values and options
-                for item, value in configured.items():
-                    litem = item.lower()
+                if section not in master.keys():
+                    err = "Not a valid section."
+                    errors.append(msg.format(section, " ", err))
+                else:
+                    # In the section check the values and options
+                    for item, value in configured.items():
+                        litem = item.lower()
 
-                    # Is the item known as a configurable item?
-                    if litem not in master[section].keys():
-                        wrn = "Not a registered option."
-                        warnings.append(msg.format(section, item, wrn))
-                    else:
-                        # Did the user provide a list value or single value
-                        val_lst = mk_lst(value)
+                        # Is the item known as a configurable item?
+                        if litem not in master[section].keys():
+                            wrn = "Not a registered option."
+                            warnings.append(msg.format(section, item, wrn))
+                        else:
+                            # Did the user provide a list value or single value
+                            val_lst = mk_lst(value)
 
-                        for v in val_lst:
-                            if v != None:
-                                # 1. Check for contraints by options lists
-                                if master[section][item].options:
-                                    # If it is not in the list, invalid
-                                    if str(v) not in master[section][item].options:
-                                        full_msg = msg.format(section,
-                                                          item,
-                                                          "Not a valid option")
-                                        errors.append(full_msg)
-
-                                # 2. Check the type constraint.
-                                options_type = master[section][item].type
-                                for name, fn in standard_funcs.items():
-
-                                    # Check for type checkers
-                                    if options_type == name.lower():
-                                        b = fn(value=v, config=config_obj)
-                                        issue = b.check()
-
-                                        if issue != None:
+                            for v in val_lst:
+                                if v != None:
+                                    # 1. Check for contraints by options lists
+                                    if master[section][item].options:
+                                        # If it is not in the list, invalid
+                                        if str(v) not in master[section][item].options:
                                             full_msg = msg.format(section,
-                                                                  item,
-                                                                  issue)
-                                            if b.msg_level == 'error':
-                                                errors.append(full_msg)
-                                            elif b.msg_level == 'warning':
-                                                warnings.append(full_msg)
-                                            break
-                                    else:
-                                        issue = None
+                                                              item,
+                                                              "Not a valid option")
+                                            errors.append(full_msg)
+
+                                    # 2. Check the type constraint.
+                                    options_type = master[section][item].type
+                                    for name, fn in standard_funcs.items():
+
+                                        # Check for type checkers
+                                        if options_type == name.lower():
+                                            b = fn(value=v, config=config_obj)
+                                            issue = b.check()
+
+                                            if issue != None:
+                                                full_msg = msg.format(section,
+                                                                      item,
+                                                                      issue)
+                                                if b.msg_level == 'error':
+                                                    errors.append(full_msg)
+                                                elif b.msg_level == 'warning':
+                                                    warnings.append(full_msg)
+                                                break
+                                        else:
+                                            issue = None
             return warnings, errors
 
 
@@ -111,49 +115,50 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
 
     # Cast all variables
     for s in ucfg.keys():
-        for i in ucfg[s].keys():
-            values = []
+        if s in mcfg.keys():
+            for i in ucfg[s].keys():
+                values = []
 
-            # Ensure it is something we can check
-            if i in mcfg[s].keys():
-                type_value = (mcfg[s][i].type).lower()
-                if type_value not in all_checks.keys():
-                    raise ValueError("\n\nSection {0} at item {1} attempted to use "
-                                    "undefined type name {2} which has no "
-                                    "checker associated.\nAvailable checkers "
-                                    "are:\n\n{3}"
-                                    "".format(s,i,type_value,all_checks.keys()))
+                # Ensure it is something we can check
+                if i in mcfg[s].keys():
+                    type_value = (mcfg[s][i].type).lower()
+                    if type_value not in all_checks.keys():
+                        raise ValueError("\n\nSection {0} at item {1} attempted to use "
+                                        "undefined type name {2} which has no "
+                                        "checker associated.\nAvailable checkers "
+                                        "are:\n\n{3}"
+                                        "".format(s,i,type_value,all_checks.keys()))
 
-                for z, v in enumerate(mk_lst(ucfg[s][i])):
-                    option_found = False
-                    # Use all the checks available to cast
-                    for name, fn in all_checks.items():
-                        if  type_value == name.lower():
-                            b = fn(value=v, config=config_obj)
-                            if v in [None, 'none', 'None']:
-                                values.append(None)
-                            else:
-                                if checking_later:
-                                    try:
-                                        values.append(b.cast())
-                                    except:
-                                        #Assumes the user will be check the
-                                        # value later
-                                        values.append(v)
-
+                    for z, v in enumerate(mk_lst(ucfg[s][i])):
+                        option_found = False
+                        # Use all the checks available to cast
+                        for name, fn in all_checks.items():
+                            if  type_value == name.lower():
+                                b = fn(value=v, config=config_obj)
+                                if v in [None, 'none', 'None']:
+                                    values.append(None)
                                 else:
-                                    values.append(b.cast())
+                                    if checking_later:
+                                        try:
+                                            values.append(b.cast())
+                                        except:
+                                            #Assumes the user will be check the
+                                            # value later
+                                            values.append(v)
 
-                            option_found = True
-                            break
+                                    else:
+                                        values.append(b.cast())
 
-                    if not option_found:
-                        raise ValueError("Unknown type_value prescribed."
-                                         " ----> {0}".format(type_value))
-            else:
-                values = ucfg[s][i]
+                                option_found = True
+                                break
 
-            ucfg[s][i] = mk_lst(values, unlst=True)
+                        if not option_found:
+                            raise ValueError("Unknown type_value prescribed."
+                                             " ----> {0}".format(type_value))
+                else:
+                    values = ucfg[s][i]
+
+                ucfg[s][i] = mk_lst(values, unlst=True)
 
     config_obj.cfg = ucfg
     return config_obj
