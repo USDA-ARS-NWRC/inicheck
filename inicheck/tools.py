@@ -117,10 +117,12 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
             # Ensure it is something we can check
             if i in mcfg[s].keys():
                 type_value = (mcfg[s][i].type).lower()
-                if type_value.lower() not in all_checks.keys():
-                    raise ValueError("Type {0} is undefined and has no"
-                                    " checker associated"
-                                    "".format(type_value))
+                if type_value not in all_checks.keys():
+                    raise ValueError("\n\nSection {0} at item {1} attempted to use "
+                                    "undefined type name {2} which has no "
+                                    "checker associated.\nAvailable checkers "
+                                    "are:\n\n{3}"
+                                    "".format(s,i,type_value,all_checks.keys()))
 
                 for z, v in enumerate(mk_lst(ucfg[s][i])):
                     option_found = False
@@ -139,10 +141,8 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                                         # value later
                                         values.append(v)
 
-
                                 else:
                                     values.append(b.cast())
-
 
                             option_found = True
                             break
@@ -199,7 +199,6 @@ def get_user_config(config_file, master_files=None, modules=None,
                       "".format(config_file))
 
     return ucfg
-
 
 def config_documentation(out_f, paths=None, modules=None,
                         section_link_dict={}):

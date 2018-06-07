@@ -55,8 +55,9 @@ def get_checkers(module='inicheck.checkers', keywords=[]):
         k = name.lower()
         # Remove any keywords
         for w in keywords:
-            if w in k:
-                k = k.replace(w, '')
+            z = w.lower()
+            if z in k:
+                k = k.replace(z, '')
                 checker_found = True
                 break
 

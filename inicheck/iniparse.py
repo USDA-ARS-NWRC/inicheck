@@ -21,18 +21,20 @@ def read_config(filename):
     return config
 
 
-def parse_entry(info, valid_names=None):
+def parse_entry(info, item = None, valid_names=None):
     properties = OrderedDict()
     if type(info) != list:
         info = [info]
+    last_three = []
 
     for s in info:
         if '=' in s:
             a = s.split('=')
+
         else:
-            raise ValueError('Master Config file missing an equals sign in'
-                            ' entry {0}\n or missing a comma above this'
-                            ' entry'.format(info))
+            raise ValueError('\n\nMaster Config file missing an equals sign in'
+                            ' entry or missing a comma right before the item '
+                            '"{0}"'.format(item))
 
         name = (a[0].lower()).strip()
         # Check for constraints on potential names of entries

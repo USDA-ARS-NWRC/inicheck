@@ -35,7 +35,7 @@ class RecipeSection:
 
             # Check for assigned values if any trigger
             if item not in self.triggers.keys():
-                item_dict = parse_entry(entry)
+                item_dict = parse_entry(entry,item = item)
 
                 self.adj_config[item] = item_dict
 
@@ -152,7 +152,7 @@ class ConfigEntry:
         self.valid_names = ['default', 'type', 'options', 'description']
 
         if parseable_line != None:
-            parsed_dict = parse_entry(parseable_line,
+            parsed_dict = parse_entry(parseable_line,item = name,
                                       valid_names=self.valid_names)
             for name,value in parsed_dict.items():
                 setattr(self,name,value)
