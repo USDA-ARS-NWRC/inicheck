@@ -52,29 +52,44 @@ def check_config(config_obj):
                             # Did the user provide a list value or single value
                             val_lst = mk_lst(value)
 
-                            for v in val_lst:
+                            #Check to see if we want to print the item error
+                            # location in the list
+                            if len(val_lst) > 1:
+                                print_lst = True
+                            else:
+                                print_lst = False
+
+                            for ii,v in enumerate(val_lst):
                                 if v != None:
+
+                                    # If we care about the errors position,
+                                    # print it
+                                    if print_lst:
+                                        print_item = "{0}[{1}]".format(item,ii)
+                                    else:
+                                        print_item = item
+
                                     # 1. Check for contraints by options lists
                                     if master[section][item].options:
                                         # If it is not in the list, invalid
                                         if str(v) not in master[section][item].options:
                                             full_msg = msg.format(section,
-                                                              item,
+                                                              print_item,
                                                               "Not a valid option")
                                             errors.append(full_msg)
 
                                     # 2. Check the type constraint.
                                     options_type = master[section][item].type
-                                    for name, fn in standard_funcs.items():
 
+                                    for name, fn in standard_funcs.items():
+                                        print("\t"+name)
                                         # Check for type checkers
                                         if options_type == name.lower():
                                             b = fn(value=v, config=config_obj)
                                             issue = b.check()
-
                                             if issue != None:
                                                 full_msg = msg.format(section,
-                                                                      item,
+                                                                      print_item,
                                                                       issue)
                                                 if b.msg_level == 'error':
                                                     errors.append(full_msg)
