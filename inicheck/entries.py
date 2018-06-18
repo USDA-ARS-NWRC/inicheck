@@ -160,3 +160,6 @@ class ConfigEntry:
         # Options should always be a list
         if type(self.options) != list:
             self.options = [self.options]
+
+        # types should always be lower case
+        self.type = self.type.lower()
