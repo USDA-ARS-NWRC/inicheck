@@ -166,3 +166,6 @@ class ConfigEntry:
 
         # types should always be lower case
         self.type = self.type.lower()
+
+        # ensure listed is a boolean.
+        self.listed = bool(self.listed)

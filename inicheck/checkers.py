@@ -48,8 +48,11 @@ class GenericCheck(object):
             msg: None is the entry is valid, else returns self.message
         """
 
-        msg = None
-        valid, msg = self.is_valid()
+        valid, issue = self.is_valid()
+        if valid:
+            msg = None
+        else:
+            msg = issue
         return msg
 
 

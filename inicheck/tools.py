@@ -86,6 +86,7 @@ def check_config(config_obj):
                                         if options_type == name.lower():
                                             b = fn(value=v, config=config_obj)
                                             issue = b.check()
+                                            print(name,item,b.value,issue)
                                             if issue != None:
                                                 full_msg = msg.format(section,
                                                                       print_item,
@@ -169,12 +170,14 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                         if not option_found:
                             raise ValueError("Unknown type_value prescribed."
                                              " ----> {0}".format(type_value))
+
+                    # Developers can specify which items are lists and which
+                    # are not
+                    if not mcfg[s][i].listed:
+                        ucfg[s][i] = mk_lst(values, unlst=True)
+
                 else:
                     values = ucfg[s][i]
-
-                # Developers can specify which items are lists and which are not
-                if not mcfg[s][i].listed:
-                    ucfg[s][i] = mk_lst(values, unlst=True)
 
     config_obj.cfg = ucfg
     return config_obj
