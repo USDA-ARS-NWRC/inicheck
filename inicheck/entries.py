@@ -131,29 +131,32 @@ class ConfigEntry:
         }
 
     Config entry then will parse the strings looking for space separated
-    lists,values denoted with =, and will only recieve:
+    lists, values denoted with =, and will only receive:
 
         * type
         * default,
-        * options
+        * options,
+        * listed,
         * description.
 
     """
 
     def __init__(self, name=None, value=None, default=None,
-                 entry_type='string', options=[], parseable_line=None):
+                 entry_type='string', options=[], listed = False,
+                 parseable_line=None):
 
         self.name = name
         self.value = value
         self.default = default
         self.options = options
         self.description = ''
+        self.listed = False
         self.type = entry_type
-        self.valid_names = ['default', 'type', 'options', 'description']
+        self.valid_names = ['default', 'type', 'options','listed', 'description']
 
         if parseable_line != None:
             parsed_dict = parse_entry(parseable_line,item = name,
-                                      valid_names=self.valid_names)
+                                        valid_names=self.valid_names)
             for name,value in parsed_dict.items():
                 setattr(self,name,value)
 

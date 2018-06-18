@@ -208,7 +208,6 @@ class CheckPath(CheckType):
         """
         Checks for existing filename
         """
-        self.msg_level = 'warning'
 
         if self.dir_path:
             exists = os.path.isdir(self.value)

@@ -82,7 +82,6 @@ def check_config(config_obj):
                                     options_type = master[section][item].type
 
                                     for name, fn in standard_funcs.items():
-                                        print("\t"+name)
                                         # Check for type checkers
                                         if options_type == name.lower():
                                             b = fn(value=v, config=config_obj)
@@ -173,7 +172,9 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                 else:
                     values = ucfg[s][i]
 
-                ucfg[s][i] = mk_lst(values, unlst=True)
+                # Developers can specify which items are lists and which are not
+                if not mcfg[s][i].listed:
+                    ucfg[s][i] = mk_lst(values, unlst=True)
 
     config_obj.cfg = ucfg
     return config_obj
