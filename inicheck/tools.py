@@ -86,7 +86,7 @@ def check_config(config_obj):
                                         if options_type == name.lower():
                                             b = fn(value=v, config=config_obj)
                                             issue = b.check()
-                                            print(name,item,b.value,issue)
+
                                             if issue != None:
                                                 full_msg = msg.format(section,
                                                                       print_item,

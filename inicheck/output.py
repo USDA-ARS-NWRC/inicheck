@@ -1,6 +1,7 @@
 from datetime import date
 import os
 import sys
+from . utilities import mk_lst
 
 def generate_config(config_obj, fname, cli=False):
     """
@@ -252,3 +253,50 @@ def print_details(details, mcfg):
     else:
         print("Please provide at least a section for information")
         sys.exit()
+
+
+def print_non_defaults(ucfg):
+    """
+    Prints out the options used that were not default option values.
+
+    Args:
+        ucfg: config object containing options that are not default
+    """
+
+    mcfg = ucfg.mcfg.cfg
+    cfg = ucfg.cfg
+
+    msg = "{: <20} {: <20} {: <40} {: <40}"
+    hdr = '\n'+msg.format("Section","Item","Value","Default")
+
+    print("\n\nConfiguration File Non-Defaults Report:")
+    print("The following are all the items that had non-defaults values specified.")
+    print("="*len(hdr))
+    print(hdr)
+    print('-'*len(hdr))
+
+    # Cycle through option/items checking defaults, print em if they don't match
+    for s in mcfg.keys():
+        if s in cfg.keys():
+            for i in mcfg[s].keys():
+                if i in cfg[s].keys():
+                    default_lst = mk_lst(mcfg[s][i].default)
+                    str_default_lst =  [str(kk).lower() for kk in default_lst]
+                    user_lst = mk_lst(cfg[s][i])
+                    str_lst = [str(kk).lower() for kk in user_lst]
+
+                    for vi, v in enumerate(str_default_lst):
+                        # Single entries
+                        if v != 'none':
+                            if len(str_lst) == 1:
+                                if str_lst[vi] != v:
+                                    print(msg.format(s, i,str(user_lst[vi]),
+                                                          str(default_lst[vi])))
+
+                            # Handle awkward list comparisons
+                            elif v not in str_lst:
+                                print(msg.format(s, i,"all values",
+                                                       str(default_lst[vi])))
+
+    print("")
+    

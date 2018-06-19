@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 
 import argparse
-from . output import print_config_report, generate_config, print_recipe_summary, print_details
+from . output import print_config_report, generate_config, print_recipe_summary, print_details, print_non_defaults
 from . tools import get_user_config, check_config
 import os
 import sys
@@ -31,9 +31,13 @@ def main():
     parser.add_argument('-r', '--recipes', dest='recipes', action='store_true',
                         help="Prints out the recipe summary")
 
+    parser.add_argument('-nd', '--non-defaults', dest='defaults', action='store_true',
+                        help="Prints out a summary of the non-defaults")
 
     parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide"
                         "section item and value for details regarding them")
+
+
     args = parser.parse_args()
 
     # Module not provided, or master config
@@ -73,9 +77,15 @@ def main():
 
             print_config_report(warnings, errors)
 
+            # Print out the recipes summary
             if args.recipes:
                 print_recipe_summary(ucfg.recipes)
 
+            # Print out the summary of non-defaults values
+            if args.defaults:
+                print_non_defaults(ucfg)
+
+            # Output the config file as inicheck interprets it.
             if args.write:
                 out_f = './{0}_full.ini'.format(
                                               os.path.basename(f).split('.')[0])
@@ -85,7 +95,6 @@ def main():
                 print('{0}'.format(out_f))
 
                 generate_config(ucfg, out_f, cli=True)
-
 
 if __name__ == '__main__':
     main()
