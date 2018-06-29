@@ -39,7 +39,6 @@ class RecipeSection:
 
                 self.adj_config[item] = item_dict
 
-
 class TriggerEntry:
     """
     RecipeEntry designed to aid in parsing master config file entries under

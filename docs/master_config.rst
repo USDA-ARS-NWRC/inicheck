@@ -173,8 +173,7 @@ Example::
   trigger_type:       has_value = [topo type ipw]
 
   topo:               type = ipw,
-                      apply_defaults = dem,
-                      apply_defaults = mask,
+                      apply_defaults = [dem mask],
                       remove_item = filename
 
 Using the entryword ANY

@@ -133,66 +133,68 @@ class UserConfig():
             for item in partial_cfg[section].keys():
                 remove = False
                 value = partial_cfg[section][item]
+                values = mk_lst(value)
 
-                if item == 'apply_defaults':
-                    result = self.add_defaults(result, sections=section)
+                for value in values:
+                    if item == 'apply_defaults':
+                        result = self.add_defaults(result, sections=section)
 
-                elif item == 'remove_section':
-                    if value.lower() == 'true':
+                    elif item == 'remove_section':
+                        if value.lower() == 'true':
 
-                        if section in result.keys():
-                            if DEBUG:
-                                print("removed section: {0}"
-                                      "".format(section))
-                            del result[section]
-
-                else:
-
-                    #Normal operation
-                    if section == 'any':
-                        s = situation[0]
-
-                    else:
-                        s = section
-
-                    if item == 'any':
-                        i = situation[1]
-
-                    elif item == 'remove_item':
-                        i = value
-
-                    else:
-                        i = item
-
-                    if value == 'any':
-                        v = situation[2]
-
-                    elif (value == 'default' and
-                          i in self.mcfg.cfg[s].keys()):
-                        v = self.mcfg.cfg[s][i].default
-
-                    else:
-                        v = value
-
-                    if item == 'remove_item':
-                        if s in result.keys():
-                            if i in result[s].keys():
+                            if section in result.keys():
                                 if DEBUG:
-                                    print("Removed: {0} {1}".format(s, i))
-                                del result[s][i]
+                                    print("removed section: {0}"
+                                          "".format(section))
+                                del result[section]
 
-                    elif s in result.keys():
-                        # Check for empty dictionaries
-                        if not bool(result[s]):
-                            if DEBUG:
-                                print("Adding section {0}".format(s))
-                            result[s] = OrderedDict()
+                    else:
+
+                        #Normal operation
+                        if section == 'any':
+                            s = situation[0]
+
                         else:
-                            if i not in result[s].keys():
+                            s = section
+
+                        if item == 'any':
+                            i = situation[1]
+
+                        elif item == 'remove_item':
+                            i = value
+
+                        else:
+                            i = item
+
+                        if value == 'any':
+                            v = situation[2]
+
+                        elif (value == 'default' and
+                              i in self.mcfg.cfg[s].keys()):
+                            v = self.mcfg.cfg[s][i].default
+
+                        else:
+                            v = value
+
+                        if item == 'remove_item':
+                            if s in result.keys():
+                                if i in result[s].keys():
+                                    if DEBUG:
+                                        print("Removed: {0} {1}".format(s, i))
+                                    del result[s][i]
+
+                        elif s in result.keys():
+                            # Check for empty dictionaries
+                            if not bool(result[s]):
                                 if DEBUG:
-                                    print("Adding {0} {1} {2}"
-                                          "".format(s, i, v))
-                                result[s][i] = v
+                                    print("Adding section {0}".format(s))
+                                result[s] = OrderedDict()
+                            else:
+                                if i not in result[s].keys():
+                                    if DEBUG:
+                                        print("Adding {0} {1} {2}"
+                                              "".format(s, i, v))
+                                    result[s][i] = v
 
         return result
 
