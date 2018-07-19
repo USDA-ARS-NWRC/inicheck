@@ -136,10 +136,14 @@ class UserConfig():
                 values = mk_lst(value)
 
                 for value in values:
-                    if item == 'apply_defaults':
-                        result = self.add_defaults(result, sections=section)
 
-                    elif item == 'remove_section':
+                    # Defaults Keyword
+                    if item == 'apply_defaults':
+                        if str(value).lower() == 'true':
+                            result = self.add_defaults(result, sections=section)
+
+                    # Keyword removal
+                    if item == 'remove_section':
                         if value.lower() == 'true':
 
                             if section in result.keys():
@@ -148,19 +152,21 @@ class UserConfig():
                                           "".format(section))
                                 del result[section]
 
+                    # Normal operation
                     else:
 
-                        #Normal operation
+                        # Handle the any keyword for sections
                         if section == 'any':
                             s = situation[0]
 
                         else:
                             s = section
-
+                        # Handle the any keyword for items
                         if item == 'any':
                             i = situation[1]
 
-                        elif item == 'remove_item':
+                        # Observe the description shift
+                        elif item in ['remove_item','default_item']:
                             i = value
 
                         else:
@@ -169,13 +175,20 @@ class UserConfig():
                         if value == 'any':
                             v = situation[2]
 
-                        elif (value == 'default' and
-                              i in self.mcfg.cfg[s].keys()):
-                            v = self.mcfg.cfg[s][i].default
+                        elif (value == 'default' or item =='default_item'):
+                            if i in self.mcfg.cfg[s].keys():
+                                v = self.mcfg.cfg[s][i].default
+                            else:
+                                raise Exception('{0} is not a valid item for '
+                                'the master config section {1}, check your '
+                                'recipes for a situation triggering on {2}, '
+                                '{3}, {4}'.format(i,s,situation[0],situation[1],
+                                                                  situation[2]))
 
                         else:
                             v = value
 
+                        # Delete items
                         if item == 'remove_item':
                             if s in result.keys():
                                 if i in result[s].keys():
@@ -189,10 +202,19 @@ class UserConfig():
                                 if DEBUG:
                                     print("Adding section {0}".format(s))
                                 result[s] = OrderedDict()
+                            # Dictionary exists
                             else:
+
+                                # Handle a item not provided by automatically adding it
                                 if i not in result[s].keys():
                                     if DEBUG:
                                         print("Adding {0} {1} {2}"
+                                              "".format(s, i, v))
+
+                                # If the item was provided we don't want to overide the user with defaults
+                                elif value != 'default':
+                                    if DEBUG:
+                                        print("Changing {0} {1} {2}"
                                               "".format(s, i, v))
                                     result[s][i] = v
 
@@ -225,7 +247,7 @@ class UserConfig():
         return set(unique_sections), set(unique_items), set(unique_values)
 
 
-    def add_defaults(self, cfg, sections=None):
+    def add_defaults(self, cfg, sections=None,items=None):
         """
         Look through the users config file and section by section add in
         missing parameters to add defaults

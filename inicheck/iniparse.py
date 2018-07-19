@@ -34,7 +34,7 @@ def parse_entry(info, item = None, valid_names=None):
         else:
             raise ValueError('\n\nMaster Config file missing an equals sign in'
                             ' entry or missing a comma right before the item '
-                            '"{0}"'.format(item))
+                            '"{0}" in the entry:\n"{1}"'.format(item,info))
 
         name = (a[0].lower()).strip()
         # Check for constraints on potential names of entries
@@ -52,7 +52,7 @@ def parse_entry(info, item = None, valid_names=None):
         if '[' in value:
             if ']' not in value:
                 raise ValueError("Missing bracket in config file under"
-                                 " {0}".format(name))
+                                 ' {0} in the entry:\n"{2}"'.format(name,info))
             else:
                 value = (''.join(c for c in value if c not in '[]'))
                 value = value.split(' ')

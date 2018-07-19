@@ -197,7 +197,13 @@ def print_cfg_for_recipe(cfg, fmt, hdr=None):
 
     for section in cfg.keys():
         for item, value in cfg[section].items():
-            print(fmt.format(section, item, value))
+            if type(value) != list:
+                v = [value]
+            else:
+                v = value
+                
+            for qq in v:
+                print(fmt.format(section, item, qq))
 
 
 def print_details(details, mcfg):
@@ -299,4 +305,3 @@ def print_non_defaults(ucfg):
                                                        str(default_lst[vi])))
 
     print("")
-    
