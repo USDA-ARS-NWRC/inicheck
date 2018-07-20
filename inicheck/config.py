@@ -29,6 +29,9 @@ class UserConfig():
         self.sections, self.items, self.values = \
         self.get_unique_entries(self.cfg)
 
+        # Hang on to the original
+        self.raw_cfg = self.cfg.copy()
+
         if mcfg != None:
             self.mcfg = mcfg
 
@@ -40,6 +43,11 @@ class UserConfig():
         Returns:
             user_cfg: User config dictionary with defaults added.
         """
+        # Add this in case the user has added anything to the config obj on the fly
+        self.cfg = self.raw_cfg.copy()
+
+        # Start fresh with recipes to avoid over populating the recipes list
+        self.recipes = []
 
         for r in self.mcfg.recipes:
 
