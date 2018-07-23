@@ -3,6 +3,21 @@ import sys
 import os
 import inicheck.checkers
 
+def remove_comment(string_entry):
+    """
+    Takes a single line and removes and .ini type comments.
+    Also remove any spaces at the begining or end of a commented line
+    """
+    # Comment checking
+    if '#' in string_entry:
+        result = string_entry.split('#')[0]
+    elif ';' in string_entry:
+        result = string_entry.split(';')[0]
+    else:
+        result = string_entry
+
+    return result
+
 def mk_lst(values, unlst=False):
     """
     while iterating through several type of lists and items it is convenient to

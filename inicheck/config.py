@@ -6,7 +6,7 @@ from collections import OrderedDict
 import os
 import copy
 import importlib
-
+import copy
 
 DEBUG = False
 FULL_DEBUG = False
@@ -25,12 +25,16 @@ class UserConfig():
         """
         self.filename = filename
         self.recipes = []
-        self.cfg = read_config(filename)
+
+        # Hang on to the original
+        self.raw_cfg = read_config(filename)
+
+        # Version inicheck will mess with
+        self.cfg = copy.deepcopy(self.raw_cfg)
+
         self.sections, self.items, self.values = \
         self.get_unique_entries(self.cfg)
 
-        # Hang on to the original
-        self.raw_cfg = self.cfg.copy()
 
         if mcfg != None:
             self.mcfg = mcfg
@@ -44,7 +48,7 @@ class UserConfig():
             user_cfg: User config dictionary with defaults added.
         """
         # Add this in case the user has added anything to the config obj on the fly
-        self.cfg = self.raw_cfg.copy()
+        self.cfg = copy.deepcopy(self.raw_cfg)
 
         # Start fresh with recipes to avoid over populating the recipes list
         self.recipes = []
@@ -426,7 +430,7 @@ class MasterConfig():
             sec = OrderedDict()
             for word in __recipe_keywords__:
                 if word in section:
-                    self.recipes.append(RecipeSection(raw_config[section], name = section))
+                    self.recipes.append(RecipeSection(raw_config[section], name=section))
                     break
 
                 else:
