@@ -13,8 +13,11 @@ def read_config(filename):
     Returns:
         config: dict of dicts containing the info in a config file
     """
+    with open(fname, encoding = 'utf-8') as f:
+        lines = f.readlines()
+        f.close()
 
-    sections = parse_sections(fname=filename)
+    sections = parse_sections(lines)
     sec_and_items = parse_items(sections)
     config = parse_values(sec_and_items)
 
@@ -61,23 +64,19 @@ def parse_entry(info, item = None, valid_names=None):
     return properties
 
 
-def parse_sections(fname):
+def parse_sections(lines):
     """
     Returns a dictionary containing all the sections as keys with a single
     string of the contents after the section
     Args:
 
-        fname: filename of the config to parse
+        lines: a list of string lines containing all the raw info of a cfg file
 
     Returns:
         sections: dictionary containing keys that are the section names and
                   values that are strings of the contents between sections
 
     """
-
-    with open(fname, encoding = 'utf-8') as f:
-        lines = f.readlines()
-        f.close()
 
     result = OrderedDict()
     section = None
