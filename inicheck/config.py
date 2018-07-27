@@ -58,19 +58,21 @@ class UserConfig():
             for trigger, recipe_entry in r.triggers.items():
                 conditions_met = 0
                 triggered = False
-                #All conditions must be met if to be applied
+
+                # All conditions must be met if to be applied
                 for condition in recipe_entry.conditions:
                     conditions_triggered = []
                     for section in self.cfg.keys():
 
-                        #Watch out for empty sections
+                        # Watch out for empty sections
                         if len(self.cfg[section].keys()) == 0:
                             items = [None]
                         else:
                             items = self.cfg[section].keys()
 
                         for item in items:
-                            #Watch for empties
+
+                            # Watch for empties
                             if item == None:
                                 vals = [None]
                             else:
@@ -155,7 +157,7 @@ class UserConfig():
                             result = self.add_defaults(result, sections=section)
 
                     # Keyword removal
-                    if item == 'remove_section':
+                    elif item == 'remove_section':
                         if value.lower() == 'true':
 
                             if section in result.keys():
@@ -222,6 +224,7 @@ class UserConfig():
                                     if DEBUG:
                                         print("Adding {0} {1} {2}"
                                               "".format(s, i, v))
+                                    result[s][i] = v
 
                                 # If the item was provided we don't want to overide the user with defaults
                                 elif value != 'default':

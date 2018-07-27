@@ -21,12 +21,15 @@ class RecipeSection:
                                      and config file adjustments.
         """
         self.name = name
+
         # Conditions to be met
         self.triggers = OrderedDict()
+
         # Config file to apply if conditions are met
         self.adj_config = OrderedDict()
 
         for item, entry in recipe_section_dict.items():
+
             # Check item for action keywords
             for word in __trigger_keywords__:
                 if word in item:

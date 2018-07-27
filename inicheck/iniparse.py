@@ -3,13 +3,13 @@ from .utilities import  remove_chars
 from collections import OrderedDict
 
 
-def read_config(filename):
+def read_config(fname):
     """
     Opens and reads in the config file in its most raw form.
     Creates a dictionary of dictionaries that contain the string result
 
     Args:
-        filename: Real path to the config file to be opened
+        fname: Real path to the config file to be opened
     Returns:
         config: dict of dicts containing the info in a config file
     """
