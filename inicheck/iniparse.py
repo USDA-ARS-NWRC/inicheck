@@ -1,5 +1,5 @@
 import os
-from .utilities import  remove_chars
+from .utilities import  remove_chars, remove_comment
 from collections import OrderedDict
 
 
@@ -84,27 +84,24 @@ def parse_sections(lines):
 
     for i in range(len(lines)):
         line = remove_chars(lines[i],'\t')
+        # Comment checking
+        line = remove_comment(line)
+
+        # Watch out for extraneous chars at the beginning an end
         line = line.strip()
 
-        # Comment checking
-        if '#' in line:
-            line = line.split('#')[0]
-
-        elif ';' in line:
-            line = line.split(';')[0]
-
-        # check for empty line first
+        # Check for empty line first
         if line and line not in os.linesep:
             # Look for section
             if line.startswith('['):
-                # look for open brackets
-                if line.endswith(']'):
-                    # Ensure this line is not a list provided under an item
+                # Look for open brackets
+                if ']' in line:
+
                     section = (remove_chars(line,'[]')).lower()
                     result[section] = []
 
             else:
-                result[section].append(lines[i])
+                result[section].append(line)
 
     return result
 
@@ -143,15 +140,22 @@ def parse_items(parsed_sections_dict, mcfg=None):
 
                 # Avoid stashing properties in line with the item
                 if '=' not in potential_value:
-                    result[k][item] = potential_value.lstrip()
+                    result[k][item] = potential_value
 
                 # Property value provided in line with item
                 else:
-                    result[k][item] += potential_value
+                    result[k][item] += " "+potential_value
 
             # User added line returns likely for readability
             else:
-                result[k][item] += val.lstrip()
+                result[k][item] += " "+val
+
+        # Perform a final cleanup
+        if item != None:
+            if ',' in result[k][item]:
+                result[k][item] = ", ".join([e.strip() for e in result[k][item].split(',')])
+
+            result[k][item] = result[k][item].strip()
 
     return result
 
