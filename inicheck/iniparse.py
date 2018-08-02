@@ -101,7 +101,15 @@ def parse_sections(lines):
                     result[section] = []
 
             else:
-                result[section].append(line)
+                # This protects from funky syntax in a config file and alerts the user
+                if section == None:
+                    raise Exception("Non-section like syntax before any "
+                                    "sections were identified at line {0} in "
+                                    "config file. Please use bracketed sections"
+                                    " or use # or ; to write comments."
+                                    "".format(i))
+                else:
+                    result[section].append(line)
 
     return result
 
