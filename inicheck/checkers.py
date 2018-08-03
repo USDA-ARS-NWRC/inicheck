@@ -3,7 +3,7 @@ Functions for checking valus in a config file and producing errors and warnings
 '''
 import os
 from pandas import to_datetime
-
+from .utilities import mk_lst
 
 class GenericCheck(object):
     def __init__(self, **kwargs):
@@ -67,20 +67,63 @@ class CheckType(GenericCheck):
         # Function used for casting to types
         self.type_func = str
 
+        # Allow users to specify an option to be a list
+        if 'is_list' in kwargs.keys():
+            self.is_list=kwargs['is_list']
+        else:
+            self.is_list = False
+
+    def is_it_a_lst(self):
+        """
+        Check to see if an option should be a list of not and convert it if
+        necessary.
+        If it is a list, check for single value lists and convert it, return false.
+        If it is a list and not single item, return True
+        if its not a list return false
+
+        """
+        if type(self.value) == list:
+            # Its list but its a single item
+            if len(self.value) == 1:
+                self.value = mk_lst(self.value, unlist=True)
+                return False
+
+            # Its a list and not a single item
+            else:
+                return True
+
+        # not a list, we good
+        else:
+            return False
+
     def is_valid(self):
         """
         Checks for type validity
+
+        Returns:
+        tuple:
+            valid: Boolean whether the value was acceptable
+            msg: string to print if value is not valid.
         """
         msg = None
         self.msg_level = 'error'
 
-        try:
-            self.value = self.cast()
-            valid = True
+        # Provide a list check
+        currently_a_list = self.is_it_a_lst()
 
-        except:
-            msg = "Expecting {0} received {1}".format(self.type,type(self.value).__name__)
-            valid = False
+        if currently_a_list and not self.is_list:
+            msg = "Expecting single value received list"
+            valie = False
+        else:
+
+            try:
+
+                self.value = self.cast()
+                valid = True
+
+            except:
+                msg = "Expecting {0} received {1}".format(self.type,type(self.value).__name__)
+                valid = False
 
         return valid,msg
 

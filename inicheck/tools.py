@@ -1,6 +1,35 @@
 import os
+import sys
+import inspect
 from . config import UserConfig, MasterConfig
-from . utilities import mk_lst, get_checkers
+from . utilities import mk_lst
+
+def get_checkers(module='inicheck.checkers', keywords=[]):
+    """
+    Args:
+        module: The module to search for the classes
+
+    Returns a dictionary of the classes available for checking config entries
+    """
+    keywords.append('check')
+
+    funcs = inspect.getmembers(sys.modules[module], inspect.isclass)
+    func_dict = {}
+    for name, fn in funcs:
+        checker_found = False
+        k = name.lower()
+        # Remove any keywords
+        for w in keywords:
+            z = w.lower()
+            if z in k:
+                k = k.replace(z, '')
+                checker_found = True
+                break
+
+        if checker_found:
+            func_dict[k] = fn
+
+    return func_dict
 
 def check_config(config_obj):
             """
@@ -81,10 +110,11 @@ def check_config(config_obj):
                                     # 2. Check the type constraint.
                                     options_type = master[section][item].type
 
+                                    # Allow developers to prescribe list types
                                     for name, fn in standard_funcs.items():
                                         # Check for type checkers
                                         if options_type == name.lower():
-                                            b = fn(value=v, config=config_obj)
+                                            b = fn(value=v, config=config_obj, is_list=master[section][item].listed)
                                             issue = b.check()
 
                                             if issue != None:

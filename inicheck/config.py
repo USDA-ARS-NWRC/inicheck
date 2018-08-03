@@ -438,6 +438,7 @@ class MasterConfig():
 
                 else:
                     for item in raw_config[section].keys():
+                            
                         sec[item] = ConfigEntry(name=item,
                                   parseable_line=raw_config[section][item])
 

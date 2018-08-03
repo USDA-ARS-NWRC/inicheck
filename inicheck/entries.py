@@ -74,7 +74,6 @@ class TriggerEntry:
 
         * has_section
         * has_item
-        * has_item_any
         * has_value
 
     """
@@ -82,13 +81,11 @@ class TriggerEntry:
     def __init__(self, parseable_line, name=None):
 
         self.conditions = []
-
         self.valid_names = ['has_section', 'has_item', 'has_value']
         heirarcy = ['section', 'item', 'value']
 
         parsed_dict = parse_entry(parseable_line,
                                   valid_names=self.valid_names)
-
         # There can be multiple conditions returned
         for name,value in parsed_dict.items():
             result = ['any', 'any', 'any']
@@ -154,10 +151,10 @@ class ConfigEntry:
         self.description = ''
         self.listed = False
         self.type = entry_type
-        self.valid_names = ['default', 'type', 'options','listed', 'description']
+        self.valid_names = ['default', 'type', 'options', 'description']
 
         if parseable_line != None:
-            parsed_dict = parse_entry(parseable_line,item = name,
+            parsed_dict = parse_entry(parseable_line, item = name,
                                         valid_names=self.valid_names)
             for name,value in parsed_dict.items():
                 setattr(self,name,value)
@@ -169,5 +166,10 @@ class ConfigEntry:
         # types should always be lower case
         self.type = self.type.lower()
 
+        # Handle the list
+        if 'list' in self.type:
+            self.listed = True
+            self.type = self.type.replace('list',''
+            )
         # ensure listed is a boolean.
         self.listed = bool(self.listed)

@@ -1,7 +1,5 @@
-import inspect
 import sys
 import os
-import inicheck.checkers
 
 def remove_comment(string_entry):
     """
@@ -18,6 +16,7 @@ def remove_comment(string_entry):
 
     return result
 
+
 def mk_lst(values, unlst=False):
     """
     while iterating through several type of lists and items it is convenient to
@@ -25,7 +24,7 @@ def mk_lst(values, unlst=False):
     convenient to be able to return the original type after were done with it.
     """
 
-    if type(values) != list:
+    if type(values) != list and not unlst:
         values = [values]
     else:
         if unlst:
@@ -33,6 +32,7 @@ def mk_lst(values, unlst=False):
                 values = values[0]
 
     return values
+
 
 def remove_chars(orig_str, char_str, replace_str=None):
     """
@@ -53,38 +53,11 @@ def remove_chars(orig_str, char_str, replace_str=None):
 
     return "".join(clean_str)
 
-
-def get_checkers(module='inicheck.checkers', keywords=[]):
-    """
-    Args:
-        module: The module to search for the classes
-
-    Returns a dictionary of the classes available for checking config entries
-    """
-    keywords.append('check')
-
-    funcs = inspect.getmembers(sys.modules[module], inspect.isclass)
-    func_dict = {}
-    for name, fn in funcs:
-        checker_found = False
-        k = name.lower()
-        # Remove any keywords
-        for w in keywords:
-            z = w.lower()
-            if z in k:
-                k = k.replace(z, '')
-                checker_found = True
-                break
-
-        if checker_found:
-            func_dict[k] = fn
-
-    return func_dict
-
-
 def get_relative_to_cfg(path, user_cfg_path):
+
     if not os.path.isabs(path):
-        path = os.path.abspath(os.path.join(os.path.dirname(user_cfg_path), path))
+        path = os.path.abspath(os.path.join(os.path.dirname(user_cfg_path),
+                                                            path))
     return path
 
 

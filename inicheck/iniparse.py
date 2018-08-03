@@ -68,6 +68,7 @@ def parse_sections(lines):
     """
     Returns a dictionary containing all the sections as keys with a single
     string of the contents after the section
+
     Args:
 
         lines: a list of string lines containing all the raw info of a cfg file
