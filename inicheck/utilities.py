@@ -23,11 +23,13 @@ def mk_lst(values, unlst=False):
     assume that we recieve a list, use this function to accomplish this. It also
     convenient to be able to return the original type after were done with it.
     """
-
+    # Not a list, were not looking to unlist it. make it a list
     if type(values) != list and not unlst:
-        values = [values]
+            values = [values]
     else:
+        # We want to unlist a list we get
         if unlst:
+            # single item provided so we don't want it a list
             if len(values) == 1:
                 values = values[0]
 

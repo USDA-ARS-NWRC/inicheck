@@ -110,11 +110,11 @@ def check_config(config_obj):
                                     # 2. Check the type constraint.
                                     options_type = master[section][item].type
 
-                                    # Allow developers to prescribe list types
                                     for name, fn in standard_funcs.items():
                                         # Check for type checkers
                                         if options_type == name.lower():
-                                            b = fn(value=v, config=config_obj, is_list=master[section][item].listed)
+                                            b = fn(value=v, config=config_obj,
+                                           is_list=master[section][item].listed)
                                             issue = b.check()
 
                                             if issue != None:
@@ -167,28 +167,35 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                 # Ensure it is something we can check
                 if i in mcfg[s].keys():
                     type_value = (mcfg[s][i].type).lower()
+
                     if type_value not in all_checks.keys():
-                        raise ValueError("\n\nSection {0} at item {1} attempted to use "
-                                        "undefined type name {2} which has no "
-                                        "checker associated.\nAvailable checkers "
+                        raise ValueError("\n\nSection {0} at item {1} attempted"
+                                        " to use undefined type name '{2}'"
+                                        " which has no checker associated."
+                                        "\nAvailable checkers "
                                         "are:\n\n{3}"
                                         "".format(s,i,type_value,all_checks.keys()))
 
                     for z, v in enumerate(mk_lst(ucfg[s][i])):
                         option_found = False
-                        # Use all the checks available to cast
+
+                        # when a checker match is found break so we check it once
                         for name, fn in all_checks.items():
+                            # Checker name and type match
                             if  type_value == name.lower():
                                 b = fn(value=v, config=config_obj)
+
+                                # Be wary of the None
                                 if v in [None, 'none', 'None']:
                                     values.append(None)
+                                    print(s,i)
                                 else:
+                                    # cfg will be checked later all at once
                                     if checking_later:
                                         try:
                                             values.append(b.cast())
+
                                         except:
-                                            #Assumes the user will be check the
-                                            # value later
                                             values.append(v)
 
                                     else:
@@ -201,13 +208,13 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                             raise ValueError("Unknown type_value prescribed."
                                              " ----> {0}".format(type_value))
 
-                    # Developers can specify which items are lists and which
-                    # are not
-                    if not mcfg[s][i].listed:
+                    # Developers can specify which items are lists in core cfg
+                    if not mcfg[s][i].listed or (len(values)==1 and values[0]==None):
                         ucfg[s][i] = mk_lst(values, unlst=True)
 
+                # Not recognized items, keep them anyways
                 else:
-                    values = ucfg[s][i]
+                    values.append(ucfg[s][i])
 
     config_obj.cfg = ucfg
     return config_obj

@@ -85,6 +85,7 @@ class CheckType(GenericCheck):
         if type(self.value) == list:
             # Its list but its a single item
             if len(self.value) == 1:
+                
                 self.value = mk_lst(self.value, unlist=True)
                 return False
 

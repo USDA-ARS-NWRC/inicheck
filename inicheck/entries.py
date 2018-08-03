@@ -133,16 +133,14 @@ class ConfigEntry:
     lists, values denoted with =, and will only receive:
 
         * type
-        * default,
-        * options,
-        * listed,
-        * description.
+        * default
+        * options
+        * description
 
     """
 
     def __init__(self, name=None, value=None, default=None,
-                 entry_type='string', options=[], listed = False,
-                 parseable_line=None):
+                 entry_type='string', options=[], parseable_line=None):
 
         self.name = name
         self.value = value
@@ -166,10 +164,8 @@ class ConfigEntry:
         # types should always be lower case
         self.type = self.type.lower()
 
-        # Handle the list
+        # Handle the list types
         if 'list' in self.type:
             self.listed = True
-            self.type = self.type.replace('list',''
-            )
-        # ensure listed is a boolean.
-        self.listed = bool(self.listed)
+            self.type = self.type.replace('list','')
+            self.type = self.type.strip()
