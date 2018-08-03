@@ -188,7 +188,7 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                                 # Be wary of the None
                                 if v in [None, 'none', 'None']:
                                     values.append(None)
-                                    print(s,i)
+
                                 else:
                                     # cfg will be checked later all at once
                                     if checking_later:
