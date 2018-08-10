@@ -10,5 +10,6 @@ __trigger_keywords__ = ['trigger']
 # Key words expected in the section name of a recipe
 __recipe_keywords__ = ['recipe']
 
-__core_config__ = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                  '../examples/CoreConfig.ini'))
+# Add in core configs for test purposes
+__core_config__ = os.path.abspath(os.path.dirname(__file__)+'/../tests/test_configs/CoreConfig.ini')
+__recipes__ = os.path.abspath(os.path.dirname(__file__)+'/../tests/test_configs/recipes.ini')

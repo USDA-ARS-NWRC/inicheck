@@ -35,7 +35,6 @@ class UserConfig():
         self.sections, self.items, self.values = \
         self.get_unique_entries(self.cfg)
 
-
         if mcfg != None:
             self.mcfg = mcfg
 
@@ -332,12 +331,11 @@ class MasterConfig():
 
         # Paths were manually provided
         if path != None and modules == None:
-            print(path)
             for p in path:
                 self.paths.append(os.path.abspath(p))
 
         # If a module was passed
-        if modules != None and path == None:
+        if modules != None and self.paths == []:
             if type(modules) != list:
                 modules = [modules]
 
@@ -375,7 +373,7 @@ class MasterConfig():
         if header != None:
             self.header = header
 
-        if len(self.paths) == 0 and module == None:
+        if len(self.paths) == 0 and modules == None:
             raise ValueError("No file was either provided or found when"
                              " initiating a master config file.")
 
