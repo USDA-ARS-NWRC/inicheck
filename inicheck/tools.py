@@ -3,6 +3,7 @@ import sys
 import inspect
 from . config import UserConfig, MasterConfig
 from . utilities import mk_lst
+import inicheck.checkers
 
 def get_checkers(module='inicheck.checkers', keywords=[]):
     """

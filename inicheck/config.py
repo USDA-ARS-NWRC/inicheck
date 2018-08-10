@@ -321,31 +321,34 @@ class MasterConfig():
     def __init__(self, path=None, modules=None, checkers=None, titles=None,
                  header=None):
 
-        if path == None:
-            path == []
-
         if type(path) != list:
             path = [path]
-
+        self.paths = []
         self.recipes = []
         self.titles = {}
         self.header = header
 
         self.checker_modules = []
 
+        # Paths were manually provided
+        if path != None and modules == None:
+            print(path)
+            for p in path:
+                self.paths.append(os.path.abspath(p))
+
         # If a module was passed
-        if modules != None:
+        if modules != None and path == None:
             if type(modules) != list:
                 modules = [modules]
 
             for m in modules:
                 i = importlib.import_module(m)
-                path.append(os.path.abspath(os.path.join(i.__file__,
+                self.paths.append(os.path.abspath(os.path.join(i.__file__,
                                                          i.__core_config__)))
 
                 # Search for possible recipes provided in the module
                 if hasattr(i, '__recipes__'):
-                    path.append(i.__recipes__)
+                    self.paths.append(i.__recipes__)
 
                 # Search for possible section titles provided in the module
                 if hasattr(i, '__config_titles__'):
@@ -372,11 +375,11 @@ class MasterConfig():
         if header != None:
             self.header = header
 
-        if len(path) == 0 and module == None:
+        if len(self.paths) == 0 and module == None:
             raise ValueError("No file was either provided or found when"
                              " initiating a master config file.")
 
-        self.cfg = self.add_files(path)
+        self.cfg = self.add_files(self.paths)
 
     def add_files(self, paths):
         """
@@ -438,7 +441,7 @@ class MasterConfig():
 
                 else:
                     for item in raw_config[section].keys():
-                            
+
                         sec[item] = ConfigEntry(name=item,
                                   parseable_line=raw_config[section][item])
 

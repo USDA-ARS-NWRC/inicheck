@@ -6,36 +6,37 @@ from . tools import get_user_config, check_config
 import os
 import sys
 from . config import MasterConfig
-# from . utilities import pcfg
 
 def main():
 
     parser = argparse.ArgumentParser(description="Examine and auto populate"
                                                  " ini files with a master file"
                                                  " comparison.")
-    parser.add_argument('-f', '--config_file', dest='config_file', type=str,
+
+    parser.add_argument('--config_file','-f', dest='config_file', type=str,
                         help='Path to a config file that needs checking')
 
-    parser.add_argument('--master', '-c', metavar='MF', type=str,
+    parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
                         help='Path to a config file that used to check against')
 
     parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                        help="Modules name with an attribute __CoreConfig__ that"
-                             " is a path to a master config file for checking"
-                             " against")
+                    help="Modules name with an attribute __CoreConfig__ that"
+                         " is a path to a master config file for checking"
+                         " against")
 
-    parser.add_argument('-w', '--write', dest='write', action='store_true',
+    parser.add_argument('--write','-w', dest='write', action='store_true',
                         help="Determines whether to write out the file with all"
                              " the defaults")
 
-    parser.add_argument('-r', '--recipes', dest='recipes', action='store_true',
+    parser.add_argument('--recipes','-r', dest='recipes', action='store_true',
                         help="Prints out the recipe summary")
 
-    parser.add_argument('-nd', '--non-defaults', dest='defaults', action='store_true',
+    parser.add_argument('--non-defaults','-nd', dest='defaults',
+                        action='store_true',
                         help="Prints out a summary of the non-defaults")
 
     parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide"
-                        "section item and value for details regarding them")
+                        " section item and value for details regarding them")
 
 
     args = parser.parse_args()
