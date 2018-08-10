@@ -55,6 +55,7 @@ def remove_chars(orig_str, char_str, replace_str=None):
 
     return "".join(clean_str)
 
+
 def get_relative_to_cfg(path, user_cfg_path):
     """
     Converts a path so that all paths are relative to the config file
