@@ -16,3 +16,9 @@ History
 * Module associated files to find master configs
 * Detail finding in cli to get help on the fly
 
+0.3.0 (2018-08-10)
+------------------
+
+* Added the ability require an config entry be a list
+* Added significant unit tests
+
