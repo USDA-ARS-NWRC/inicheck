@@ -85,7 +85,7 @@ class CheckType(GenericCheck):
         if type(self.value) == list:
             # Its list but its a single item
             if len(self.value) == 1:
-                
+
                 self.value = mk_lst(self.value, unlist=True)
                 return False
 
@@ -113,8 +113,8 @@ class CheckType(GenericCheck):
         currently_a_list = self.is_it_a_lst()
 
         if currently_a_list and not self.is_list:
-            msg = "Expecting single value received list"
-            valie = False
+            msg = "Expected single value received list"
+            valid = False
         else:
 
             try:
@@ -123,7 +123,8 @@ class CheckType(GenericCheck):
                 valid = True
 
             except:
-                msg = "Expecting {0} received {1}".format(self.type,type(self.value).__name__)
+                msg = "Expecting {0} received {1}".format(self.type,
+                                                    type(self.value).__name__)
                 valid = False
 
         return valid,msg

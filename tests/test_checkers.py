@@ -83,6 +83,34 @@ class TestCheckers(unittest.TestCase):
             b = CheckString(value = v, config = None)
             assert b.is_valid()[0]
 
+    def test_list(self):
+        """
+        Test our listing methods.
+
+        Case a. The user wants a list and recieves a single item. The result
+        should be a list of length one.
+
+        Case B. The user enters a list of lenght > 1 and requests it not to be
+        as list, the result should be the value is invalid
+
+        Case C. The user enters a single value and requests it not to be
+        as list, the result should be the value is valid and not type list
+        """
+
+        # Confirm we cast to a list when a single value it provided
+        b = CheckString(value = 'test', config = None, is_list=True)
+        b.is_valid()
+        assert type(b.value==list)
+
+        # Confirm we are invalid when no list is requested and a list is received
+        b = CheckString(value = ['test','test1'], config = None, is_list=False)
+        valid,msg = b.is_valid()
+        assert not valid
+
+        # Confirm we don't cast to list when it is neither provided or requested
+        b = CheckString(value = 'test', config = None, is_list=False)
+        b.is_valid()
+        assert type(b.value!=list)
 
 if __name__ == '__main__':
     import sys
