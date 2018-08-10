@@ -38,7 +38,7 @@ class RecipeSection:
 
             # Check for assigned values if any trigger
             if item not in self.triggers.keys():
-                item_dict = parse_entry(entry,item = item)
+                item_dict = parse_entry(entry, item = item)
 
                 self.adj_config[item] = item_dict
 
@@ -100,9 +100,9 @@ class TriggerEntry:
                     if keyword in name:
                         result[i] = value
 
-        # If result is all any, then clear it
-        if len([True for i in result if i == 'any']) != len(result):
-            self.conditions.append(result)
+            # If result is all any, then clear it
+            if len([True for i in result if i == 'any']) != len(result):
+                self.conditions.append(result)
 
 
 class ConfigEntry:

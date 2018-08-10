@@ -16,11 +16,38 @@ class TestEntries(unittest.TestCase):
         """
         Tests to see if we correctly gather a trigger for a recipe
         """
-        entryies = [['has_value = [topo type ipw]'],
-                    ['has_value = [topo type ipw]']
+        entries = [ 'has_section = test',
+                    'has_item = test',
+                    'has_value = [test test test]',
+                    ['has_section = test',
+                    'has_item = test2']]
 
-        t = TriggerEntry(entry1)
+        # section trigger
+        t = TriggerEntry(entries[0])
+        assert(t.conditions[0] == ['test', 'any', 'any'])
+
+        # section item
+        t = TriggerEntry(entries[1])
+        assert(t.conditions[0] == ['any', 'test', 'any'])
+
+        t = TriggerEntry(entries[2])
+        assert(t.conditions[0] == ['test', 'test', 'test'])
+
+        # Confirm we can handle multiple conditions
+        t = TriggerEntry(entries[3])
+        assert(t.conditions[0] == ['test', 'any', 'any'])
+        assert(t.conditions[1] == ['any', 'test2', 'any'])
+
+
+    def test_config_entry(self):
+        """
+        Tests to see if we correctly gather a trigger for a recipe
+        """
+        entries = [['has_value = [topo type ipw]']]
+
+        t = TriggerEntry(entries[0])
         assert(t.conditions[0] == ['topo', 'type', 'ipw'])
+
 if __name__ == '__main__':
     import sys
     sys.exit(unittest.main())

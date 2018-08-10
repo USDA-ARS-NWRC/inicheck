@@ -38,6 +38,10 @@ class TestIniparse(unittest.TestCase):
         # Confirm we see a section with space caps issues
         assert(sections['test case'][0] == "b:5")
 
+        # Confirm we catch dumb errors before we find a section name
+        self.assertRaises(Exception, parse_sections,['a#','#','[test]'])
+
+
     def test_parse_items(self):
         """
         Tests our base function used to parse items after we read sections but
@@ -54,7 +58,7 @@ class TestIniparse(unittest.TestCase):
                           'options=[10 15 20]']} # Handle wrapped lines with tabs
 
         items = parse_items(info)
-        print(items)
+
         # Check for a normal single entry parse
         #print(items['test case']['a'])
         assert(items['unit']['a'] == '10')
