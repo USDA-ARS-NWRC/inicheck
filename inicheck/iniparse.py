@@ -54,8 +54,9 @@ def parse_entry(info, item = None, valid_names=None):
         # Is there a list of values provided?
         if '[' in value:
             if ']' not in value:
-                raise ValueError("Missing bracket in config file under"
-                                 ' {0} in the entry:\n"{2}"'.format(name,info))
+                raise ValueError('Missing bracket or commas used in a list'
+                                 ' instead of spaces in config file under'
+                                 ' {0} in the entry:\n"{1}"'.format(name, info))
             else:
                 value = (''.join(c for c in value if c not in '[]'))
                 value = value.split(' ')
