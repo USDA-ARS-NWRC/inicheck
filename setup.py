@@ -27,7 +27,7 @@ test_requirements = [
 
 setup(
     name='inicheck',
-    version='0.3.0',
+    version='0.3.1',
     description="inicheck is an high level configuration file checker enabling developers tight control over their users configuration files",
     long_description=readme + '\n\n' + history,
     author="Micah Johnson",
