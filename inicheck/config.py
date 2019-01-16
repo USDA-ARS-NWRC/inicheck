@@ -115,6 +115,16 @@ class UserConfig():
                     conditions_met = 0
                     self.recipes.append(r)
 
+                    # Check recipes for sections not in the master
+                    invalid_r_sections = [s for s in r.adj_config.keys()
+                                          if (s not in self.mcfg.cfg.keys()
+                                             and s != 'any')]
+
+                    if len(invalid_r_sections) > 0:
+                        raise ValueError("The recipe {} attempts to modify"
+                        " section(s) {} not recognized by Master Config."
+                        "".format(r.name,",".join(invalid_r_sections)))
+
                     if DEBUG:
                         print("\nDEBUG: Trigger: {0} {1} was met!"
                         "".format(trigger, condition))
@@ -124,6 +134,7 @@ class UserConfig():
                         # Insert the recipe into the users config
                         self.cfg = self.interpret_recipes(r.adj_config,
                                                           situation)
+
                 else:
                     if DEBUG:
                         print("\nDEBUG: Trigger: {0} not met. gates = {1}"

@@ -14,7 +14,7 @@ class RecipeSection:
 
     """
 
-    def __init__(self, recipe_section_dict, name = None):
+    def __init__(self, recipe_section_dict, name=None):
         """
             Args:
                 recipe_section_dict: a dictionary containing the triggers
