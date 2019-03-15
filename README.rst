@@ -1,6 +1,6 @@
-========
-inicheck
-========
+===================
+Welcome to inicheck
+===================
 
 
 .. image:: https://img.shields.io/pypi/v/inicheck.svg

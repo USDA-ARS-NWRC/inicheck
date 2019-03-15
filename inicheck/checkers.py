@@ -262,7 +262,7 @@ class CheckPath(CheckType):
         else:
             exists = os.path.isfile(self.value)
 
-        return exists,self.message
+        return exists, self.message
 
     def cast(self):
         return self.value
