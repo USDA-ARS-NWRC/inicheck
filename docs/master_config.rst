@@ -13,7 +13,7 @@ warning to alert the user.
 
 Consider the following entry for a configuration file:
 
-Example::
+.. code-block:: ini
 
   [time]
 
@@ -74,7 +74,7 @@ in the config file.
 The following example required the users input to be a string, and must match
 nearest, linear, or cubic.
 
-Example::
+.. code-block:: ini
 
   [interpolation]
     method:
@@ -106,8 +106,8 @@ Triggers can be defined using keywords and to create complex scenarios you can
 add more keywords. Recipe triggers have only a couple key words available:
 
 * **has_section** - if the configuration file has this section
-* **has_value** - This is the most flexible trigger provided. It is provded using
-                  a bracketed, **space delimited* list in section > item > value order.
+* **has_value** - This is the most flexible trigger provided. It is provded
+  using a bracketed, **space delimited** list in section > item > value order.
 
 Below is an example showing how a trigger can have multiple criteria that can
 create very specific conditions. Trigger entries can be provided in a comma
@@ -115,7 +115,7 @@ separated fashion indicating that the conditions are compounded such that the
 recipe is applied only if all the entries are true. This allows developers to
 create highly specific scenarios to apply changes to a users configuration file.
 
-Example::
+.. code-block:: ini
 
   [my_specific_recipe]
          specific_trigger:  has_value = [cool_section cool_item],
@@ -126,7 +126,7 @@ If a developer wants more broad conditions to apply changes this can be
 accomplished by providing another trigger which will be apply a recipe if
 either trigger is true.
 
-Example::
+.. code-block:: ini
 
   [my_specific_recipe]
          trigger_1:         has_value = [cool_section cool_item]
@@ -149,7 +149,8 @@ triggered. If a keyword is not used then values are treated like section > item
 
 Edits can be prescribed by section and item names under a recipe:
 
-Example::
+.. code-block:: ini
+
   [my_recipe]
     some_trigger:   has_section = test_section
 
@@ -167,7 +168,7 @@ actions. Available keywords for entries are:
 * **remove_section** - remove an section in this section
 
 
-Example::
+.. code-block:: ini
 
   [topo_ipw_recipe]
   trigger_type:       has_value = [topo type ipw]
@@ -199,7 +200,7 @@ Recipe Example and Breakdown
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The following example shows a recipe:
 
-Example::
+.. code-block:: ini
 
   [csv_recipe]
   test_trigger:      has_section = csv

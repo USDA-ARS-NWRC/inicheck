@@ -116,11 +116,73 @@ file. Below is an example of how to add these attributes to your module.
   # If you have enough recipes to keep the files separate you can add:
   __recipes__ = os.path.abspath(os.path.dirname(__file__) + '/recipes.ini')
 
-Once this is done make sure you add the file(s) to whateverpackage inclusions you need.
-Here is an example of how to include them in your setup.py
+Once this is done make sure you add the file(s) to whatever package inclusions
+you need. Here is an example of how to include them in your setup.py
 
 .. code-block:: python
 
-  #In a setup.py, under the setup class initializer
+  # In a setup.py, under the setup class initializer
   package_data={'mymodule':['./master.ini',
                       './recipes.ini']},
+
+Custom Configuration File Headers
+---------------------------------
+
+inicheck has multiple ways to output your configuration file once inicheck as
+interpreted it. It is nice to use these because they are clean and it often
+serves as a placemark on some settings used for some event/task.
+Developers can provide custom headers. We have seen this functionality used for:
+
+* Datetime stamping configuration file creation
+* Marking with relevant software version numbers or git hashes.
+* Links to source code or documentation
+
+To add this to your project, simply add:
+
+.. code-block:: python
+
+  __config_header__ = some.function()
+
+where "some.function()" would be a custom function that returns a string of content
+to write to the top of you configuration file.
+
+Here are some examples of this in action:
+
+* `SMRFs example configuration header`_
+* `SMRFs example custom header function`_
+.. _`SMRFs example configuration header`: https://github.com/USDA-ARS-NWRC/smrf/blob/master/examples/boise_river_basin/brb_wy2017.ini
+.. _`SMRFs example custom header function`: https://github.com/USDA-ARS-NWRC/smrf/blob/master/smrf/utils/utils.py#L259
+
+
+Custom Configuration File Section Titles
+-----------------------------------------
+
+A less critical feature but still nice for producing self describing
+configuration files is having custom section headers.
+
+To add this to your project, simply add the following attribute with a
+dictionary containing corresponding sections with the messages desired:
+
+.. code-block:: python
+
+  __config_titles__ = {"Setup": "This is the setup section"}
+
+The result is a config file with a section preceeded by:
+
+.. code-block:: ini
+
+  #######################################################################
+  # This Is The Setup Section
+  #######################################################################
+
+  [setup]
+  # configuration stuff..
+
+The following is a good example of how this looks in a project:
+
+* `AWSMs example configuration titles`_
+* `AWSMS module dictionary`_
+
+.. _`AWSMs example configuration titles`: https://github.com/USDA-ARS-NWRC/awsm/blob/master/tests/test_base_config.ini
+
+.. _`AWSMS module dictionary`: https://github.com/USDA-ARS-NWRC/awsm/blob/master/awsm/__init__.py

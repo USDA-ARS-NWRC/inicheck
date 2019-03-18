@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('docs/history.rst') as history_file:
     history = history_file.read()
 
-with open('requirements_dev.txt') as req_file:
+with open('requirements.txt') as req_file:
     requirements = req_file.read()
 
 
@@ -45,7 +45,7 @@ setup(
     zip_safe=False,
     keywords='inicheck',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
