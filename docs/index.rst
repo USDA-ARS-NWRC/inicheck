@@ -10,7 +10,7 @@ Contents:
    installation
    usage
    master_config
-   api
+   modules
    contributing
    authors
    history
