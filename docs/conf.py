@@ -30,10 +30,7 @@ project_root = os.path.dirname(cwd)
 # This lets us ensure that the source package is imported, and that its
 # version is used.
 #sys.path.insert(0, project_root)
-if os.environ.get('READTHEDOCS') == 'True':
-    sys.path.insert(0, os.path.abspath('.'))
-else:
-    sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../'))
 
 
 import inicheck
