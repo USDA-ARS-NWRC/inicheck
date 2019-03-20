@@ -7,3 +7,4 @@ Sphinx==1.8.5
 sphinx-rtd-theme==0.4.3
 pytest==3.0.0
 pytest-runner==2.11.1
+sphinxcontrib-apidoc==0.3.0

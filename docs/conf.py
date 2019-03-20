@@ -15,7 +15,10 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(os.getcwd())))
+project_dir =  os.path.abspath(os.path.dirname(os.getcwd()))
+print(project_dir)
+
+sys.path.insert(0, project_dir)
 
 
 # -- Project information -----------------------------------------------------
@@ -41,10 +44,16 @@ release = 'beta'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
+    'sphinxcontrib.apidoc',
 ]
+
+apidoc_module_dir = os.path.join(project_dir, project)
+apidoc_output_dir = os.path.abspath('./')
+apidoc_excluded_paths = []
+apidoc_separate_modules = False
+apidoc_module_first =  False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
