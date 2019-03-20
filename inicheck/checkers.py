@@ -1,6 +1,7 @@
 '''
-Functions for checking valus in a config file and producing errors and warnings
+Functions for checking values in a config file and producing errors and warnings
 '''
+
 import os
 from pandas import to_datetime
 from .utilities import mk_lst
@@ -31,9 +32,10 @@ class GenericCheck(object):
 
         Args:
             value: Value that is going to be check for validity
+
         Returns:
-            **(boolean, msg)**: True or False whether value valid and
-                                correspond error message if it is not
+            **(boolean, msg)**: Boolean result whether value valid and
+                              correspond error message if it is not
         """
         pass
 
@@ -102,9 +104,9 @@ class CheckType(GenericCheck):
         Checks for type validity
 
         Returns:
-        tuple:
-            valid: Boolean whether the value was acceptable
-            msg: string to print if value is not valid.
+            tuple:
+                **valid** - Boolean whether the value was acceptable
+                **msg** - string to print if value is not valid.
         """
         msg = None
         self.msg_level = 'error'

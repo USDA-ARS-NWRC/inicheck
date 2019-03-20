@@ -46,6 +46,7 @@ class UserConfig():
         Returns:
             user_cfg: User config dictionary with defaults added.
         """
+        
         # Add this in case the user has added anything to the config obj on the fly
         self.cfg = copy.deepcopy(self.raw_cfg)
 

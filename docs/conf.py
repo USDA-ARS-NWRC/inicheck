@@ -47,13 +47,22 @@ release = 'beta'
 
 extensions = [
     'sphinxcontrib.apidoc',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon'
 ]
 
+# Auto api
 apidoc_module_dir = os.path.join(project_dir, project)
 apidoc_output_dir = os.path.abspath('./')
 apidoc_excluded_paths = []
 apidoc_separate_modules = False
 apidoc_module_first =  False
+
+# Napolean docs strings
+napoleon_google_docstring = True
+napoleon_use_param = False
+napoleon_use_ivar = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -164,8 +173,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'inicheck', 'inicheck Documentation',
-     author, 'inicheck', 'One line description of project.',
-     'Miscellaneous'),
+     author, 'inicheck', 'inicheck is an advanced configuration file checker/manager enabling developers high end control over their users configuration files.',
+     'Utilities'),
 ]
 
 
