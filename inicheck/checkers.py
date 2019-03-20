@@ -164,7 +164,7 @@ class CheckFloat(CheckType):
 
 class CheckInt(CheckType):
     """
-    integer checking whether a value of the right type.
+    Integer checking whether a value of the right type.
     """
 
     def __init__(self, **kwargs):
@@ -190,9 +190,9 @@ class CheckInt(CheckType):
 
         if self.value.is_integer():
             self.value = int(self.value)
+
         else:
             raise ValueError("Expecting integer and received float with non-zero decimal")
-
         return self.value
 
 

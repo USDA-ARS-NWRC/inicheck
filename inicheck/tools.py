@@ -42,12 +42,12 @@ def check_config(config_obj):
                              :class:`~inicheck.config.UserConfig`
 
             Returns:
-                tuple:
-                    **warnings** - Returns a list of string messages that are
-                                 consider non-critical issues with config file.
+                (tuple): tuple containing
 
-                    **errors** - Returns a list of string messages that are
-                               consider critical issues with the config file.
+                     - **warnings** (*list*): Returns a list of string messages that are
+                       consider non-critical issues with config file.
+                     - **errors** (*list*): Returns a list of string messages that are
+                       consider critical issues with the config file.
             """
 
             msg = "{: <20} {: <30} {: <60}"
@@ -171,6 +171,7 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                 if i in mcfg[s].keys():
                     type_value = (mcfg[s][i].type).lower()
 
+                    # Is the specified type recognized?
                     if type_value not in all_checks.keys():
                         raise ValueError("\n\nSection {0} at item {1} attempted"
                                         " to use undefined type name '{2}'"
@@ -179,17 +180,19 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                                         "are:\n\n{3}"
                                         "".format(s,i,type_value,all_checks.keys()))
 
+                    # go through the list of values
                     for z, v in enumerate(mk_lst(ucfg[s][i])):
                         option_found = False
 
                         # when a checker match is found break so we check it once
                         for name, fn in all_checks.items():
+
                             # Checker name and type match
                             if  type_value == name.lower():
                                 b = fn(value=v, config=config_obj)
 
                                 # Be wary of the None
-                                if v in [None, 'none', 'None']:
+                                if str(v).lower() == 'none':
                                     values.append(None)
 
                                 else:
@@ -211,9 +214,11 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                             raise ValueError("Unknown type_value prescribed."
                                              " ----> {0}".format(type_value))
 
-                    # Developers can specify which items are lists in core cfg
-                    if not mcfg[s][i].listed or (len(values)==1 and values[0]==None):
+                    # Developers can specify which items are lists in master cfg
+                    if not mcfg[s][i].listed or values[0]==None:
                         ucfg[s][i] = mk_lst(values, unlst=True)
+                    else:
+                        ucfg[s][i] = values
 
                 # Not recognized items, keep them anyways
                 else:
@@ -276,7 +281,7 @@ def config_documentation(out_f, paths=None, modules=None,
         out_f: string path to output location for the auto documentation
         paths: paths to master config files to use for creating docs
         modules: modules with attributes __core_config__ for creating docs
-        section_link_dict- dictionary containing special documentation for a section in the config file reference
+        section_link_dict: dictionary containing special documentation for a section in the config file reference
 
     """
 

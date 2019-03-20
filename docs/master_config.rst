@@ -106,6 +106,8 @@ Triggers can be defined using keywords and to create complex scenarios you can
 add more keywords. Recipe triggers have only a couple key words available:
 
 * **has_section** - if the configuration file has this section
+* **has_item** -  It is provded using a bracketed, **space delimited** list in
+  section > item order
 * **has_value** - This is the most flexible trigger provided. It is provded
   using a bracketed, **space delimited** list in section > item > value order.
 
@@ -166,6 +168,8 @@ actions. Available keywords for entries are:
 * **apply_defaults** - apply the defaults set in the section
 * **remove_item** - remove an item in this section
 * **remove_section** - remove an section in this section
+* **default_item** - Applies defaults to all the items provided in a space
+                     delimited list
 
 
 .. code-block:: ini
@@ -176,6 +180,12 @@ actions. Available keywords for entries are:
   topo:               type = ipw,
                       apply_defaults = [dem mask],
                       remove_item = filename
+
+Using the entryword default
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Any item can have the value default given to it which triggers inicheck to look
+for the default value specified in the master config file and apply during the
+application of a recipe.
 
 Using the entryword ANY
 ^^^^^^^^^^^^^^^^^^^^^^^
