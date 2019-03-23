@@ -11,11 +11,10 @@ def generate_config(config_obj, fname, cli=False):
     Args:
         config_obj: config object containing data to be outputted
         fname: String path to the output location for the new config file
-        cli: Boolean value that adds the line "file generated using
+        cli : Boolean value that adds the line "file generated using
             inicheck.cli", Default = False
-
-
     """
+
     header_len = 80
     pg_sep = '#' * header_len
 
@@ -91,12 +90,11 @@ def print_config_report(warnings, errors, logger=None):
 
     Args:
         warnings: List of non-critical messages returned from
-                   :func:`~utilities.check_config'.
+                :func:`~utilities.check_config`.
         errors: List of critical messages returned from
-                 :func:`~utilities.check_config'.
+              :func:`~utilities.check_config`.
         logger: pass in the logger function being used. If no logger is
-                 provided, print is used. Default = None
-
+                provided, print is used. Default = None
     """
 
     msg = "{: <20} {: <25} {: <60}"
@@ -201,7 +199,7 @@ def print_cfg_for_recipe(cfg, fmt, hdr=None):
                 v = [value]
             else:
                 v = value
-                
+
             for qq in v:
                 print(fmt.format(section, item, qq))
 

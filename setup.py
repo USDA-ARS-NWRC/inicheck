@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('docs/history.rst') as history_file:
     history = history_file.read()
 
-with open('requirements_dev.txt') as req_file:
+with open('requirements.txt') as req_file:
     requirements = req_file.read()
 
 
@@ -27,7 +27,7 @@ test_requirements = [
 
 setup(
     name='inicheck',
-    version='0.3.3',
+    version='0.3.4',
     description="inicheck is an high level configuration file checker enabling developers tight control over their users configuration files",
     long_description=readme + '\n\n' + history,
     author="Micah Johnson",
@@ -45,7 +45,7 @@ setup(
     zip_safe=False,
     keywords='inicheck',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
