@@ -5,17 +5,18 @@ from . config import UserConfig, MasterConfig
 from . utilities import mk_lst
 import inicheck.checkers
 
-def get_checkers(module='inicheck.checkers', keywords=[]):
+def get_checkers(module='inicheck.checkers', keywords="check"):
     """
     Args:
         module: The module to search for the classes
 
     Returns a dictionary of the classes available for checking config entries
     """
-    keywords.append('check')
+    keywords = mk_lst(keywords)
 
     funcs = inspect.getmembers(sys.modules[module], inspect.isclass)
     func_dict = {}
+
     for name, fn in funcs:
         checker_found = False
         k = name.lower()
@@ -38,16 +39,14 @@ def check_config(config_obj):
             config file looking at correctness and missing info.
 
             Args:
-                config_obj: UserConfig object produced by
+                config_obj - UserConfig object produced by
                              :class:`~inicheck.config.UserConfig`
-
             Returns:
-                (tuple): tuple containing
-
-                     - **warnings** (*list*): Returns a list of string messages that are
-                       consider non-critical issues with config file.
-                     - **errors** (*list*): Returns a list of string messages that are
-                       consider critical issues with the config file.
+                tuple:
+                - **warnings** - Returns a list of string messages that are
+                                 consider non-critical issues with config file.
+                - **errors** - Returns a list of string messages that are
+                               consider critical issues with the config file.
             """
 
             msg = "{: <20} {: <30} {: <60}"
@@ -141,10 +140,10 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
 
     Args:
         config_obj: The object of the user config from
-        mcfg_obj: The object used for manage the master config from MasterConfig
+        mcfg_obj: The object used for manage the master config from
+                  class MasterConfig
         other_types: User provided list to add any custom types
-        checking_later: Enables whether a failure to cast an item will raise an
-                        exception
+        checking_later: Enables whether a failure to cast an item will raise an exception
 
     Returns:
         ucfg: The users config dictionary containing the correct value types
@@ -236,12 +235,10 @@ def get_user_config(config_file, master_files=None, modules=None,
     Args:
         config_file: real path to existing config file
         master_file: real path to a Core Config file
-        modules: a module or list of modules with a string attribute
-                 __CoreConfig__ which is the path to a CoreConfig
-
+        modules: a module or list of modules with a string attribute __CoreConfig__ which is the
+                path to a CoreConfig
         mcfg: the master config object after it has been read in.
-        checking_later: Passes over excpetions when casting to the right types
-                        to be formally checked later
+        checking_later: Passes over excpetions when catsing to the right types to be formally checked later
 
     Returns:
         ucfg: Users config as an object
@@ -281,7 +278,7 @@ def config_documentation(out_f, paths=None, modules=None,
         out_f: string path to output location for the auto documentation
         paths: paths to master config files to use for creating docs
         modules: modules with attributes __core_config__ for creating docs
-        section_link_dict: dictionary containing special documentation for a section in the config file reference
+        section_link_dict- dictionary containing special documentation for a section in the config file reference
 
     """
 

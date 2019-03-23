@@ -169,4 +169,3 @@ class ConfigEntry:
             self.listed = True
             self.type = self.type.replace('list','')
             self.type = self.type.strip()
-        print(self.name,self.type)
