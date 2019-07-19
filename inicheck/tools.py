@@ -53,7 +53,7 @@ def check_config(config_obj):
             errors = []
             warnings = []
 
-            master = config_obj.mcfg.cfg
+            mcfg = config_obj.mcfg.cfg
             cfg = config_obj.cfg
 
             standard_funcs = get_checkers()
@@ -67,7 +67,7 @@ def check_config(config_obj):
             # Compare user config file to our master config
             for section, configured in cfg.items():
 
-                if section not in master.keys():
+                if section not in mcfg.keys():
                     err = "Not a valid section."
                     errors.append(msg.format(section, " ", err))
                 else:
@@ -76,7 +76,7 @@ def check_config(config_obj):
                         litem = item.lower()
 
                         # Is the item known as a configurable item?
-                        if litem not in master[section].keys():
+                        if litem not in mcfg[section].keys():
                             wrn = "Not a registered option."
                             warnings.append(msg.format(section, item, wrn))
                         else:
@@ -101,22 +101,23 @@ def check_config(config_obj):
                                         print_item = item
 
                                     # 1. Check for contraints by options lists
-                                    if master[section][item].options:
+                                    if mcfg[section][item].options:
                                         # If it is not in the list, invalid
-                                        if str(v) not in master[section][item].options:
+                                        if str(v) not in mcfg[section][item].options:
                                             full_msg = msg.format(section,
                                                               print_item,
                                                               "Not a valid option")
                                             errors.append(full_msg)
 
                                     # 2. Check the type constraint.
-                                    options_type = master[section][item].type
+                                    options_type = mcfg[section][item].type
 
                                     for name, fn in standard_funcs.items():
                                         # Check for type checkers
                                         if options_type == name.lower():
                                             b = fn(value=v, config=config_obj,
-                                           is_list=master[section][item].listed)
+                                           is_list=mcfg[section][item].listed,
+                                           item=item, section=section)
                                             issue = b.check()
 
                                             if issue != None:
@@ -177,7 +178,8 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                                         " which has no checker associated."
                                         "\nAvailable checkers "
                                         "are:\n\n{3}"
-                                        "".format(s,i,type_value,all_checks.keys()))
+                                        "".format(s,i,type_value,
+                                                      all_checks.keys()))
 
                     # go through the list of values
                     for z, v in enumerate(mk_lst(ucfg[s][i])):
@@ -188,7 +190,8 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
 
                             # Checker name and type match
                             if  type_value == name.lower():
-                                b = fn(value=v, config=config_obj)
+                                b = fn(value=v, config=config_obj, section=s,
+                                                                   item=i)
 
                                 # Be wary of the None
                                 if str(v).lower() == 'none':

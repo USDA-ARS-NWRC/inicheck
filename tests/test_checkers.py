@@ -20,12 +20,12 @@ class TestCheckers(unittest.TestCase):
 
         # Confirm we these values are valid
         for v in ['2018-01-10 10:10','10-10-2018', "October 10 2018"]:
-            b = CheckDatetime(value = v, config = None)
+            b = CheckDatetime(value=v, config=None)
             assert b.is_valid()[0]
 
         # Confirm these are not valid
         for v in ['Not-a-date','Wednesday 5th']:
-            b = CheckDatetime(value = v, config = None)
+            b = CheckDatetime(value=v, config=None)
             assert not b.is_valid()[0]
 
     def test_float(self):
@@ -35,12 +35,12 @@ class TestCheckers(unittest.TestCase):
 
         # Confirm we these values are valid
         for v in [-1.5,'2.5']:
-            b = CheckFloat(value = v, config = None)
+            b = CheckFloat(value=v, config=None)
             assert b.is_valid()[0]
 
         # Confirm these are not valid
         for v in ['tough']:
-            b = CheckFloat(value = v, config = None)
+            b = CheckFloat(value=v, config=None)
             assert not b.is_valid()[0]
 
     def test_int(self):
@@ -49,13 +49,13 @@ class TestCheckers(unittest.TestCase):
         """
 
         # Confirm we these values are valid
-        for v in [10, '2',1.0]:
-            b = CheckInt(value = v, config = None)
+        for v in [10, '2', 1.0]:
+            b = CheckInt(value=v, config=None)
             assert b.is_valid()[0]
 
         # Confirm these are not valid
-        for v in ['tough','1.5','']:
-            b = CheckInt(value = v, config = None)
+        for v in ['tough', '1.5', '']:
+            b = CheckInt(value=v, config=None)
             assert not b.is_valid()[0]
 
     def test_bool(self):
@@ -64,13 +64,14 @@ class TestCheckers(unittest.TestCase):
         """
 
         # Confirm we these values are valid
-        for v in [True,False,'true','FALSE','yes','y','no','n']:
-            b = CheckBool(value = v, config = None)
+        for v in [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']:
+            b = CheckBool(value=v, config=None)
             assert b.is_valid()[0]
 
         # Confirm these are not valid
         for v in ['Fasle','treu']:
-            b = CheckBool(value = v, config = None)
+            b = CheckBool(value=v, config=None)
+
             assert not b.is_valid()[0]
 
     def test_string(self):
@@ -80,7 +81,7 @@ class TestCheckers(unittest.TestCase):
 
         # Confirm we these values are valid
         for v in ['test']:
-            b = CheckString(value = v, config = None)
+            b = CheckString(value=v, config=None)
             assert b.is_valid()[0]
 
     def test_list(self):
@@ -97,20 +98,38 @@ class TestCheckers(unittest.TestCase):
         as list, the result should be the value is valid and not type list
         """
 
-        # Confirm we cast to a list when a single value it provided
-        b = CheckString(value = 'test', config = None, is_list=True)
-        b.is_valid()
-        assert type(b.value==list)
+        valids = ["test"]
+        invalids = [["test","test2"]]
 
-        # Confirm we are invalid when no list is requested and a list is received
-        b = CheckString(value = ['test','test1'], config = None, is_list=False)
-        valid,msg = b.is_valid()
-        assert not valid
+        for t in valids:
+            # Confirm we cast to a list when a single value it provided
+            b = CheckString(value=t, config=None, is_list=True)
+            valid, msg = b.is_valid()
+            assert valid
 
-        # Confirm we don't cast to list when it is neither provided or requested
-        b = CheckString(value = 'test', config = None, is_list=False)
-        b.is_valid()
-        assert type(b.value!=list)
+        for t in invalids:
+
+            # Confirm we cast to a list when a single value it provided
+            b = CheckString(value=t, config=None, is_list=False)
+            valid, msg = b.is_valid()
+            assert not valid
+
+    def test_url(self):
+        """
+        Test our url methods.
+        """
+        valids = ["https://google.com"]
+        invalids = ["https://micah_subnaught_is_awesome.com"]
+
+        for url in valids:
+            b = CheckURL(value=url, config=None)
+            valid, msg = b.is_valid()
+            assert valid
+
+        for url in invalids:
+            b = CheckURL(value=url, config=None, is_list=False)
+            valid, msg = b.is_valid()
+            assert not valid
 
 if __name__ == '__main__':
     import sys

@@ -25,6 +25,22 @@ def read_config(fname):
 
 
 def parse_entry(info, item = None, valid_names=None):
+    """
+    Parse the values found in the master config where the entries are a little
+    more complicated. Specifically this deals with syntax issues and whether
+    a entry option is valid or not.
+
+    This should be used only after knowning the section and item.
+
+    Args:
+        info: Potential line to parse containing masater config options
+        item: Item name were parsing. Only for reporting errors purposes
+        valid_names: valid property names to be parsing.
+
+    Returns:
+        properties: dictionary containing the properties as keys
+    """
+
     properties = OrderedDict()
     if type(info) != list:
         info = [info]
@@ -37,7 +53,7 @@ def parse_entry(info, item = None, valid_names=None):
         else:
             raise ValueError('\n\nMaster Config file missing an equals sign in'
                             ' entry or missing a comma right before the item '
-                            '"{0}" in the entry:\n"{1}"'.format(item,info))
+                            '"{0}" in the entry:\n"{1}"'.format(item, info))
 
         name = (a[0].lower()).strip()
         # Check for constraints on potential names of entries

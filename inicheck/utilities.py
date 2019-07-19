@@ -72,6 +72,49 @@ def get_relative_to_cfg(path, user_cfg_path):
     return path
 
 
+def is_kw_matched(single_word, kw_list, kw_count=1):
+    """
+    Checks to see if there are any keywords in the single word and returns
+    a boolean
+
+    Args:
+        single_word: String to be examined for keywords
+        kw_list: List of strings to look for inside the single word
+        kw_count: Minimum Number of keywords to be found for it to be True
+
+    Returns:
+        boolean: Whether a keyword match was found
+    """
+    truths = [True for kw in kw_list if kw in single_word]
+
+    if len(truths) >= kw_count:
+        return True
+    else:
+        return False
+
+
+def get_kw_match(potential_matches, kw_list, kw_count=1):
+    """
+    Loops through a list of potential matches looking for keywords in the
+    list of strings being presented. When a match is found return its value.
+
+    Args:
+        potential_matches: List of strings to check
+        kw_list: List of strings to look for inside the single word
+        kw_count: Minimum Number of keywords to be found for it to be True
+
+    Returns:
+        result: The first potential found with the keyword match
+    """
+    result = False
+    for potential in potential_matches:
+        match = is_kw_matched(potential, kw_list, kw_count=kw_count)
+        result = potential
+        if match:
+            break
+    return result
+
+
 def pcfg(cfg):
     """
     prints out the config file to the prompt with a nice stagger Look for
@@ -120,3 +163,29 @@ def pmcfg(cfg):
                 else:
                     out = value
                 print('\t\t\t' + repr(out))
+
+def is_valid(value, cast_fn, expected_data_type):
+    """
+    Checks whether a value can be converted using the cast_fn function.
+
+    Args:
+        value: Value to be considered
+        cast_fn: Function used to determine the validity, should throw an
+                 excpetion if it cannot
+        expected_data_type: string name of the expected data
+    Returns:
+        tuple:
+            **valid (boolean)**: whether it could be casted
+            **msg (string)**: Msg reporting what happen
+    """
+
+    try:
+        value = cast_fn(value)
+        valid = True
+        msg = None
+
+    except Exception as e:
+        valid = False
+        msg = "Expecting {0} received {1}".format(expected_data_type,
+                                                  type(value).__name__)
+    return valid, msg
