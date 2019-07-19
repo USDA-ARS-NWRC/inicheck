@@ -22,3 +22,10 @@ History
 * Added the ability require an config entry be a list
 * Added significant unit tests
 
+0.4.0 (2019-07-19)
+------------------
+
+* Added in url datatype
+* Added Datetime Ordered data type for start stop options
+* Added in an inidiff script for comparing config files
+
