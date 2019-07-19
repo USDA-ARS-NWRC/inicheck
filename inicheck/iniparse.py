@@ -115,7 +115,7 @@ def parse_sections(lines):
                 # Look for open brackets
                 if ']' in line:
 
-                    section = (remove_chars(line,'[]')).lower()
+                    section = (remove_chars(line,'[]')).lower().strip()
                     result[section] = []
 
             else:
@@ -157,7 +157,7 @@ def parse_items(parsed_sections_dict, mcfg=None):
                 # Only split on the first colon to avoid collisions with datetime
                 parse_loc = val.index(':')
                 parseable = [val[0:parse_loc],val[parse_loc + 1:]]
-                item = parseable[0].lower()
+                item = parseable[0].lower().strip()
 
                 result[k][item] = ''
 

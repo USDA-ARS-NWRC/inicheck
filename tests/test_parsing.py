@@ -29,7 +29,9 @@ class TestIniparse(unittest.TestCase):
                 "[unit]",
                 "a:10; in line comment",
                 "[test CASe] # another inline comment test",
-                "b:5"]
+                "b:5",
+                "[ spaces ]",
+                "test:now"]
         sections = parse_sections(info)
 
         # Confirm we see a normal section
@@ -37,6 +39,8 @@ class TestIniparse(unittest.TestCase):
 
         # Confirm we see a section with space caps issues
         assert(sections['test case'][0] == "b:5")
+
+        assert(sections['spaces'][0] == "test:now")
 
         # Confirm we catch dumb errors before we find a section name
         self.assertRaises(Exception, parse_sections,['a#','#','[test]'])
@@ -53,7 +57,7 @@ class TestIniparse(unittest.TestCase):
         """
 
         info = {"unit":["a:10"],
-                "test case":["a:10,","15,20"],
+                "test case":[" a :10,","15,20"],
                 'recipe':['a: default=10,',
                           'options=[10 15 20]']} # Handle wrapped lines with tabs
 
