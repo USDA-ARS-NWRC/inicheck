@@ -32,11 +32,12 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Micah Johnson",
     author_email='micah.johnson150@gmail.com',
-    url='https://github.com/micahjohnson150/inicheck',
+    url='https://github.com/USDA-ARS-NWRC/inicheck',
     packages=find_packages(include=['inicheck']),
     entry_points={
         'console_scripts': [
-            'inicheck=inicheck.cli:main'
+            'inicheck=inicheck.cli:main',
+            'inidiff=inicheck.cli:inidiff'
         ]
     },
     include_package_data=True,

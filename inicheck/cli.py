@@ -97,5 +97,82 @@ def main():
 
                 generate_config(ucfg, out_f, cli=True)
 
+def inidiff():
+    """
+    Creates a report showing the difference in files
+    """
+    parser = argparse.ArgumentParser(description="Examine and compare"
+                                                 " ini files with a master file"
+                                                 "")
+
+    parser.add_argument('--config_files','-f', dest='config_files', type=str,
+                        nargs=2, required=True,
+                        help='Path to two config file that needs comparing')
+
+    parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
+                        help='Path to a config file that used to check against')
+
+    parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
+                    help="Modules name with an attribute __CoreConfig__ that"
+                         " is a path to a master config file for checking"
+                         " against")
+    args = parser.parse_args()
+
+    cfg1 = os.path.abspath(args.config_files[0])
+    ucfg1 = get_user_config(cfg1, master_files=args.master,
+                              modules=args.modules,
+                              checking_later=True)
+
+    cfg2 = os.path.abspath(args.config_files[1])
+    ucfg2 = get_user_config(cfg2, master_files=args.master,
+                              modules=args.modules,
+                              checking_later=True)
+
+    msg = "{0:<20}{1:<20}"
+    header = ["\n"+msg.format("Base File:", cfg1),
+              msg.format("Compare File:", cfg2),
+              "",""]
+
+    msg = "{:<20}{:<30}{:<30}{:<30}{:<30}"
+    column_header = msg.format("Section","Item","CFG 1","CFG 2","Default")
+
+
+    msg_len = len(column_header)
+
+    banner = "=" * msg_len
+
+    print("\nChecking the differences...")
+
+    print("\n".join(header))
+    print(column_header)
+    print(banner)
+
+    for s in ucfg1.mcfg.cfg.keys():
+
+        for i in ucfg1.mcfg.cfg[s].keys():
+            showit = False
+            v1 = "Not Found"
+            v2 = "Not Found"
+
+            if s in ucfg1.cfg.keys():
+                if i in ucfg1.cfg[s].keys():
+                    v1 = str(ucfg1.cfg[s][i])
+
+            if s in ucfg2.cfg.keys():
+                if i in ucfg2.cfg[s].keys():
+                    v2 = str(ucfg2.cfg[s][i])
+
+            m = ucfg1.mcfg.cfg[s][i].default
+
+            if v1 != v2:
+                showit = True
+
+            elif str(m).lower() != "none":
+                if v1 != m or v2 != m:
+                    showit = True
+
+            if showit:
+                print(msg.format(s, i, v1, v2, str(m)))
+
 if __name__ == '__main__':
     main()
