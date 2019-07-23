@@ -1,3 +1,4 @@
+
 =====
 Usage
 =====
@@ -35,6 +36,8 @@ To see how inicheck interpreted your config file add the -w option to the aboved
 command. This will output the file the way inicheck sees it. Opening it up will
 show all the entries are filled out.
 
+For more info see :ref:`CLI`.
+
 Aiming to be User Proof
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -60,6 +63,8 @@ more on functionality rather than the sometimes erratic behavior of users.
 
 For information take a look at `Command Line Tools`_.
 
+.. _ForAProject:
+
 For a Project
 ===========================
 
@@ -76,7 +81,7 @@ following at a minimum:
 
   from inicheck.tools import get_user_config
 
-  ucfg = get_user_config(filename, module = str_module_name, checking_later=True)
+  ucfg = get_user_config(filename, module=str_module_name, checking_later=True)
 
 
 **CAUTION**: Using the *checking later* flag will allow inicheck to pass over issues
@@ -91,7 +96,7 @@ To get the config and check it and report the warnings and errors to the screen:
 
   from inicheck.tools import get_user_config, check_config, print_config_report
 
-  ucfg = get_user_config(filename, module = str_module_name, checking_later=True)
+  ucfg = get_user_config(filename, module=str_module_name, checking_later=True)
   warnings, errors = check_config(ucfg)
   print_config_report(warnings, errors)
 

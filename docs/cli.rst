@@ -1,11 +1,12 @@
+.. _CLI:
 
 Command Line tools
 ===================
 
 inicheck on the command line can greatly speed up debugging of config files
 and provide simple ways of getting information. In all inicheck CLI tools
-master config arguments are exchangeable with a model who has inicheck files
-install.
+master config arguments are exchangeable with a python module who has inicheck
+files installed. For more project related info visit inichecks :ref:`ForAProject`.
 
 1. You can access config options by requesting details using the master file
 or a module name (see For a project).
