@@ -106,7 +106,7 @@ def inidiff():
                                                  "")
 
     parser.add_argument('--config_files','-f', dest='config_files', type=str,
-                        nargs=2, required=True,
+                        nargs='+', required=True,
                         help='Path to two config file that needs comparing')
 
     parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
@@ -118,61 +118,100 @@ def inidiff():
                          " against")
     args = parser.parse_args()
 
-    cfg1 = os.path.abspath(args.config_files[0])
-    ucfg1 = get_user_config(cfg1, master_files=args.master,
-                              modules=args.modules,
-                              checking_later=True)
+    # handle multiple files
+    cfgs = []
 
-    cfg2 = os.path.abspath(args.config_files[1])
-    ucfg2 = get_user_config(cfg2, master_files=args.master,
-                              modules=args.modules,
-                              checking_later=True)
+    # Keep track of non-default and mismatches
+    non_default_count = 0
+    mismatch_count = 0
+    total_count = 0
 
+    # Legend print out
     msg = "{0:<20}{1:<20}"
-    header = ["\n"+msg.format("Base File:", cfg1),
-              msg.format("Compare File:", cfg2),
-              "",""]
 
-    msg = "{:<20}{:<30}{:<30}{:<30}{:<30}"
-    column_header = msg.format("Section","Item","CFG 1","CFG 2","Default")
+    # header formatable
+    msg = "{0:<20}{1:<20}"
 
+    # We need to start with Section, Item, and a Default
+    tmsg = "{:<20}{:<30}{:<30}"
+    header = ["Section","Item"]
 
+    print("\nChecking the differences...\n")
+
+    # Instatiates CFGs and prints out legend
+    for i,f in enumerate(args.config_files):
+
+        fname = os.path.abspath(f)
+        cfgs.append(get_user_config(fname, master_files=args.master,
+                                           modules=args.modules,
+                                           checking_later=True))
+
+        cfg_rename = "CFG {}".format(i+1)
+
+        # Print out the Config rename legend at the top
+        print(msg.format(cfg_rename, fname))
+
+        # Start building the table header
+        header.append(cfg_rename)
+        tmsg+="{:<30}"
+
+    # Print out a nice table header
+    header.append("Default")
+    column_header = tmsg.format(*header)
     msg_len = len(column_header)
 
     banner = "=" * msg_len
 
-    print("\nChecking the differences...")
-
-    print("\n".join(header))
-    print(column_header)
+    print("\n" + column_header)
     print(banner)
 
-    for s in ucfg1.mcfg.cfg.keys():
+    # Use the master config to look at everything
+    mcfg = cfgs[0].mcfg.cfg
 
-        for i in ucfg1.mcfg.cfg[s].keys():
+    for s in mcfg.keys():
+
+        for i in mcfg[s].keys():
             showit = False
-            v1 = "Not Found"
-            v2 = "Not Found"
+            values = ["Not Found" for c in cfgs]
+            total_count +=1
+            # Iterate through all the configs, find a value
+            for zz, ucfg in enumerate(cfgs):
+                cfg = ucfg.cfg
 
-            if s in ucfg1.cfg.keys():
-                if i in ucfg1.cfg[s].keys():
-                    v1 = str(ucfg1.cfg[s][i])
+                # Is the section in the CFG
+                if s in cfg.keys():
+                    # is the item in there
+                    if i in cfg[s].keys():
+                        values[zz] = str(cfg[s][i])
 
-            if s in ucfg2.cfg.keys():
-                if i in ucfg2.cfg[s].keys():
-                    v2 = str(ucfg2.cfg[s][i])
+            # Always grab the default
+            m = str(mcfg[s][i].default)
 
-            m = ucfg1.mcfg.cfg[s][i].default
+            # Check one value against all to see if theyre mistmatched
+            mismatched = [True for cv in values if values[0] != cv ]
 
-            if v1 != v2:
+            # Non Default check
+            non_default = [True for v in values if v != m]
+
+            # Show if any values are mismatched
+            if len(mismatched) > 0:
                 showit = True
+                mismatch_count += len(mismatched)
 
-            elif str(m).lower() != "none":
-                if v1 != m or v2 != m:
+            elif m.lower() != "none" and len(non_default) > 0:
                     showit = True
+                    non_default_count += len(non_default)
 
             if showit:
-                print(msg.format(s, i, v1, v2, str(m)))
+                table = [s,i]
+                table += values
+                table.append(m)
+                print(tmsg.format(*table))
+
+    # # Print out some final details regarding the differences
+    print("\nTotal items checked: {:0.0f}".format(total_count))
+    print("Total Non-default values: {}".format(non_default_count))
+    print("Total config mismatches: {:0.0f}\n".format(mismatch_count))
 
 if __name__ == '__main__':
     main()
