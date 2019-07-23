@@ -48,6 +48,10 @@ class TestEntries(unittest.TestCase):
         t = TriggerEntry(entries[0])
         assert(t.conditions[0] == ['topo', 'type', 'ipw'])
 
+
+
+
+
 if __name__ == '__main__':
     import sys
     sys.exit(unittest.main())

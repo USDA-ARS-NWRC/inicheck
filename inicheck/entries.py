@@ -153,7 +153,7 @@ class ConfigEntry:
 
         if parseable_line != None:
             parsed_dict = parse_entry(parseable_line, item = name,
-                                        valid_names=self.valid_names)
+                                                  valid_names=self.valid_names)
             for name,value in parsed_dict.items():
                 setattr(self,name,value)
 
@@ -165,7 +165,9 @@ class ConfigEntry:
         self.type = self.type.lower()
 
         # Handle the list types
-        if 'list' in self.type:
-            self.listed = True
-            self.type = self.type.replace('list','')
-            self.type = self.type.strip()
+        for kw in ['list','listed']:
+            if kw in self.type:
+                self.listed = True
+                self.type = self.type.replace(kw,'')
+                self.type = self.type.strip()
+                break

@@ -99,7 +99,7 @@ class CheckType(GenericCheck):
 
     def __init__(self, **kwargs):
         super(CheckType, self).__init__(**kwargs)
-        self.type = 'str'
+        self.type = 'string'
         # Function used for casting to types
         self.type_func = str
 
@@ -123,7 +123,7 @@ class CheckType(GenericCheck):
             # Its list but its a single item
             if len(self.value) == 1:
 
-                self.value = mk_lst(self.value, unlist=True)
+                self.value = mk_lst(self.value, unlst=True)
                 return False
 
             # Its a list and not a single item

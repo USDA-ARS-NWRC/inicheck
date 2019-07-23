@@ -10,7 +10,7 @@ Tests for `inicheck.config` module.
 import unittest
 import os
 from inicheck.config import *
-from inicheck.tools import cast_all_variables
+from inicheck.tools import cast_all_variables, get_checkers
 
 def compare_config(generated_config, truth_config, master=False, mcfg_attr='default'):
     """
@@ -122,7 +122,7 @@ class TestUserConfig(unittest.TestCase):
         self.ucfg = cast_all_variables(self.ucfg, self.ucfg.mcfg)
 
         assert compare_config(self.ucfg.cfg,truth)
-        
+
 
 class TestMasterConfig(unittest.TestCase):
     def setUp(self):
@@ -130,13 +130,13 @@ class TestMasterConfig(unittest.TestCase):
         Stage our truthing data here
         """
         self.truth_defaults = {'topo':
-                                            {'type': 'netcdf',
-                                             'dem': None,
-                                             'filename': None},
-                                'air_temp':
-                                            {'distribution': 'idw',
-                                             'detrend': 'true',
-                                             'dk_nthreads': '1'}}
+                                      {'type': 'netcdf',
+                                       'dem': None,
+                                       'filename': None},
+                               'air_temp':
+                                       {'distribution': 'idw',
+                                        'detrend': 'true',
+                                        'dk_nthreads': '1'}}
 
     def test_from_module(self):
         """
@@ -157,6 +157,26 @@ class TestMasterConfig(unittest.TestCase):
 
         assert compare_config(mcfg.cfg,self.truth_defaults, master=True,
                                                             mcfg_attr='default')
+
+    def test_check_types(self):
+        """
+        Checks to make sure we throw the correct error when an unknown data
+        type is requested
+        """
+
+        # Call out an BS type to raise the error
+        checkers = get_checkers()
+        for kw in ['str','filepath']:
+            cfg = {"section":{"test": ConfigEntry(entry_type=kw)}}
+            self.assertRaises(ValueError, check_types, cfg, checkers)
+
+        types = ['bool', 'criticaldirectory', 'criticalfilename', 'datetime',
+                 'datetimeorderedpair', 'directory', 'filename', 'float', 'int',
+                 'path', 'string', 'url']
+
+        for kw in types:
+            cfg = {"section":{"test": ConfigEntry(entry_type=kw)}}
+            assert check_types(cfg, checkers)
 
 
 if __name__ == '__main__':

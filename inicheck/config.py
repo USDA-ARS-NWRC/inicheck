@@ -46,7 +46,7 @@ class UserConfig():
         Returns:
             user_cfg: User config dictionary with defaults added.
         """
-        
+
         # Add this in case the user has added anything to the config obj on the fly
         self.cfg = copy.deepcopy(self.raw_cfg)
 
@@ -458,3 +458,34 @@ class MasterConfig():
                     cfg[section] = sec
 
         return cfg
+
+
+def check_types(cfg, checkers):
+    """
+    Iterates through all the master config items and confirm all type are valid
+
+    Args:
+        cfg: dict of master config entries listing out properties
+        checkers: dict of checker names and class  as Key Value pairs
+
+    Returns:
+        Bool: True if no error is raised
+    Raises:
+        ValueError: raises error if a type is specified not in the lists of
+                    checkers
+    """
+
+    for s in cfg.keys():
+        for i in cfg[s].keys():
+
+            type_value = cfg[s][i].type
+            # Is the specified type recognized?
+            if type_value not in checkers.keys():
+                raise ValueError("\n\nIn master config, SECTION: {0} at ITEM: {1} attempts"
+                                " to use undefined type name '{2}'"
+                                " which has no checker associated."
+                                "\nAvailable checkers "
+                                "are:\n\n{3}"
+                                "".format(s,i,type_value,
+                                              checkers.keys()))
+    return True

@@ -1,16 +1,20 @@
 import os
 import sys
 import inspect
-from . config import UserConfig, MasterConfig
+from . config import UserConfig, MasterConfig, check_types
 from . utilities import mk_lst
 import inicheck.checkers
 
-def get_checkers(module='inicheck.checkers', keywords="check"):
+def get_checkers(module='inicheck.checkers', keywords="check",
+                                             ignore=["type","generic"]):
     """
     Args:
         module: The module to search for the classes
+        keyword: Keywords to look for in class names
+        ignore: Post parsed keywords to ignore if found in a class name
 
-    Returns a dictionary of the classes available for checking config entries
+    Returns:
+        dictionary: Dict of the classes available for checking config entries
     """
     keywords = mk_lst(keywords)
 
@@ -20,13 +24,17 @@ def get_checkers(module='inicheck.checkers', keywords="check"):
     for name, fn in funcs:
         checker_found = False
         k = name.lower()
+
         # Remove any keywords
         for w in keywords:
             z = w.lower()
+
             if z in k:
                 k = k.replace(z, '')
-                checker_found = True
-                break
+
+                if k not in ignore:
+                    checker_found = True
+                    break
 
         if checker_found:
             func_dict[k] = fn
@@ -112,8 +120,8 @@ def check_config(config_obj):
                                     # 2. Check the type constraint.
                                     options_type = mcfg[section][item].type
 
+                                    # Check for type checkers
                                     for name, fn in standard_funcs.items():
-                                        # Check for type checkers
                                         if options_type == name.lower():
                                             b = fn(value=v, config=config_obj,
                                            is_list=mcfg[section][item].listed,
@@ -134,7 +142,7 @@ def check_config(config_obj):
             return warnings, errors
 
 
-def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
+def cast_all_variables(config_obj, mcfg_obj, checking_later=False):
     """
     Cast all values into the appropiate type using checkers, other_types
     and the master config.
@@ -161,6 +169,9 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
             new_checks = get_checkers(module=c)
             all_checks.update(new_checks)
 
+    # Confirm checks are valid
+    check_types(mcfg,all_checks)
+
     # Cast all variables
     for s in ucfg.keys():
         if s in mcfg.keys():
@@ -170,16 +181,6 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later = False):
                 # Ensure it is something we can check
                 if i in mcfg[s].keys():
                     type_value = (mcfg[s][i].type).lower()
-
-                    # Is the specified type recognized?
-                    if type_value not in all_checks.keys():
-                        raise ValueError("\n\nSection {0} at item {1} attempted"
-                                        " to use undefined type name '{2}'"
-                                        " which has no checker associated."
-                                        "\nAvailable checkers "
-                                        "are:\n\n{3}"
-                                        "".format(s,i,type_value,
-                                                      all_checks.keys()))
 
                     # go through the list of values
                     for z, v in enumerate(mk_lst(ucfg[s][i])):
