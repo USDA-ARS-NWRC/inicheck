@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/micahjohnson150/inicheck
+    $ git clone git://github.com/USDA-ARS-NWRC/inicheck
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/micahjohnson150/inicheck/tarball/master
+    $ curl  -OL https://github.com/USDA-ARS-NWRC/inicheck/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/micahjohnson150/inicheck
-.. _tarball: https://github.com/micahjohnson150/inicheck/tarball/master
+.. _Github repo: https://github.com/USDA-ARS-NWRC/inicheck
+.. _tarball: https://github.com/USDA-ARS-NWRC/inicheck/tarball/master
