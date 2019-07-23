@@ -40,11 +40,7 @@ Aiming to be User Proof
 
 For a further demo, let's say the our user think themselves funny and enters the
 following into their configuration file:
-
-.. code-block:: console
-
-    age: nunya!
-    job_class: king
+/home/micahjohnson/projects/inicheck/docs/usage.rst
 
 inicheck will produce errors and report them in the following manner:
 
@@ -62,32 +58,42 @@ inicheck will produce errors and report them in the following manner:
 This takes alot of issues out of the hands of the developer so they can focus
 more on functionality rather than the sometimes erratic behavior of users.
 
+For information take a look at `Command Line Tools`_.
 
 For a Project
 ===========================
 
 Using inicheck for your project is a great way to save on repeated code and
-reduce insane amounts of check of types and if something exists etc...
+reduce insane amounts of check of types, whether something exists, etc...
 
 Getting a Config File
 ---------------------
 Once the user has filled out a configuration file, inicheck can bring in the
 information via a :class:`~inicheck.config.UserConfig` object by using the
-following:
+following at a minimum:
 
 .. code-block:: python
 
   from inicheck.tools import get_user_config
 
-  ucfg = get_user_config(filename, module = str_module_name, checking_later = True)
-  warnings, errors = check_config(ucfg)
-  print_config_report(warnings, errors)
+  ucfg = get_user_config(filename, module = str_module_name, checking_later=True)
+
 
 **CAUTION**: Using the *checking later* flag will allow inicheck to pass over issues
 that would raise exceptions so that the developer can inform the user of the
 issues with their config file at the same time. This can be dangerous if the
 developer does not follow  up with the functions check_config and
 print_config_report.
+
+To get the config and check it and report the warnings and errors to the screen:
+
+.. code-block:: python
+
+  from inicheck.tools import get_user_config, check_config, print_config_report
+
+  ucfg = get_user_config(filename, module = str_module_name, checking_later=True)
+  warnings, errors = check_config(ucfg)
+  print_config_report(warnings, errors)
 
 To learn more see checkout the functions documentation:
   * :func:`~inicheck.tools.get_user_config`

@@ -62,6 +62,7 @@ Available types:
   * float
   * integer
   * datetime
+  * ordered datetime
   * filename
   * CriticalFilename
   * directory
