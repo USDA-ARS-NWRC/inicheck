@@ -402,7 +402,7 @@ class CheckPath(CheckType):
         return exists, self.message
 
     def cast(self):
-        return value
+        return self.value
 
 
 class CheckDirectory(CheckPath):
