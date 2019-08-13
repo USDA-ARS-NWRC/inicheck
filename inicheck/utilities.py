@@ -1,6 +1,116 @@
 import sys
 import os
 
+
+def find_options_in_recipes(recipes, choice_search, action_kw, condition_position=0):
+    """
+    Looks through the master config at recipes and entries to determine if
+    there are place the developer made distince choices, this is used in the
+    inimake script to walk users through making their own config file from
+    scratch.
+
+    This function looks through and finds sections or items that match the
+    conditional. Then it looks through the adj_config to determine if any
+    sections/items are being removed as a result, then it finds those.
+    If a section/item appears in a recipe condition and a removed by
+    another trigger it is extremely likely these are choices.
+
+    Args:
+        mcfg: Recipes object from master config
+        conditional: list of 3 focusing on what were looking for
+        action_kw: action keyword is a string of what to look for in matching
+                   choices where ever true is used will popoulate with every
+                   item/section
+
+    Returns:
+        final_choices:
+
+    """
+    decisions = {}
+    conditional = ["any" for i in range(3)]
+    final_choices = []
+    pos = condition_position
+
+    # Gather which recipes might represent a decision point
+    for r in recipes:
+        choices = []
+
+        for t_name, trigger in r.triggers.items():
+
+            for condition in trigger.conditions:
+                # if the position of interest is not a generic place holder
+                if condition[pos] != "any":
+                    # Look at how it adjusts the config
+                    for k, v in r.adj_config.items():
+                        # If our action word shows up then we know its a choice
+                        if action_kw in v.keys():
+                            choices.append(condition[pos])
+                            # Look inside the adjustment for more choices
+                            for kk,vv in v.items():
+                                actions = [k,kk,vv]
+
+                                if kk == action_kw:
+                                    choices.append(actions[pos])
+
+        # if the list is not empty add it
+
+        if choices:
+            final_choices.append(tuple(set(sorted(choices))))
+
+    # Because there will be redundent sets of choices, we perform a set to clean up
+    return list(set(final_choices))
+
+
+def ask_user(question, choices=None):
+    """
+    Asks the user which choice to make and handles incorrect choices.
+    """
+    valid = False
+    if choices == None:
+        choices = ["yes", "no"]
+
+    if choices != None:
+        choice_str = "(" + ", ".join(choices) + ")\n"
+
+    while not valid:
+        msg = question + choice_str
+        s = input(msg)
+        if s not in choices:
+            print("Invalid Choice: Try again.")
+            valid = False
+        else:
+            valid = True
+    return s
+
+
+def ask_config_setup(choices_series, section=None, item=None, num_questions=None):
+    """
+    Ask repeating questions for setting up a config
+    """
+    if section == None and item == None:
+        msg =  "Which of these sections do you want to use? "
+
+    elif section != None and item == None:
+        msg =  "In section {},  Which of these items do you want to use? ".format(section)
+
+    else:
+        msg =  "In section {} item {},  Which of these values do you want to use? ".format(section, item)
+
+    if num_questions == None:
+        num_questions = len(choices_series)
+
+    # Add sections that we choose
+    selections = []
+
+    for i, c in enumerate(choices_series):
+        count = "{}/{}: ".format(i + 1, num_questions)
+        q = count + msg
+
+        selections.append(ask_user(q, c))
+
+    return selections
+
+
 def remove_comment(string_entry):
     """
     Takes a single line and removes and .ini type comments.

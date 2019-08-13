@@ -25,15 +25,17 @@ class UserConfig():
         """
         self.filename = filename
         self.recipes = []
-
+        self.raw_cfg = OrderedDict()
+        
         # Hang on to the original
-        self.raw_cfg = read_config(filename)
+        if self.filename != None:
+            self.raw_cfg = read_config(filename)
 
-        # Version inicheck will mess with
-        self.cfg = copy.deepcopy(self.raw_cfg)
+            # Version inicheck will mess with
+            self.cfg = copy.deepcopy(self.raw_cfg)
 
-        self.sections, self.items, self.values = \
-        self.get_unique_entries(self.cfg)
+            self.sections, self.items, self.values = \
+            self.get_unique_entries(self.cfg)
 
         if mcfg != None:
             self.mcfg = mcfg

@@ -80,12 +80,15 @@ class TriggerEntry:
 
     def __init__(self, parseable_line, name=None):
 
+        # conditions end up being a list of list because you can have
+        # multiple condition to trigger something
         self.conditions = []
         self.valid_names = ['has_section', 'has_item', 'has_value']
         heirarcy = ['section', 'item', 'value']
 
         parsed_dict = parse_entry(parseable_line,
                                   valid_names=self.valid_names)
+
         # There can be multiple conditions returned
         for name,value in parsed_dict.items():
             result = ['any', 'any', 'any']

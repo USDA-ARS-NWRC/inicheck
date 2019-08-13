@@ -37,7 +37,8 @@ setup(
     entry_points={
         'console_scripts': [
             'inicheck=inicheck.cli:main',
-            'inidiff=inicheck.cli:inidiff'
+            'inidiff=inicheck.cli:inidiff',
+            'inimake=inicheck.cli:inimake'
         ]
     },
     include_package_data=True,
