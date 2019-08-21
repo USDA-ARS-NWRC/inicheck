@@ -188,7 +188,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
 
     e.g:
         start_simulation: 10-01-2016
-        stop_simulation: 10-01-2015
+        stop_simulation: 10-01-2017
 
     Would return an issue.
 
@@ -227,12 +227,12 @@ class CheckDatetimeOrderedPair(CheckDatetime):
         is_start = is_kw_matched(self.item, init_kw)
         is_end = is_kw_matched(self.item, final_kw)
 
-        # Look for corresponding end
         if is_start and not is_end:
+            # Look for a corresponding end
             corresponding = get_kw_match(self.cfg_dict.keys(), final_kw)
 
-        # Look for the start
         elif is_end and not is_start:
+            # Look for the start
             corresponding = get_kw_match(self.cfg_dict.keys(), init_kw)
 
         else:
@@ -243,15 +243,21 @@ class CheckDatetimeOrderedPair(CheckDatetime):
 
         # Is corresponding castable?
         corresponding_val = self.cfg_dict[corresponding]
-        valid, msg = is_valid(corresponding_val, self.type_func, self.type)
 
+        valid, msg = is_valid(corresponding_val, self.type_func, self.type)
         if valid:
+            corresponding_val = self.type_func(corresponding_val)
+            value = self.type_func(self.value)
+
             if is_start:
-                order_valid = self.value < corresponding_val
+                # validity check
+                print(type(self.value), type(corresponding_val))
+                order_valid = value < corresponding_val
                 incorrect_context = "after"
 
             elif is_end:
-                order_valid = corresponding_val < self.value
+                # validity check
+                order_valid = value > corresponding_val
                 incorrect_context = "before"
 
             msg = "Date is {} {} value".format(incorrect_context, corresponding)
