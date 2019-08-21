@@ -29,3 +29,9 @@ History
 * Added Datetime Ordered data type for start stop options
 * Added in an inidiff script for comparing config files
 
+0.5.0 (2019-08-22)
+------------------
+
+* Fixed bug relating to Datetime Ordered Pairs
+* Added in inimake script for creating scripts from scratch
+* Added in more unittests (54% coverage)

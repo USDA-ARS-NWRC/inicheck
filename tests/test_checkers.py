@@ -9,39 +9,53 @@ Tests for `inicheck.checkers` module.
 
 import unittest
 from inicheck.checkers import *
-
+from inicheck.config import UserConfig, MasterConfig
 
 class TestCheckers(unittest.TestCase):
+    def run_a_checker(self, valids, invalids, checker, ucfg=None, is_list=False, section=None, item=None):
+        """
+        Runs a loop over all the valids and applies the checker and asserts
+        theyre true. Same thing is done for the invalids
+        Args:
+            valids: List of valid entries to check
+            invalids: List of invalid entries to check
+            checker: any class in inicheck.checkers
+            ucfg: inicheck.config.UserConfig instance (optional)
+            is_list: is it expected to be a list?
+            section: section name the item being checked is occurring
+            item: Item name in the config
+        """
+        for v in valids:
+            b = checker(value=v, config=ucfg, is_list=is_list,section=section, item=item)
+            valid, msg = b.is_valid()
+            if not valid:
+                print(msg)
+            assert valid
+
+        for v in invalids:
+            b = checker(value=v, config=ucfg, is_list=is_list,section=section, item=item)
+            valid, msg = b.is_valid()
+            if valid:
+                print(msg)
+
+            assert not valid
 
     def test_datetime(self):
         """
         Test we see datetime as datetime
         """
-
-        # Confirm we these values are valid
-        for v in ['2018-01-10 10:10','10-10-2018', "October 10 2018"]:
-            b = CheckDatetime(value=v, config=None)
-            assert b.is_valid()[0]
-
-        # Confirm these are not valid
-        for v in ['Not-a-date','Wednesday 5th']:
-            b = CheckDatetime(value=v, config=None)
-            assert not b.is_valid()[0]
+        valids = ['2018-01-10 10:10','10-10-2018', "October 10 2018"]
+        invalids = ['Not-a-date', 'Wednesday 5th']
+        self.run_a_checker(valids, invalids, CheckDatetime)
 
     def test_float(self):
         """
         Test we see floats as floats
         """
 
-        # Confirm we these values are valid
-        for v in [-1.5,'2.5']:
-            b = CheckFloat(value=v, config=None)
-            assert b.is_valid()[0]
-
-        # Confirm these are not valid
-        for v in ['tough']:
-            b = CheckFloat(value=v, config=None)
-            assert not b.is_valid()[0]
+        valids = [-1.5, '2.5']
+        invalids =  ['tough']
+        self.run_a_checker(valids, invalids, CheckFloat)
 
     def test_int(self):
         """
@@ -49,14 +63,10 @@ class TestCheckers(unittest.TestCase):
         """
 
         # Confirm we these values are valid
-        for v in [10, '2', 1.0]:
-            b = CheckInt(value=v, config=None)
-            assert b.is_valid()[0]
+        valids = [10, '2', 1.0]
+        invalids = ['tough', '1.5', '']
+        self.run_a_checker(valids, invalids, CheckInt)
 
-        # Confirm these are not valid
-        for v in ['tough', '1.5', '']:
-            b = CheckInt(value=v, config=None)
-            assert not b.is_valid()[0]
 
     def test_bool(self):
         """
@@ -64,15 +74,10 @@ class TestCheckers(unittest.TestCase):
         """
 
         # Confirm we these values are valid
-        for v in [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']:
-            b = CheckBool(value=v, config=None)
-            assert b.is_valid()[0]
+        valids = [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
+        invalids = ['Fasle', 'treu']
+        self.run_a_checker(valids, invalids, CheckBool)
 
-        # Confirm these are not valid
-        for v in ['Fasle','treu']:
-            b = CheckBool(value=v, config=None)
-
-            assert not b.is_valid()[0]
 
     def test_string(self):
         """
@@ -80,9 +85,8 @@ class TestCheckers(unittest.TestCase):
         """
 
         # Confirm we these values are valid
-        for v in ['test']:
-            b = CheckString(value=v, config=None)
-            assert b.is_valid()[0]
+        valids = ['test']
+        self.run_a_checker(valids, [], CheckString)
 
     def test_list(self):
         """
@@ -99,37 +103,51 @@ class TestCheckers(unittest.TestCase):
         """
 
         valids = ["test"]
-        invalids = [["test","test2"]]
+        invalids = [["test", "test2"]]
+        self.run_a_checker(valids, [], CheckString,  is_list=True)
+        self.run_a_checker([], invalids, CheckString,  is_list=False)
 
-        for t in valids:
-            # Confirm we cast to a list when a single value it provided
-            b = CheckString(value=t, config=None, is_list=True)
-            valid, msg = b.is_valid()
-            assert valid
+    def test_directory(self):
+        """
+        Tests the base class for path based checkers
+        """
 
-        for t in invalids:
+        ucfg = UserConfig("./tests/test_configs/base_cfg.ini")
+        valids = ["../"]
+        invalids = ['./somecrazy_location!/']
+        self.run_a_checker(valids, invalids, CheckDirectory, ucfg=ucfg)
 
-            # Confirm we cast to a list when a single value it provided
-            b = CheckString(value=t, config=None, is_list=False)
-            valid, msg = b.is_valid()
-            assert not valid
+    def test_filename(self):
+        """
+        Tests the base class for path based checkers
+        """
+
+        ucfg = UserConfig("./tests/test_configs/base_cfg.ini")
+        valids = ["../test_entries.py"]
+        self.run_a_checker(valids, [], CheckFilename, ucfg=ucfg)
 
     def test_url(self):
         """
-        Test our url methods.
+        Test our url checking.
         """
         valids = ["https://google.com"]
         invalids = ["https://micah_subnaught_is_awesome.com"]
+        self.run_a_checker(valids, [], CheckURL, is_list=True)
 
-        for url in valids:
-            b = CheckURL(value=url, config=None)
-            valid, msg = b.is_valid()
-            assert valid
+    def test_datetime_ordered_pairs(self):
+        """
+        Tests the ordered datetime pair checker which looks for <keyword>_start
+        <keyword>_end pairs and confirms they occurs in the correct order.
 
-        for url in invalids:
-            b = CheckURL(value=url, config=None, is_list=False)
-            valid, msg = b.is_valid()
-            assert not valid
+        """
+        mcfg = MasterConfig(path='./tests/test_configs/CoreConfig.ini')
+        ucfg = UserConfig(None, mcfg=mcfg)
+
+        ucfg.raw_cfg = {"topo":{"test_end":"10-01-2019"}}
+        ucfg.apply_recipes()
+        valids = ["9-01-2019"]
+        invalids = ["10-02-2019"]
+        self.run_a_checker(valids, invalids, CheckDatetimeOrderedPair, section="topo", item="test_start", ucfg=ucfg)
 
 if __name__ == '__main__':
     import sys
