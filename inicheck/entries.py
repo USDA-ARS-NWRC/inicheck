@@ -139,11 +139,15 @@ class ConfigEntry:
         * default
         * options
         * description
+        * max
+        * min
+        * length
 
     """
 
     def __init__(self, name=None, value=None, default=None,
-                 entry_type='string', options=[], parseable_line=None):
+                 entry_type='string', options=[], maximum=None, minimmum=None,
+                 option_length = None, parseable_line=None):
 
         self.name = name
         self.value = value
@@ -152,13 +156,17 @@ class ConfigEntry:
         self.description = ''
         self.listed = False
         self.type = entry_type
-        self.valid_names = ['default', 'type', 'options', 'description']
+        self.max = maximum
+        self.min = minimmum
+        self.option_length = option_length
+        self.valid_names = ['default', 'type', 'options', 'description','max',
+                            'min','length']
 
         if parseable_line != None:
-            parsed_dict = parse_entry(parseable_line, item = name,
+            parsed_dict = parse_entry(parseable_line, item=name,
                                                   valid_names=self.valid_names)
             for name,value in parsed_dict.items():
-                setattr(self,name,value)
+                setattr(self, name, value)
 
         # Options should always be a list
         if type(self.options) != list:

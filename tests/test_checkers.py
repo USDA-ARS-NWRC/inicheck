@@ -12,7 +12,10 @@ from inicheck.checkers import *
 from inicheck.config import UserConfig, MasterConfig
 
 class TestCheckers(unittest.TestCase):
-    def run_a_checker(self, valids, invalids, checker, ucfg=None, is_list=False, section=None, item=None):
+
+    def run_a_checker(self, valids, invalids, checker, ucfg=None, is_list=False,
+                                                                  section=None,
+                                                                  item=None):
         """
         Runs a loop over all the valids and applies the checker and asserts
         theyre true. Same thing is done for the invalids
@@ -26,14 +29,16 @@ class TestCheckers(unittest.TestCase):
             item: Item name in the config
         """
         for v in valids:
-            b = checker(value=v, config=ucfg, is_list=is_list,section=section, item=item)
+            b = checker(value=v, config=ucfg, is_list=is_list, section=section,
+                                                               item=item)
             valid, msg = b.is_valid()
             if not valid:
                 print(msg)
             assert valid
 
         for v in invalids:
-            b = checker(value=v, config=ucfg, is_list=is_list,section=section, item=item)
+            b = checker(value=v, config=ucfg, is_list=is_list, section=section,
+                                                               item=item)
             valid, msg = b.is_valid()
             if valid:
                 print(msg)
@@ -65,7 +70,7 @@ class TestCheckers(unittest.TestCase):
         # Confirm we these values are valid
         valids = [10, '2', 1.0]
         invalids = ['tough', '1.5', '']
-        self.run_a_checker(valids, invalids, CheckInt)
+        self.run_a_checker(valids, invalids, CheckInt, ucfg=None)
 
 
     def test_bool(self):
@@ -147,7 +152,32 @@ class TestCheckers(unittest.TestCase):
         ucfg.apply_recipes()
         valids = ["9-01-2019"]
         invalids = ["10-02-2019"]
-        self.run_a_checker(valids, invalids, CheckDatetimeOrderedPair, section="topo", item="test_start", ucfg=ucfg)
+        self.run_a_checker(valids, invalids, CheckDatetimeOrderedPair,
+                                             section="topo",
+                                             item="test_start",
+                                             ucfg=ucfg)
+    def test_bounds_checking(self):
+        """
+        MasterConfig options now have max and min values to constrain continuous
+        types. This tests whether that works
+        """
+        mcfg = MasterConfig(path='./tests/test_configs/CoreConfig.ini')
+        ucfg = UserConfig(None, mcfg=mcfg)
+        s = "air_temp"
+        i = "dk_nthreads"
+
+        ucfg.raw_cfg = {s:{i:None}}
+
+        ucfg.apply_recipes()
+        valids = [0, 5, 10]
+        invalids = [-1,11]
+        for v in valids:
+            ucfg.cfg[s][i] = v
+            self.run_a_checker([v], [], CheckInt, ucfg=ucfg, section=s, item=i)
+
+        for v in invalids:
+            ucfg.cfg[s][i] = v
+            self.run_a_checker([], [v], CheckInt, ucfg=ucfg, section=s, item=i)
 
 if __name__ == '__main__':
     import sys

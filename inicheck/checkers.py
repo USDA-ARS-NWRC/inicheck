@@ -99,15 +99,74 @@ class CheckType(GenericCheck):
 
     def __init__(self, **kwargs):
         super(CheckType, self).__init__(**kwargs)
+
         self.type = 'string'
+        kwargs_requires = ["item","section", "config", "is_list", 'maximum',
+                                                                  'minimum']
+
+        for kw in kwargs_requires:
+            if kw in kwargs.keys():
+                value = kwargs[kw]
+            else:
+                value = None
+
+            setattr(self, kw, value)
+
         # Function used for casting to types
         self.type_func = str
 
         # Allow users to specify an option to be a list
-        if 'is_list' in kwargs.keys():
-            self.is_list=kwargs['is_list']
-        else:
+        if self.is_list == None:
             self.is_list = False
+
+        # Allow developers to specify bounds for certain types
+        self.bounded = False
+
+    def check_bounds(self):
+        """
+        Checks the developers values for bounded checks on the config file.
+
+        If self.max or self.min == None then it is assumed no bounds on either
+        end.
+
+        Function only runs when requested.
+        """
+
+        valid = True
+
+        msg = "Value must be"
+
+        if self.bounded:
+            if self.config != None:
+                max_value = self.config.mcfg.cfg[self.section][self.item].max
+                min_value = self.config.mcfg.cfg[self.section][self.item].min
+            else:
+                max_value = self.maximum
+                min_value = self.minimum
+
+            value = self.type_func(self.value)
+
+            if min_value != None:
+                min_value = self.type_func(min_value)
+                msg += " greater than {}".format(min_value)
+
+                if value < min_value:
+                    valid = False
+
+            if max_value != None:
+                if min_value != None:
+                    msg += " and"
+
+                max_value = self.type_func(max_value)
+                msg += " less than {}".format(max_value)
+
+                if value > max_value:
+                    valid = False
+
+            if valid:
+                msg = None
+
+        return valid, msg
 
     def is_it_a_lst(self):
         """
@@ -156,6 +215,10 @@ class CheckType(GenericCheck):
         else:
             valid, msg = is_valid(self.value, self.type_func, self.type)
 
+        # Check for bounds
+        if valid:
+            valid, msg = self.check_bounds()
+
         return valid, msg
 
     def cast(self):
@@ -176,18 +239,17 @@ class CheckDatetime(CheckType):
         self.type_func = to_datetime
         self.type = 'datetime'
 
-
 class CheckDatetimeOrderedPair(CheckDatetime):
     """
-    Checks to see if start and stop based items end are infact in fact ordered in
-    the same section.
+    Checks to see if start and stop based items end are infact in fact ordered
+    in the same section.
 
     Requires keywords section and item to ba passed as keyword args.
     Looks for keywords start/begin or stop/end in an item name. Then looks for a
     corresponding match with the opposite name.
 
     e.g:
-        start_simulation: 10-01-2016
+        start_simulation: 10-01-2019
         stop_simulation: 10-01-2017
 
     Would return an issue.
@@ -200,9 +262,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
     def __init__(self, **kwargs):
         super(CheckDatetimeOrderedPair, self).__init__(**kwargs)
 
-        self.item = kwargs["item"]
-        section = kwargs["section"]
-        self.cfg_dict = kwargs['config'].cfg[section]
+        self.cfg_dict = kwargs['config'].cfg[self.section]
         self.msg_level = "error"
 
     def is_corresponding_valid(self):
@@ -217,8 +277,8 @@ class CheckDatetimeOrderedPair(CheckDatetime):
             corresponding: item name in the config section corresponding with
                            item being checked
         Raises:
-            ValueError: raises an error if the name contains both sets or None of
-                        keywords
+            ValueError: raises an error if the name contains both sets or None
+                        of keywords
         """
         init_kw = ["start",'begin']
         final_kw = ['stop','end']
@@ -251,7 +311,6 @@ class CheckDatetimeOrderedPair(CheckDatetime):
 
             if is_start:
                 # validity check
-                print(type(self.value), type(corresponding_val))
                 order_valid = value < corresponding_val
                 incorrect_context = "after"
 
@@ -269,6 +328,11 @@ class CheckDatetimeOrderedPair(CheckDatetime):
     def is_valid(self):
         """
         Checks whether it convertable to datetime, then checks for order.
+
+        Returns:
+            valid: boolean representing whether the valid
+            msg: issue report string if there is an issue, otherwise returns
+                 None
         """
         # Check for the datetime first
         valid, msg = is_valid(self.value, self.type_func, self.type)
@@ -290,6 +354,8 @@ class CheckFloat(CheckType):
         self.type_func = float
         self.type = 'float'
 
+        # Can be bounded but not requried
+        self.bounded = True
 
 class CheckInt(CheckType):
     """
@@ -301,6 +367,9 @@ class CheckInt(CheckType):
         super(CheckInt, self).__init__(**kwargs)
         self.type = 'int'
         self.type_func = self.convert_to_int
+
+        # Can be bounded but not requried
+        self.bounded = True
 
     def convert_to_int(self, value):
         """
@@ -408,6 +477,9 @@ class CheckPath(CheckType):
         return exists, self.message
 
     def cast(self):
+        """
+        Special casting function to just pass the path through
+        """
         return self.value
 
 

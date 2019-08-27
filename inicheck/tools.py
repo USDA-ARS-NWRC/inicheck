@@ -91,8 +91,8 @@ def check_config(config_obj):
                             # Did the user provide a list value or single value
                             val_lst = mk_lst(value)
 
-                            #Check to see if we want to print the item error
-                            # location in the list
+                            # Check to see if we want to print the item
+                            # location as in the list as a part of the error
                             if len(val_lst) > 1:
                                 print_lst = True
                             else:
@@ -120,12 +120,12 @@ def check_config(config_obj):
                                     # 2. Check the type constraint.
                                     options_type = mcfg[section][item].type
 
-                                    # Check for type checkers
+                                    issue = None
                                     for name, fn in standard_funcs.items():
                                         if options_type == name.lower():
                                             b = fn(value=v, config=config_obj,
-                                           is_list=mcfg[section][item].listed,
-                                           item=item, section=section)
+                                            is_list=mcfg[section][item].listed,
+                                            item=item, section=section)
                                             issue = b.check()
 
                                             if issue != None:
@@ -137,6 +137,7 @@ def check_config(config_obj):
                                                 elif b.msg_level == 'warning':
                                                     warnings.append(full_msg)
                                                 break
+
                                         else:
                                             issue = None
             return warnings, errors
