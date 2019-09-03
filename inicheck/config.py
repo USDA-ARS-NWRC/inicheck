@@ -17,16 +17,18 @@ class UserConfig():
     config repeatedly making it available through the attribute self.cfg
     """
 
-    def __init__(self, filename, mcfg=None):
+    def __init__(self, filename, mcfg=None, changelog=None):
         """
         Args:
             filename: String to path containing config in .ini format
             mcfg: Object of the master config
+            changelog: Object of changes.ChangeLog representing config file
+                       entry changes by developers
         """
         self.filename = filename
         self.recipes = []
         self.raw_cfg = OrderedDict()
-        
+
         # Hang on to the original
         if self.filename != None:
             self.raw_cfg = read_config(filename)
@@ -40,6 +42,8 @@ class UserConfig():
         if mcfg != None:
             self.mcfg = mcfg
 
+        if changelog != None:
+            self.changelog = changelog
     def apply_recipes(self):
         """
         Look through the users config file and section by section add in
@@ -415,7 +419,7 @@ class MasterConfig():
 
         return result
 
-    def merge(self,mcfg):
+    def merge(self, mcfg):
         """
         Merges the a master config object into the current master config object
         in place

@@ -8,7 +8,7 @@ Tests for `inicheck.iniparse` module.
 """
 
 import unittest
-from inicheck.iniparse import parse_sections, parse_items, parse_entry, parse_values
+from inicheck.iniparse import *
 
 
 class TestIniparse(unittest.TestCase):
@@ -73,7 +73,7 @@ class TestIniparse(unittest.TestCase):
         # Check for a correct interpretation of item properties for master files
         assert(items['recipe']['a'] == "default=10, options=[10 15 20]")
 
-    def test_parse_values(parsed_items):
+    def test_parse_values(self):
         """
         test parse values
 
@@ -92,6 +92,21 @@ class TestIniparse(unittest.TestCase):
 
         # Check we parse a properties list with no commas correctly
         assert(values['recipe']['a'][1]=='options=[10 15 20]')
+
+    def test_parse_changes(self):
+        """
+        Tests tha change lof parsing. Ensures we raise a value error for invalid
+        syntax and that valid syntax is parsed correctly
+        """
+        d = ["section/item -> new_section/item", "section/item -> REMOVED"]
+
+        cfg = parse_changes(d)
+        assert cfg[0][-1] == "new_section/item"
+        assert cfg[1][-1] == "removed"
+
+        # Test syntax errors
+        d = ["section/item > new_section/item"]
+        self.assertRaises(ValueError, parse_changes, d)
 
 
 if __name__ == '__main__':

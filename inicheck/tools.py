@@ -234,7 +234,7 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later=False):
 
 
 def get_user_config(config_file, master_files=None, modules=None,
-                    mcfg=None, checking_later=False):
+                    mcfg=None, changelog_file=None, checking_later=False):
     """
     Returns the users config as the object UserConfig.
 
@@ -244,6 +244,8 @@ def get_user_config(config_file, master_files=None, modules=None,
         modules: a module or list of modules with a string attribute
                 __CoreConfig__ which is the path to a CoreConfig
         mcfg: the master config object after it has been read in.
+        changelog_file: Path to a changlog showing any changes to the config
+                        file the developers have made
         checking_later: Passes over excpetions when catsing to the right
                         types to be formally checked later
 
@@ -264,14 +266,21 @@ def get_user_config(config_file, master_files=None, modules=None,
 
             mcfg = MasterConfig(path=master_files, modules=modules)
 
-        ucfg = UserConfig(config_file, mcfg=mcfg)
-
-        ucfg.apply_recipes()
-        ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
-
     else:
         raise IOError("Config file path {0} doesn't exist."
                       "".format(config_file))
+
+    # Look for the change log
+    if changelog_file != None:
+        chlog = ChangeLog(path=changelog, modeules=module)
+    else:
+        chlog = None
+
+    ucfg = UserConfig(config_file, mcfg=mcfg, changelog=chlog)
+
+    ucfg.apply_recipes()
+    ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
+
 
     return ucfg
 

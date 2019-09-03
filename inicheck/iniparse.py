@@ -47,19 +47,25 @@ def parse_entry(info, item = None, valid_names=None):
     last_three = []
 
     for s in info:
+        print(s)
         if '=' in s:
             a = s.split('=')
 
         else:
             raise ValueError('\n\nMaster Config file missing an equals sign in'
                             ' entry or missing a comma right before the item '
-                            '"{0}" in the entry:\n"{1}"'.format(item, info))
+                            '"{0}" in the entry:\n"{1}"\nFound in {2}'.format(item, info, s))
 
         name = (a[0].lower()).strip()
+
         # Check for constraints on potential names of entries
         if valid_names != None and name not in valid_names:
-            raise ValueError("Invalid option set in the master config File"
-                            " for entry -----> {0}".format(name))
+            raise ValueError("\nInvalid property set in the master config File,"
+                            " available options are: \n * {0}\n"
+                            "\nIf this is supposed to be a recipe, you may have"
+                            " forgotten to add keyword 'recipe' to the section"
+                            " name.\nIssue generated from '{1}'"
+                            "".format("\n * ".join(valid_names), s))
 
         value = a[1].strip()
 
@@ -116,6 +122,10 @@ def parse_sections(lines):
                 if ']' in line:
 
                     section = (remove_chars(line,'[]')).lower().strip()
+                    if section in result.keys():
+                        raise ValueError("Section name {} already used in "
+                                         "config, consider renaming it to "
+                                         "something unique.".format(section))
                     result[section] = []
 
             else:
@@ -213,3 +223,49 @@ def parse_values(parsed_items):
                     result[section][item] = [value]
 
         return result
+
+
+def parse_changes(change_list):
+    """
+    Takes in a section and item parsed dictionary and parses on > forming a
+    list. It works as the following:
+
+    To move an item to another section or item name
+    section/item -> new_section/new_item
+
+    section/item -> Removed
+
+    Args:
+        change_list: List of modifcations that occured to the config
+    Returns:
+        result: a list of a list length 2 containing of list length 4
+                representing section item property value which are all any
+                by default.
+    """
+    results = []
+
+    for i,s in enumerate(change_list):
+        if "->" in s:
+            changes = [c.lower().strip() for c in s.split("->")]
+        else:
+            raise ValueError("Invalid changelog syntax at line "
+                             " {}. A changelog entry must follow"
+                             " <section>/<item>/<property>/<value> ->"
+                             " <section>/<item>/<property>/<value>  or REMOVED"
+                             "".format(i))
+
+        # build out an any list and populate it
+        final_changes = []
+
+        for ii,c in enumerate(changes):
+            mods = ["any" for i in range(4)]
+            if "/" in c:
+                mod_lst = c.split("/")
+                mods[0:len(mod_lst)] = mod_lst
+                final_changes.append(mods)
+            else:
+                final_changes.append([c])
+
+        results.append(final_changes)
+
+    return results
