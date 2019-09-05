@@ -4,38 +4,50 @@ from . entries import ConfigEntry
 from . utilities import mk_lst
 import importlib
 from os.path import join as pjoin
+from os.path import abspath
+
 
 class ChangeLog(object):
 
-    def __init__(self, paths=None, modules=None, mcfg=None,**kwargs):
-        self.paths =[]
+    def __init__(self, paths=None, mcfg=None, **kwargs):
+
+        # Paths to changelogs
+        self.paths = []
 
         # We got a direct path
-        if path != None:
+        if paths != None:
             paths = mk_lst(paths)
             self.paths += paths
 
-        # Paths were manually provided
-        if modules != None:
-            modules = mk_lst(modules)
-            for m in modules:
-                i = importlib.import_module(m)
-                if hasattr(i,"__config_changelog__"):
-                    self.paths.append(os.path.abspath(pjoin(i.__file__,
-                                                      i.__config_changelog__)))
-
-        else:
-            # For testing only
-            self.changes = kwargs["changes"]
+            self.changes = self.join_changes(self.paths)
 
         self.check_log_validity(mcfg)
 
-    def read_change_log(self, changelog):
+    def join_changes(self, paths):
         """
-        Opens the file and reads in sections and the items.
+        Joins multiple changelogs together
+
+        Args:
+            paths: List of paths containing changelogs syntax
+        Returns:
+            changes: lists of line item changes provided in each line as a
+                     list of [old, new]
         """
 
-        with open(changelog, encoding='utf-8') as f:
+        changes = []
+        for p in paths:
+            changes += self.read_change_log(p)
+
+        return changes
+
+    def read_change_log(self, path):
+        """
+        Opens the file and reads in sections and the items.
+
+        Args:
+            path: Path to a changlog file
+        """
+        with open(path, encoding='utf-8') as f:
             lines = f.readlines()
             f.close()
 
@@ -55,66 +67,108 @@ class ChangeLog(object):
 
     def check_log_validity(self, mcfg):
         """
-        Checks the current master config that the items were moving to
+        Checks the current master config that the items we're moving to
         are valid. Also confirms that removals are aligned with the master.
         """
-
+        action_kw = ["any",'removed']
         cfe = ConfigEntry()
         invalids = []
 
         for zz,c in enumerate(self.changes):
-
             # Check the new assignments match the names of current master items
             current = c[1]
             valids = []
 
-            # KW removed is valid
-            if current[0] == "removed":
-                valids = [True]
-
-            # Valid Sections check
-            elif current[0] == "any" or current[0] in mcfg.cfg.keys():
+            # KW removed or ANY is valid for sections
+            if current[0] in action_kw or current[0] in mcfg.cfg.keys():
                 valids.append(True)
 
-            # Valid items when section is any
-            if current[1] == "any":
-                valids.append(True)
+            # Section is valid, lets check items
+            if current[0] != "removed":
 
-            # Non-any item and any section provided
-            elif current[0] == "any":
-                for s,items in mcfg.cfg.items():
-                    if current[1] in items.keys():
+                if len(valids) >= 1:
+
+                    # Non-any item and any section provided
+                    if current[0] == "any" and current[1] not in action_kw:
+                        for s, items in mcfg.cfg.items():
+                            if current[1] in items.keys():
+                                valids.append(True)
+                                break
+
+                    # Valid item check whe valid section provided
+                    elif (current[1] in action_kw or
+                          current[1] in mcfg.cfg[current[0]].keys()):
                         valids.append(True)
-                        break
-            # Valid item check whe valid section provided
-            elif current[1] in mcfg.cfg[current[0]].keys():
-                valids.append(True)
 
+                # Check for valid properties
+                if len(valids) >= 2:
+                        if current[2] in ["any", "default"]:
+                            valids.append(True)
 
-            # Check for valid properties
-            if current[3] == "any" or current[3] in cfe.valid_names:
-                valids.append(True)
+                # TODO Actually check values, ignoring for now.
+                if len(valids) == 3:
+                    valids.append(True)
 
-            # Final check
-            if len(valids) != len(current[0:-1]):
-                invalids.append(current)
+                # Final check
+                if len(valids) != len(current):
+                    invalids.append(c)
 
-        # Form a coherent message
+        # Form a coherent message about incorrect changlog stuff
         if invalids:
             msg = ("Changelog states a change that doesn match the core config."
                   " For a change to be valid the new changes must be in the"
                   " Master Config file. Mismatches are:")
 
             for n in invalids:
-                msg+="\n"
-                msg+="/".join(n)
+                msg+="\n * "
+                msg+="/".join(n[0])
+                msg+=" -> "
+                msg+="/".join(n[1])
+
             raise ValueError(msg)
 
+    def get_active_changes(self, ucfg):
+        """
+        Goes through the users config looking for matching old configurations,
+        then makes recommendations.
 
-    def detect_changes(ucfg, changelog):
+        Args:
+            ucfg: UserConfig Object
         """
-        As config files evolve over time it is important to be able to detect
-        changes. This is accomplished by a changelog file which follows the syntax
-        is the changes in the changelog are found in the current config
-        file
-        """
+        required_changes = []
+        potential_changes = []
+
+        cfe = ConfigEntry()
+
+        cfg = ucfg.cfg
+
+        for change in self.changes:
+
+            # Original config options
+            assumed = change[0]
+
+            # New options
+            new = change[1]
+
+            # Go through the sections
+            for s in cfg.keys():
+                if assumed[0] == "any":
+                    assumed[0] = s
+                    new[0] = s
+                # Go through the items
+                for i in cfg[s].keys():
+                    if assumed[1] == "any":
+                        assumed[1] = i
+                        new[1] = i
+                    # If we have a match from the changelog and the current config
+                    if assumed[0] == s and assumed[1] == i:
+
+                        # Check for an old default match and suggest a change
+                        if assumed[2] == "default":
+                            if str(cfg[s][i]) == assumed[3]:
+                                potential_changes.append([assumed, new])
+
+                        else:
+                            required_changes.append([assumed, new])
+
+        return potential_changes, required_changes

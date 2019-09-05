@@ -44,10 +44,10 @@ def parse_entry(info, item = None, valid_names=None):
     properties = OrderedDict()
     if type(info) != list:
         info = [info]
+
     last_three = []
 
     for s in info:
-        print(s)
         if '=' in s:
             a = s.split('=')
 
@@ -261,10 +261,13 @@ def parse_changes(change_list):
             mods = ["any" for i in range(4)]
             if "/" in c:
                 mod_lst = c.split("/")
-                mods[0:len(mod_lst)] = mod_lst
-                final_changes.append(mods)
+
+            # Catch singular sections referenced
             else:
-                final_changes.append([c])
+                mod_lst[0] = c
+
+            mods[0:len(mod_lst)] = mod_lst
+            final_changes.append(mods)
 
         results.append(final_changes)
 

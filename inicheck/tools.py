@@ -4,6 +4,8 @@ import inspect
 from . config import UserConfig, MasterConfig, check_types
 from . utilities import mk_lst
 import inicheck.checkers
+from . changes import ChangeLog
+
 
 def get_checkers(module='inicheck.checkers', keywords="check",
                                              ignore=["type","generic"]):
@@ -270,17 +272,23 @@ def get_user_config(config_file, master_files=None, modules=None,
         raise IOError("Config file path {0} doesn't exist."
                       "".format(config_file))
 
-    # Look for the change log
-    if changelog_file != None:
-        chlog = ChangeLog(path=changelog, modeules=module)
-    else:
-        chlog = None
+    # Get users config object
+    ucfg = UserConfig(config_file, mcfg=mcfg)
 
-    ucfg = UserConfig(config_file, mcfg=mcfg, changelog=chlog)
+    # Check out any change logs for issues
+    chlog = ChangeLog(path=changelog_file, modules=modules, mcfg=mcfg)
+    potentials, required = chlog.get_active_changes(ucfg)
 
-    ucfg.apply_recipes()
-    ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
+    # If no critical changes required
+    if len(required) == 0:
+        ucfg.apply_recipes()
+        ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
 
+    # If were not running the CLI, raise an exception
+    if not checking_later and len(required) != 0:
+        raise ValueError("User's Config has deprecated information and needs"
+                        " adjustment. To see what need to change:"
+                        "\n{}")
 
     return ucfg
 

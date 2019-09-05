@@ -17,7 +17,7 @@ class UserConfig():
     config repeatedly making it available through the attribute self.cfg
     """
 
-    def __init__(self, filename, mcfg=None, changelog=None):
+    def __init__(self, filename, mcfg=None):
         """
         Args:
             filename: String to path containing config in .ini format
@@ -42,8 +42,6 @@ class UserConfig():
         if mcfg != None:
             self.mcfg = mcfg
 
-        if changelog != None:
-            self.changelog = changelog
     def apply_recipes(self):
         """
         Look through the users config file and section by section add in
