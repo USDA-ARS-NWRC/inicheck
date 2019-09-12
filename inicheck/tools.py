@@ -43,9 +43,6 @@ def get_checkers(module='inicheck.checkers', keywords="check",
 
     return func_dict
 
-def check_config_changelog(config_obj):
-    """
-    """
 
 def check_config(config_obj):
             """
@@ -285,19 +282,20 @@ def get_user_config(config_file, master_files=None, modules=None,
     if not checking_later:
 
         # Check out any change logs for issues
-        chlog = ChangeLog(path=changelog_file, modules=modules, mcfg=mcfg)
+        chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
         potentials, required = chlog.get_active_changes(ucfg)
+
 
         # Required Changes that broke things
         if len(required) != 0:
             cmd = get_inicheck_cmd(config_file, modules=modules,
                                                 master_files=master_files)
-                                                
+
             raise ValueError("User's Config has deprecated information and "
                             " needs adjustment. To see what needs to change:"
                             "\n{}".format(cmd))
 
-    # If no critical changes required
+    # Fill in the gaps and make sure they're the right types
     ucfg.apply_recipes()
     ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
 
