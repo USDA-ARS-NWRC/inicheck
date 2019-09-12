@@ -2,7 +2,7 @@ import os
 import sys
 import inspect
 from . config import UserConfig, MasterConfig, check_types
-from . utilities import mk_lst
+from . utilities import mk_lst, get_inicheck_cmd
 import inicheck.checkers
 from . changes import ChangeLog
 
@@ -291,9 +291,9 @@ def get_user_config(config_file, master_files=None, modules=None,
             cmd = get_inicheck_cmd(config_file, modules=modules,
                                                 master_files=master_files)
 
-            raise ValueError("User's Config has deprecated information and "
+            raise ValueError("User's Config has deprecated information and"
                             " needs adjustment. To see what needs to change:"
-                            "\n{}".format(cmd))
+                            "\n>> {}".format(cmd))
 
     # Fill in the gaps and make sure they're the right types
     ucfg.apply_recipes()
