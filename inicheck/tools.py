@@ -265,6 +265,8 @@ def get_user_config(config_file, master_files=None, modules=None,
         if master_files != None or modules != None:
             if master_files != None:
                 master_files = mk_lst(master_files)
+            if modules != None:
+                modules = mk_lst(modules)
 
             mcfg = MasterConfig(path=master_files, modules=modules)
 
@@ -275,20 +277,29 @@ def get_user_config(config_file, master_files=None, modules=None,
     # Get users config object
     ucfg = UserConfig(config_file, mcfg=mcfg)
 
-    # Check out any change logs for issues
-    chlog = ChangeLog(path=changelog_file, modules=modules, mcfg=mcfg)
-    potentials, required = chlog.get_active_changes(ucfg)
+    # If were not running the CLI, raise exceptions for issues
+    if not checking_later:
+
+        # Check out any change logs for issues
+        chlog = ChangeLog(path=changelog_file, modules=modules, mcfg=mcfg)
+        potentials, required = chlog.get_active_changes(ucfg)
+
+        # Required Changes that broke things
+        if len(required) != 0:
+            cmd = "inicheck -f {}".format(config_file)
+
+            if master_files != None:
+                cmd += "-mf {}".format(" ".join(master_files))
+            elif modules != None:
+                cmd += " -m {}".format(" ".join(modules))
+
+            raise ValueError("User's Config has deprecated information and "
+                            " needs adjustment. To see what needs to change:"
+                            "\n{}".format(cmd))
 
     # If no critical changes required
-    if len(required) == 0:
-        ucfg.apply_recipes()
-        ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
-
-    # If were not running the CLI, raise an exception
-    if not checking_later and len(required) != 0:
-        raise ValueError("User's Config has deprecated information and needs"
-                        " adjustment. To see what need to change:"
-                        "\n{}")
+    ucfg.apply_recipes()
+    ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
 
     return ucfg
 
@@ -302,7 +313,7 @@ def config_documentation(out_f, paths=None, modules=None,
         out_f: string path to output location for the auto documentation
         paths: paths to master config files to use for creating docs
         modules: modules with attributes __core_config__ for creating docs
-                 section_link_dict- dictionary containing special documentation
+        section_link_dict: dictionary containing special documentation
                  for a section in the config file reference
 
     """
@@ -343,7 +354,7 @@ def config_documentation(out_f, paths=None, modules=None,
                 if type(z) == list:
                     combo = ' '
                     doc_s = combo.join([str(s) for s in z])
-                    setattr(v,att,doc_s)
+                    setattr(v, att, doc_s)
 
             # Bold item with definition
             config_doc += "| **{0}**\n".format(item)

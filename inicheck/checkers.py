@@ -534,7 +534,6 @@ class CheckURL(CheckType):
         self.type = 'url'
         self.msg_level = 'error'
 
-
     def is_valid(self):
         """
         Makes a request to the URL to determine the validity

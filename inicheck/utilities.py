@@ -136,10 +136,11 @@ def mk_lst(values, unlst=False):
     # Not a list, were not looking to unlist it. make it a list
     if type(values) != list and not unlst:
             values = [values]
-    else:
-        # We want to unlist a list we get
-        if unlst:
-            # single item provided so we don't want it a list
+
+    # We want to unlist a list we get
+    if unlst:
+        # single item provided so we don't want it a list
+        if type(values) == list:
             if len(values) == 1:
                 values = values[0]
 
@@ -299,3 +300,20 @@ def is_valid(value, cast_fn, expected_data_type):
         msg = "Expecting {0} received {1}".format(expected_data_type,
                                                   type(value).__name__)
     return valid, msg
+
+def get_inicheck_cmd(config_file, modules=None, master_files=None):
+    """
+    Strings together an inicheck cli command based on modules and files
+    """
+
+    cmd = "inicheck -f {}".format(config_file)
+
+    if master_files != None:
+        master_files = mk_lst(master_files)
+        cmd += " -mf {}".format(" ".join(master_files))
+
+    if modules != None:
+        modules = mk_lst(modules)
+        cmd += " -m {}".format(" ".join(modules))
+
+    return cmd

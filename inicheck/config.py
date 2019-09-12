@@ -334,28 +334,24 @@ class UserConfig():
 
 class MasterConfig():
     def __init__(self, path=None, modules=None, checkers=None, titles=None,
-                 header=None):
+                 header=None, changelogs=None):
 
-        if type(path) != list:
-            path = [path]
         self.paths = []
         self.recipes = []
         self.titles = {}
         self.header = header
-
         self.checker_modules = []
+        self.changelogs = []
 
         # Paths were manually provided
         if path != None and modules == None:
-            for p in path:
-                self.paths.append(os.path.abspath(p))
+            for p in mk_lst(path):
+                self.paths(os.path.abspath(p))
 
         # If a module was passed
         if modules != None and self.paths == []:
-            if type(modules) != list:
-                modules = [modules]
 
-            for m in modules:
+            for m in mk_lst(modules):
                 i = importlib.import_module(m)
                 self.paths.append(os.path.abspath(os.path.join(i.__file__,
                                                          i.__core_config__)))
@@ -374,13 +370,16 @@ class MasterConfig():
 
                 # Search for custom checkers
                 if hasattr(i, '__config_checkers__'):
-                    self.checker_modules.append(m+'.' +
+                    self.checker_modules.append(m + '.' +
                                               getattr(i, '__config_checkers__'))
+                # Grab ayny change logs
+                if hasattr(i,"__config_changelog__"):
+                    self.changelogs.append(os.path.abspath(os.path.join(i.__file__,
+                                                         i.__config_changelog__)))
 
+        # Add any extra ones provided
         if checkers != None:
-            if type(checkers) != list:
-                checkers = [checkers]
-            for c in checkers:
+            for c in mk_lst(checkers):
                 self.checker_modules.append(c)
 
         if titles != None:

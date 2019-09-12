@@ -1,13 +1,14 @@
 # !/usr/bin/env python
 
 import argparse
-from . output import print_config_report, generate_config, print_recipe_summary, print_details, print_non_defaults
+from . output import *
 from . tools import get_user_config, check_config
+from . changes import ChangeLog
 import os
 import sys
 from . config import MasterConfig, UserConfig
 from . import __version__
-from .utilities import find_options_in_recipes, ask_config_setup
+from .utilities import find_options_in_recipes, ask_config_setup, get_inicheck_cmd
 from collections import OrderedDict
 
 
@@ -42,6 +43,10 @@ def main():
     parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide"
                         " section item and value for details regarding them")
 
+    parser.add_argument('--change', '-c', action="store_true",
+                                           help="Apply changes to config if"
+                                           " changes from a changelog are"
+                                           " detected")
 
     args = parser.parse_args()
 
@@ -50,7 +55,6 @@ def main():
         print("ERROR: Please provide either a module or a path to a master"
              " config, or ask for details on config entries")
         sys.exit()
-
 
     # Normal operation
     else:
@@ -78,8 +82,31 @@ def main():
                                       modules=args.modules,
                                       checking_later=True)
 
-            warnings, errors = check_config(ucfg)
+            # Check out any change logs for issues
+            chlog = ChangeLog(paths=ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
+            potentials, required = chlog.get_active_changes(ucfg)
 
+            # Fix the changes per user request
+            if args.change:
+                print("Applying {} changes required by recent code developments."
+                    "".format(len(required) + len(potentials)))
+                ucfg.cfg = chlog.apply_changes(ucfg, potentials, required)
+
+                required = []
+
+            # If changes are required report and exit
+            if len(required) > 0:
+                print_change_report(potentials, required, ucfg)
+                cmd = get_inicheck_cmd(args.config_file, modules=args.modules,
+                                                      master_files=args.master)
+                cmd += " --change -w"
+
+                print("Please make the above changes before continuing. "
+                      "To automatically do this use:\n{}"
+                      "".format(cmd))
+                sys.exit()
+
+            warnings, errors = check_config(ucfg)
             print_config_report(warnings, errors)
 
             # Print out the recipes summary

@@ -211,6 +211,7 @@ def parse_values(parsed_items):
                     and the values provided as a list
         """
         result = OrderedDict()
+
         for section in parsed_items.keys():
             result[section] = OrderedDict()
             for item,val in parsed_items[section].items():

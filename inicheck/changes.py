@@ -5,7 +5,7 @@ from . utilities import mk_lst
 import importlib
 from os.path import join as pjoin
 from os.path import abspath
-
+from collections import OrderedDict
 
 class ChangeLog(object):
 
@@ -115,7 +115,7 @@ class ChangeLog(object):
 
         # Form a coherent message about incorrect changlog stuff
         if invalids:
-            msg = ("Changelog states a change that doesn match the core config."
+            msg = ("Changelog states a change that doesn't match the core config."
                   " For a change to be valid the new changes must be in the"
                   " Master Config file. Mismatches are:")
 
@@ -143,32 +143,106 @@ class ChangeLog(object):
         cfg = ucfg.cfg
 
         for change in self.changes:
-
-            # Original config options
-            assumed = change[0]
-
-            # New options
-            new = change[1]
-
             # Go through the sections
             for s in cfg.keys():
-                if assumed[0] == "any":
-                    assumed[0] = s
-                    new[0] = s
+
                 # Go through the items
                 for i in cfg[s].keys():
-                    if assumed[1] == "any":
+
+                    # Assign original changes to any's
+                    assumed = change[0].copy()
+                    new = change[1].copy()
+
+                    if change[0][0] == "any":
+                        assumed[0] = s
+                        if change[1][0] != "removed":
+                            new[0] = s
+
+                    if change[0][1] == "any":
                         assumed[1] = i
-                        new[1] = i
-                    # If we have a match from the changelog and the current config
+                        if change[1][1] != "removed":
+                            new[1] = i
+
+                    # If we have a match from the changelog and the ucfg
                     if assumed[0] == s and assumed[1] == i:
+                        print(new)
+                        if "removed" in new:
+                            required_changes.append([assumed, "removed"])
 
-                        # Check for an old default match and suggest a change
-                        if assumed[2] == "default":
-                            if str(cfg[s][i]) == assumed[3]:
-                                potential_changes.append([assumed, new])
+                        # Make sure "any" doesn't disagree with master
+                        elif new[0] in ucfg.mcfg.cfg.keys():
+                            if new[1] in ucfg.mcfg.cfg[new[0]].keys():
 
-                        else:
-                            required_changes.append([assumed, new])
+                                # Check for an old default match and suggest a change
+                                if assumed[2] == "default":
+
+                                    value = str(mk_lst(cfg[s][i], unlst=True))
+                                    if value == assumed[3]:
+                                        potential_changes.append([assumed, new])
+
+                                else:
+                                    required_changes.append([assumed, new])
 
         return potential_changes, required_changes
+
+    def apply_changes(self, ucfg, potentials, changes):
+        """
+        Iterate through the list of detectd applicable changes retrieved
+        from get_actived_changes to produce a new config file with the
+        correct changes.
+
+        Args:
+            ucfg: UserConifg Object
+            changes: list lists length 4 (section item property value)
+                    representing detected changes
+
+        Returns:
+            cfg: Config dictionary
+        """
+
+        cfg = ucfg.cfg.copy()
+
+        # REVIEW Right now only defaults can be changed so we assume that here
+        for p in potentials:
+            s_o = p[0][0]
+            i_o = p[0][1]
+
+            # assign the new defaults
+            cfg[s_o][i_o] = p[1][3]
+
+        for c in changes:
+            removal = False
+            s_o = c[0][0]
+            i_o = c[0][1]
+
+            # Avoid adding removed items
+            if c[1] == "removed":
+                removal = True
+            else:
+                s_n = c[1][0]
+                i_n = c[1][1]
+
+            #print(s_o, i_o, s_n, i_n)
+
+            # Confirm new section in the config
+            if s_n not in ucfg.cfg.keys() and s_n != "removed":
+                cfg[s_n] = OrderedDict()
+
+            # Its been deprecated
+            if removal:
+                del cfg[s_o][i_o]
+
+            # Item or section is a name transfer.
+            elif s_o in ucfg.cfg.keys():
+                if i_o in cfg[s_o].keys():
+
+                    if s_n != "removed":
+                        cfg[s_n][i_n] = cfg[s_o][i_o]
+
+                    del cfg[s_o][i_o]
+
+                # look to remove a whole section
+                if len(cfg[s_o].keys()) == 0 and s_o not in ucfg.mcfg.cfg.keys():
+                    del(cfg[s_o])
+
+        return cfg
