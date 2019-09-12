@@ -295,9 +295,9 @@ def get_user_config(config_file, master_files=None, modules=None,
                             " needs adjustment. To see what needs to change:"
                             "\n>> {}".format(cmd))
 
-    # Fill in the gaps and make sure they're the right types
-    ucfg.apply_recipes()
-    ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
+        # Fill in the gaps and make sure they're the right types
+        ucfg.apply_recipes()
+        ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
 
     return ucfg
 
