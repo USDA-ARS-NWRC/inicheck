@@ -179,6 +179,7 @@ class TestCheckers(unittest.TestCase):
             ucfg.cfg[s][i] = v
             self.run_a_checker([], [v], CheckInt, ucfg=ucfg, section=s, item=i)
 
+
 if __name__ == '__main__':
     import sys
     sys.exit(unittest.main())

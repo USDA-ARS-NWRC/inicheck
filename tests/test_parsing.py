@@ -100,9 +100,10 @@ class TestIniparse(unittest.TestCase):
         """
         d = ["section/item -> new_section/item", "section/item -> REMOVED"]
 
-        cfg = parse_changes(d)
-        assert cfg[0][-1] == "new_section/item"
-        assert cfg[1][-1] == "removed"
+        changes = parse_changes(d)
+        print(changes[0][1][0])
+        assert changes[0][1][0] == "new_section"
+        assert changes[1][1][0] == "removed"
 
         # Test syntax errors
         d = ["section/item > new_section/item"]
