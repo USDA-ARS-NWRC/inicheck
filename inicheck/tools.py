@@ -43,6 +43,10 @@ def get_checkers(module='inicheck.checkers', keywords="check",
 
     return func_dict
 
+def check_config_changelog(config_obj):
+    """
+    """
+
 def check_config(config_obj):
             """
             Looks at the users provided config file and checks it to a master
@@ -286,13 +290,9 @@ def get_user_config(config_file, master_files=None, modules=None,
 
         # Required Changes that broke things
         if len(required) != 0:
-            cmd = "inicheck -f {}".format(config_file)
-
-            if master_files != None:
-                cmd += "-mf {}".format(" ".join(master_files))
-            elif modules != None:
-                cmd += " -m {}".format(" ".join(modules))
-
+            cmd = get_inicheck_cmd(config_file, modules=modules,
+                                                master_files=master_files)
+                                                
             raise ValueError("User's Config has deprecated information and "
                             " needs adjustment. To see what needs to change:"
                             "\n{}".format(cmd))

@@ -43,10 +43,10 @@ def main():
     parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide"
                         " section item and value for details regarding them")
 
-    parser.add_argument('--change', '-c', action="store_true",
-                                           help="Apply changes to config if"
-                                           " changes from a changelog are"
-                                           " detected")
+    parser.add_argument('--change', '-c', action='store_true',
+                        help="Actomatically apply changes to the config"
+                        " according to a packages changelog. Including"
+                        " recommended default changes.")
 
     args = parser.parse_args()
 
@@ -55,6 +55,7 @@ def main():
         print("ERROR: Please provide either a module or a path to a master"
              " config, or ask for details on config entries")
         sys.exit()
+
 
     # Normal operation
     else:
@@ -83,46 +84,45 @@ def main():
                                       checking_later=True)
 
             # Check out any change logs for issues
-            chlog = ChangeLog(paths=ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
+            chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
             potentials, required = chlog.get_active_changes(ucfg)
 
-            # Fix the changes per user request
+            # Request to apply changes
             if args.change:
-                print("Applying {} changes required by recent code developments."
-                    "".format(len(required) + len(potentials)))
-                ucfg.cfg = chlog.apply_changes(ucfg, potentials, required)
+                    print("Applying {} changes due to deprecation..."
+                          "".format(len(required) + len(potentials)))
+                    ucfg.cfg = chlog.apply_changes(ucfg, potentials, required)
+                    required = []
 
-                required = []
-
-            # If changes are required report and exit
+            # report issues if there are recommended changes
             if len(required) > 0:
-                print_change_report(potentials, required, ucfg)
-                cmd = get_inicheck_cmd(args.config_file, modules=args.modules,
-                                                      master_files=args.master)
+                cmd = get_inicheck_cmd(args.config_file,
+                                       master_files=args.master,
+                                       modules=args.modules)
                 cmd += " --change -w"
+                print_change_report(potentials, required, ucfg)
+                print("Please make the above changes before continuing."
+                      " To apply the name and default changes automatically "
+                      "use:\n{}".format(cmd))
 
-                print("Please make the above changes before continuing. "
-                      "To automatically do this use:\n{}"
-                      "".format(cmd))
-                sys.exit()
+            else:
+                warnings, errors = check_config(ucfg)
+                print_config_report(warnings, errors)
 
-            warnings, errors = check_config(ucfg)
-            print_config_report(warnings, errors)
+                # Print out the recipes summary
+                if args.recipes:
+                    print_recipe_summary(ucfg.recipes)
 
-            # Print out the recipes summary
-            if args.recipes:
-                print_recipe_summary(ucfg.recipes)
-
-            # Print out the summary of non-defaults values
-            if args.defaults:
-                print_non_defaults(ucfg)
+                # Print out the summary of non-defaults values
+                if args.defaults:
+                    print_non_defaults(ucfg)
 
             # Output the config file as inicheck interprets it.
             if args.write:
                 out_f = './{0}_full.ini'.format(
                                               os.path.basename(f).split('.')[0])
 
-                print("Writing complete config file with all recipes and "
+                print("Writing complete config file with all recipes and"
                       " necessary defaults...")
                 print('{0}'.format(out_f))
 

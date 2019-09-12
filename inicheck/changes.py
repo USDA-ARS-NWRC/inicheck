@@ -165,7 +165,6 @@ class ChangeLog(object):
 
                     # If we have a match from the changelog and the ucfg
                     if assumed[0] == s and assumed[1] == i:
-                        print(new)
                         if "removed" in new:
                             required_changes.append([assumed, "removed"])
 

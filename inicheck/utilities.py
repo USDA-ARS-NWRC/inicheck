@@ -83,7 +83,8 @@ def ask_user(question, choices=None):
     return s
 
 
-def ask_config_setup(choices_series, section=None, item=None, num_questions=None):
+def ask_config_setup(choices_series, section=None, item=None,
+                                                   num_questions=None):
     """
     Ask repeating questions for setting up a config
     """
@@ -91,10 +92,12 @@ def ask_config_setup(choices_series, section=None, item=None, num_questions=None
         msg =  "Which of these sections do you want to use? "
 
     elif section != None and item == None:
-        msg =  "In section {},  Which of these items do you want to use? ".format(section)
+        msg =  ("In section {}, Which of these items do you want to use? "
+               "".format(section))
 
     else:
-        msg =  "In section {} item {},  Which of these values do you want to use? ".format(section, item)
+        msg =  ("In section {} item {},  Which of these values do you want to "
+               "use? ".format(section, item))
 
     if num_questions == None:
         num_questions = len(choices_series)
@@ -300,6 +303,7 @@ def is_valid(value, cast_fn, expected_data_type):
         msg = "Expecting {0} received {1}".format(expected_data_type,
                                                   type(value).__name__)
     return valid, msg
+
 
 def get_inicheck_cmd(config_file, modules=None, master_files=None):
     """

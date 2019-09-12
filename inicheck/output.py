@@ -333,10 +333,11 @@ def print_change_report(potential_changes, required_changes, ucfg, logger=None):
 
         out("Default changes - Warnings issued only when old default values are "
         "detected in file.\n")
+
+        out("Default Changes:")
         out("No. of default changes: {:0.0f}".format(len(potential_changes)))
 
         any_warnings = True
-        out("Default Changes:")
         out(" ")
         out(msg.format(" Section", "Item", "Old Default", "New Default"))
         out("-"*msg_len)
@@ -352,8 +353,8 @@ def print_change_report(potential_changes, required_changes, ucfg, logger=None):
 
     if len(required_changes) > 0:
         any_errors = True
-        out("No. of necessary changes: {:0.0f}".format(len(required_changes)))
         out("Required Changes:")
+        out("No. of necessary changes: {:0.0f}".format(len(required_changes)))
         out(" ")
         out(msg.format("From", "To"))
         out("-"*msg_len)
