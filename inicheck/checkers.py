@@ -83,8 +83,11 @@ class GenericCheck(object):
         Returns:
             msg: None is the entry is valid, else returns self.message
         """
+        if self.value == None:
+            valid = True
+        else:
+            valid, issue = self.is_valid()
 
-        valid, issue = self.is_valid()
         if valid:
             msg = None
         else:
@@ -235,14 +238,14 @@ class CheckType(GenericCheck):
         """
         Attempts to return the casted value
         """
-        # Be wary of the None
-        if str(v).lower() == 'none':
-            value = None
+        if type(self.value) == str:
+            if self.value.lower() == "none":
+                return None
+            else:
+                return  self.type_func(self.value)
 
-        else:
-            value = self.type_func(self.value)
-
-        return value
+        elif self.value != None:
+            return  self.type_func(self.value)
 
 class CheckDatetime(CheckType):
     """
@@ -484,9 +487,13 @@ class CheckPath(CheckType):
         """
         Checks for existing filename
         """
+        # This avoids crashing on os.posix on none type
+        if self.value == None:
+            exists = False
 
-        if self.dir_path:
+        elif self.dir_path:
             exists = os.path.isdir(self.value)
+
         else:
             exists = os.path.isfile(self.value)
 
@@ -496,6 +503,7 @@ class CheckPath(CheckType):
         """
         Special casting function to just pass the path through
         """
+
         return self.value
 
 

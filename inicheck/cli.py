@@ -80,8 +80,7 @@ def main():
         else:
             f = os.path.abspath(args.config_file)
             ucfg = get_user_config(f, master_files=args.master,
-                                      modules=args.modules,
-                                      checking_later=True)
+                                      modules=args.modules)
 
             # Check out any change logs for issues
             chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
@@ -174,8 +173,7 @@ def inidiff():
 
         fname = os.path.abspath(f)
         cfgs.append(get_user_config(fname, master_files=args.master,
-                                           modules=args.modules,
-                                           checking_later=True))
+                                           modules=args.modules))
 
         cfg_rename = "CFG {}".format(i+1)
 

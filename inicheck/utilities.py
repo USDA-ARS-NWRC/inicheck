@@ -294,9 +294,13 @@ def is_valid(value, cast_fn, expected_data_type):
     """
 
     try:
-        value = cast_fn(value)
-        valid = True
-        msg = None
+        if type(value) != None:
+            value = cast_fn(value)
+            valid = True
+            msg = None
+        else:
+            valid = True
+            msg = None
 
     except Exception as e:
         valid = False

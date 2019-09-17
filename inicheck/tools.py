@@ -145,7 +145,7 @@ def check_config(config_obj):
             return warnings, errors
 
 
-def cast_all_variables(config_obj, mcfg_obj, checking_later=True):
+def cast_all_variables(config_obj, mcfg_obj):
     """
     Cast all values into the appropiate type using checkers, other_types
     and the master config.
@@ -155,8 +155,7 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later=True):
         mcfg_obj: The object used for manage the master config from
                   class MasterConfig
         other_types: User provided list to add any custom types
-        checking_later: Enables whether a failure to cast an item will raise an
-                        exception
+
 
     Returns:
         ucfg: The users config dictionary containing the correct value types
@@ -199,15 +198,7 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later=True):
                                                                    item=i)
 
                                 # cfg will be checked later all at once
-                                if checking_later:
-                                    try:
-                                        values.append(b.cast())
-
-                                    except:
-                                        values.append(v)
-
-                                else:
-                                    values.append(b.cast())
+                                values.append(b.cast())
 
                                 option_found = True
                                 break
@@ -231,7 +222,7 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later=True):
 
 
 def get_user_config(config_file, master_files=None, modules=None,
-                    mcfg=None, changelog_file=None, checking_later=False):
+                    mcfg=None, changelog_file=None):
     """
     Returns the users config as the object UserConfig.
 
@@ -243,8 +234,6 @@ def get_user_config(config_file, master_files=None, modules=None,
         mcfg: the master config object after it has been read in.
         changelog_file: Path to a changlog showing any changes to the config
                         file the developers have made
-        checking_later: Passes over excpetions when catsing to the right
-                        types to be formally checked later
 
     Returns:
         ucfg: Users config as an object
@@ -273,25 +262,22 @@ def get_user_config(config_file, master_files=None, modules=None,
     ucfg = UserConfig(config_file, mcfg=mcfg)
 
     # If were not running the CLI, raise exceptions for issues
-    if not checking_later:
+    # Check out any change logs for issues
+    chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
+    potentials, required = chlog.get_active_changes(ucfg)
 
-        # Check out any change logs for issues
-        chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
-        potentials, required = chlog.get_active_changes(ucfg)
+    # # Required Changes that broke things
+    # if len(required) != 0:
+    #     cmd = get_inicheck_cmd(config_file, modules=modules,
+    #                                         master_files=master_files)
+    #
+    #     raise ValueError("\n\nUser's Config has deprecated information and"
+    #                     " needs adjustment. To see what needs to change:"
+    #                     "\n\n>> {}".format(cmd))
 
-
-        # Required Changes that broke things
-        if len(required) != 0:
-            cmd = get_inicheck_cmd(config_file, modules=modules,
-                                                master_files=master_files)
-
-            raise ValueError("User's Config has deprecated information and"
-                            " needs adjustment. To see what needs to change:"
-                            "\n>> {}".format(cmd))
-
-        # Fill in the gaps and make sure they're the right types
-        ucfg.apply_recipes()
-        ucfg = cast_all_variables(ucfg, mcfg, checking_later=checking_later)
+    # Fill in the gaps and make sure they're the right types
+    ucfg.apply_recipes()
+    ucfg = cast_all_variables(ucfg, mcfg)
 
     return ucfg
 
