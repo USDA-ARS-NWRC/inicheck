@@ -449,7 +449,8 @@ class MasterConfig():
             sec = OrderedDict()
             for word in __recipe_keywords__:
                 if word in section:
-                    self.recipes.append(RecipeSection(raw_config[section], name=section))
+                    self.recipes.append(RecipeSection(raw_config[section],
+                                                      name=section))
                     break
 
                 else:
@@ -484,11 +485,9 @@ def check_types(cfg, checkers):
             type_value = cfg[s][i].type
             # Is the specified type recognized?
             if type_value not in checkers.keys():
-                raise ValueError("\n\nIn master config, SECTION: {0} at ITEM: {1} attempts"
-                                " to use undefined type name '{2}'"
-                                " which has no checker associated."
-                                "\nAvailable checkers "
-                                "are:\n\n{3}"
-                                "".format(s,i,type_value,
-                                              checkers.keys()))
+                raise ValueError("\n\nIn master config, SECTION: {0} at ITEM: "
+                                 "{1} attempts to use undefined type name '{2}'"
+                                 " which has no checker associated.\nAvailable "
+                                 "checkers are:\n\n{3}"
+                                 "".format(s, i, type_value, checkers.keys()))
     return True

@@ -38,7 +38,7 @@ class RecipeSection:
 
             # Check for assigned values if any trigger
             if item not in self.triggers.keys():
-                item_dict = parse_entry(entry, item = item)
+                item_dict = parse_entry(entry, item=item)
 
                 self.adj_config[item] = item_dict
 

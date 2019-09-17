@@ -54,7 +54,8 @@ def parse_entry(info, item = None, valid_names=None):
         else:
             raise ValueError('\n\nMaster Config file missing an equals sign in'
                             ' entry or missing a comma right before the item '
-                            '"{0}" in the entry:\n"{1}"\nFound in {2}'.format(item, info, s))
+                            '"{0}" in the entry:\n"{1}"\nFound in {2}'
+                            ''.format(item, info, s))
 
         name = (a[0].lower()).strip()
 
@@ -180,16 +181,17 @@ def parse_items(parsed_sections_dict, mcfg=None):
 
                 # Property value provided in line with item
                 else:
-                    result[k][item] += " "+potential_value
+                    result[k][item] += " " + potential_value
 
             # User added line returns likely for readability
             else:
-                result[k][item] += " "+val
+                result[k][item] += " " + val
 
         # Perform a final cleanup
         if item != None:
             if ',' in result[k][item]:
-                result[k][item] = ", ".join([e.strip() for e in result[k][item].split(',')])
+                final = [e.strip() for e in result[k][item].split(',')]
+                result[k][item] = ", ".join(final)
 
             result[k][item] = result[k][item].strip()
 
@@ -214,14 +216,20 @@ def parse_values(parsed_items):
 
         for section in parsed_items.keys():
             result[section] = OrderedDict()
-            for item,val in parsed_items[section].items():
-                value = val.strip()
-                if ',' in val:
-                    result[section][item] = \
-                    [v.strip() for v in value.split(',')]
 
+            for item, val in parsed_items[section].items():
+                value = val.strip()
+
+                # list was provided
+                if ',' in val:
+                    final = [v.strip() for v in value.split(',') if v != '']
+
+                # For use later always make it a list
                 else:
-                    result[section][item] = [value]
+                    final = [value]
+
+                # Assign it finally and replace none
+                result[section][item] = final
 
         return result
 

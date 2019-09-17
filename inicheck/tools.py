@@ -102,51 +102,50 @@ def check_config(config_obj):
                                 print_lst = False
 
                             for ii,v in enumerate(val_lst):
-                                if v != None:
 
-                                    # If we care about the errors position,
-                                    # print it
-                                    if print_lst:
-                                        print_item = "{0}[{1}]".format(item,ii)
-                                    else:
-                                        print_item = item
+                                # If we care about the errors value position
+                                if print_lst:
+                                    print_item = "{0}[{1}]".format(item,ii)
+                                else:
+                                    print_item = item
 
-                                    # 1. Check for contraints by options lists
-                                    if mcfg[section][item].options:
-                                        # If it is not in the list, invalid
-                                        if str(v) not in mcfg[section][item].options:
+                                # 1. Check for contraints by options lists
+                                if mcfg[section][item].options:
+
+                                    # If it is not in the list, invalid
+                                    if str(v) not in mcfg[section][item].options:
+                                        full_msg = msg.format(section,
+                                                          print_item,
+                                                          "Not a valid option")
+                                        errors.append(full_msg)
+
+                                # 2. Check the type constraint.
+                                options_type = mcfg[section][item].type
+
+                                issue = None
+                                for name, fn in standard_funcs.items():
+                                    if options_type == name.lower():
+                                        b = fn(value=v, config=config_obj,
+                                        is_list=mcfg[section][item].listed,
+                                        item=item, section=section)
+                                        issue = b.check()
+
+                                        if issue != None:
                                             full_msg = msg.format(section,
-                                                              print_item,
-                                                              "Not a valid option")
-                                            errors.append(full_msg)
+                                                                  print_item,
+                                                                  issue)
+                                            if b.msg_level == 'error':
+                                                errors.append(full_msg)
+                                            elif b.msg_level == 'warning':
+                                                warnings.append(full_msg)
+                                            break
 
-                                    # 2. Check the type constraint.
-                                    options_type = mcfg[section][item].type
-
-                                    issue = None
-                                    for name, fn in standard_funcs.items():
-                                        if options_type == name.lower():
-                                            b = fn(value=v, config=config_obj,
-                                            is_list=mcfg[section][item].listed,
-                                            item=item, section=section)
-                                            issue = b.check()
-
-                                            if issue != None:
-                                                full_msg = msg.format(section,
-                                                                      print_item,
-                                                                      issue)
-                                                if b.msg_level == 'error':
-                                                    errors.append(full_msg)
-                                                elif b.msg_level == 'warning':
-                                                    warnings.append(full_msg)
-                                                break
-
-                                        else:
-                                            issue = None
+                                    else:
+                                        issue = None
             return warnings, errors
 
 
-def cast_all_variables(config_obj, mcfg_obj, checking_later=False):
+def cast_all_variables(config_obj, mcfg_obj, checking_later=True):
     """
     Cast all values into the appropiate type using checkers, other_types
     and the master config.
@@ -175,7 +174,7 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later=False):
             all_checks.update(new_checks)
 
     # Confirm checks are valid
-    check_types(mcfg,all_checks)
+    check_types(mcfg, all_checks)
 
     # Cast all variables
     for s in ucfg.keys():
@@ -199,21 +198,16 @@ def cast_all_variables(config_obj, mcfg_obj, checking_later=False):
                                 b = fn(value=v, config=config_obj, section=s,
                                                                    item=i)
 
-                                # Be wary of the None
-                                if str(v).lower() == 'none':
-                                    values.append(None)
+                                # cfg will be checked later all at once
+                                if checking_later:
+                                    try:
+                                        values.append(b.cast())
+
+                                    except:
+                                        values.append(v)
 
                                 else:
-                                    # cfg will be checked later all at once
-                                    if checking_later:
-                                        try:
-                                            values.append(b.cast())
-
-                                        except:
-                                            values.append(v)
-
-                                    else:
-                                        values.append(b.cast())
+                                    values.append(b.cast())
 
                                 option_found = True
                                 break

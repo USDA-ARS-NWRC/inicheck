@@ -137,31 +137,41 @@ class CheckType(GenericCheck):
         msg = "Value must be"
 
         if self.bounded:
+            # Grab it from the config
             if self.config != None:
                 max_value = self.config.mcfg.cfg[self.section][self.item].max
                 min_value = self.config.mcfg.cfg[self.section][self.item].min
+
+            # grab the args
             else:
                 max_value = self.maximum
                 min_value = self.minimum
 
-            value = self.type_func(self.value)
+            # Check upper and lower bounds
+            if self.value != None:
+                value = self.type_func(self.value)
 
-            if min_value != None:
-                min_value = self.type_func(min_value)
-                msg += " greater than {}".format(min_value)
-
-                if value < min_value:
-                    valid = False
-
-            if max_value != None:
                 if min_value != None:
-                    msg += " and"
+                    min_value = self.type_func(min_value)
+                    msg += " greater than {}".format(min_value)
 
-                max_value = self.type_func(max_value)
-                msg += " less than {}".format(max_value)
+                    if value < min_value:
+                        valid = False
 
-                if value > max_value:
-                    valid = False
+                if max_value != None:
+                    if min_value != None:
+                        msg += " and"
+
+                    max_value = self.type_func(max_value)
+                    msg += " less than {}".format(max_value)
+
+                    if value > max_value:
+                        valid = False
+
+            # Throw error if max or min is set and value is none.
+            elif value == None and (max_value != None or min_value != None):
+                valid == False
+                msg = "Value cannot be None"
 
             if valid:
                 msg = None
@@ -225,8 +235,14 @@ class CheckType(GenericCheck):
         """
         Attempts to return the casted value
         """
-        return self.type_func(self.value)
+        # Be wary of the None
+        if str(v).lower() == 'none':
+            value = None
 
+        else:
+            value = self.type_func(self.value)
+
+        return value
 
 class CheckDatetime(CheckType):
     """
@@ -354,7 +370,7 @@ class CheckFloat(CheckType):
         self.type_func = float
         self.type = 'float'
 
-        # Can be bounded but not requried
+        # Can be bounded but not required
         self.bounded = True
 
 class CheckInt(CheckType):
