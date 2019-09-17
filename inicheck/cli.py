@@ -80,7 +80,7 @@ def main():
         else:
             f = os.path.abspath(args.config_file)
             ucfg = get_user_config(f, master_files=args.master,
-                                      modules=args.modules)
+                                      modules=args.modules, cli=True)
 
             # Check out any change logs for issues
             chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)

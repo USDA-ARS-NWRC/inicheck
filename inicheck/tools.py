@@ -222,7 +222,7 @@ def cast_all_variables(config_obj, mcfg_obj):
 
 
 def get_user_config(config_file, master_files=None, modules=None,
-                    mcfg=None, changelog_file=None):
+                    mcfg=None, changelog_file=None, cli=False):
     """
     Returns the users config as the object UserConfig.
 
@@ -234,6 +234,7 @@ def get_user_config(config_file, master_files=None, modules=None,
         mcfg: the master config object after it has been read in.
         changelog_file: Path to a changlog showing any changes to the config
                         file the developers have made
+        cli: boolean determining whether to attempt to process the changes which should be done from the CLI only
 
     Returns:
         ucfg: Users config as an object
@@ -266,14 +267,14 @@ def get_user_config(config_file, master_files=None, modules=None,
     chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
     potentials, required = chlog.get_active_changes(ucfg)
 
-    # # Required Changes that broke things
-    # if len(required) != 0:
-    #     cmd = get_inicheck_cmd(config_file, modules=modules,
-    #                                         master_files=master_files)
-    #
-    #     raise ValueError("\n\nUser's Config has deprecated information and"
-    #                     " needs adjustment. To see what needs to change:"
-    #                     "\n\n>> {}".format(cmd))
+    # Required Changes that broke things
+    if len(required) != 0 and not cli:
+        cmd = get_inicheck_cmd(config_file, modules=modules,
+                                            master_files=master_files)
+
+        raise ValueError("\n\nUser's Config has deprecated information and"
+                        " needs adjustment. To see what needs to change:"
+                        "\n\n>> {}".format(cmd))
 
     # Fill in the gaps and make sure they're the right types
     ucfg.apply_recipes()
