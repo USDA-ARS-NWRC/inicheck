@@ -55,8 +55,8 @@ def parse_entry(info, item=None, valid_names=None):
         else:
             raise ValueError('\n\nMaster Config file missing an equals sign in'
                             ' entry or missing a comma right before the item '
-                            '"{0}" in the entry:\n"{1}"\nFound in {2}'
-                            ''.format(item, info, s))
+                            '"{0}" in the entry:\n"{1}"\nIssue generated from:'
+                            ' \n>> "{2}"'.format(item, info, s))
 
         name = (a[0].lower()).strip()
 
@@ -269,12 +269,13 @@ def parse_changes(change_list):
 
         for ii,c in enumerate(changes):
             mods = ["any" for i in range(4)]
+            mod_lst = []
             if "/" in c:
                 mod_lst = c.split("/")
 
             # Catch singular sections referenced
             else:
-                mod_lst[0] = c
+                mod_lst.append(c)
 
             mods[0:len(mod_lst)] = mod_lst
             final_changes.append(mods)

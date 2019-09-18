@@ -52,7 +52,7 @@ class ChangeLog(object):
             f.close()
 
         sections = parse_sections(lines)
-        raw_changes = sections['changes']
+        raw_changes = sections['changes'].copy()
         del sections['changes']
 
         # Parse meta data the same way as everything
@@ -143,6 +143,7 @@ class ChangeLog(object):
         cfg = ucfg.cfg
 
         for change in self.changes:
+
             # Go through the sections
             for s in cfg.keys():
 
@@ -153,14 +154,16 @@ class ChangeLog(object):
                     assumed = change[0].copy()
                     new = change[1].copy()
 
+                    # Swap out anys with section names
                     if change[0][0] == "any":
                         assumed[0] = s
                         if change[1][0] != "removed":
                             new[0] = s
 
+                    # swap out anys with item names
                     if change[0][1] == "any":
                         assumed[1] = i
-                        if change[1][1] != "removed":
+                        if change[1][0] != "removed":
                             new[1] = i
 
                     # If we have a match from the changelog and the ucfg

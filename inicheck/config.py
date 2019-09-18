@@ -460,8 +460,6 @@ class MasterConfig():
                 # Look for master properties
                 else:
                     for item in raw_config[section].keys():
-                        if item == "grid_local_n":
-                            print(section, item, raw_config[section][item])
                         sec[item] = ConfigEntry(name=item,
                                   parseable_line=raw_config[section][item])
 
