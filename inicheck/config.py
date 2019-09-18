@@ -193,23 +193,31 @@ class UserConfig():
 
                         else:
                             s = section
+
                         # Handle the any keyword for items
                         if item == 'any':
                             i = situation[1]
 
-                        # Observe the description shift
+                        # Enable removing and defaulting
                         elif item in ['remove_item','default_item']:
                             i = value
+                            print(section,item,i,value)
 
+                        # Nothing special asusme its a valid item name
                         else:
                             i = item
 
+                        # Replace ANYs with values from the situation
                         if value == 'any':
                             v = situation[2]
 
-                        elif (value == 'default' or item =='default_item'):
-                            if i in self.mcfg.cfg[s].keys():
-                                v = self.mcfg.cfg[s][i].default
+                        elif value in ['default','default_item']:
+                            if ((i in self.mcfg.cfg[s].keys()) and
+                                (i not in self.cfg[s].keys())):
+                                    v = self.mcfg.cfg[s][i].default
+
+                            elif i in self.cfg[s].keys():
+                                v = value
                             else:
                                 raise Exception('{0} is not a valid item for '
                                 'the master config section {1}, check your '
@@ -218,6 +226,7 @@ class UserConfig():
                                                                   situation[2]))
 
                         else:
+
                             v = value
 
                         # Delete items
@@ -234,6 +243,7 @@ class UserConfig():
                                 if DEBUG:
                                     print("Adding section {0}".format(s))
                                 result[s] = OrderedDict()
+
                             # Dictionary exists
                             else:
 
