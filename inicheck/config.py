@@ -201,8 +201,7 @@ class UserConfig():
                         # Enable removing and defaulting
                         elif item in ['remove_item','default_item']:
                             i = value
-                            print(section,item,i,value)
-
+                            value = "default"
                         # Nothing special asusme its a valid item name
                         else:
                             i = item
@@ -211,20 +210,17 @@ class UserConfig():
                         if value == 'any':
                             v = situation[2]
 
-                        elif value in ['default','default_item']:
-                            if ((i in self.mcfg.cfg[s].keys()) and
-                                (i not in self.cfg[s].keys())):
-                                    v = self.mcfg.cfg[s][i].default
+                        elif value == 'default':
+                            if i in self.mcfg.cfg[s].keys():
+                                v = self.mcfg.cfg[s][i].default
 
-                            elif i in self.cfg[s].keys():
-                                v = value
                             else:
                                 raise Exception('{0} is not a valid item for '
                                 'the master config section {1}, check your '
                                 'recipes for a situation triggering on {2}, '
                                 '{3}, {4}'.format(i,s,situation[0],situation[1],
                                                                   situation[2]))
-
+                        # default items were sepcified.
                         else:
 
                             v = value

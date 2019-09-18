@@ -83,10 +83,8 @@ class GenericCheck(object):
         Returns:
             msg: None is the entry is valid, else returns self.message
         """
-        if self.value == None:
-            valid = True
-        else:
-            valid, issue = self.is_valid()
+
+        valid, issue = self.is_valid()
 
         if valid:
             msg = None
@@ -473,11 +471,19 @@ class CheckPath(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckPath, self).__init__(**kwargs)
+
+        # Allow None as a value?
+        self.allow_none = False
+
         self.root_loc = self.config.filename
 
         self.dir_path = False
 
         # Path should alsways be absolute or relative to the config file path
+        if type(self.value) == str:
+            if self.value.lower() == "none":
+                self.value = None
+
         if self.value != None and self.root_loc != None:
             if not os.path.isabs(self.value):
                 p = os.path.expanduser(os.path.dirname(self.root_loc))
@@ -489,7 +495,10 @@ class CheckPath(CheckType):
         """
         # This avoids crashing on os.posix on none type
         if self.value == None:
-            exists = False
+            if self.allow_none:
+                exists = True
+            else:
+                exists = False
 
         elif self.dir_path:
             exists = os.path.isdir(self.value)
@@ -520,7 +529,8 @@ class CheckDirectory(CheckPath):
 
 class CheckFilename(CheckPath):
     """
-    Checks whether a directory exists.
+    Checks whether a directory exists. These are files that the may be created
+    or not necessary to run.
     """
 
     def __init__(self, **kwargs):
@@ -528,19 +538,32 @@ class CheckFilename(CheckPath):
         self.message = "File does not exist."
 
 
+
 class CheckCriticalFilename(CheckFilename):
     """
-    Checks whether a critical file exists.
+    Checks whether a critical file exists. This would be any files that absolutely
+    have to exist to avoid crashing the software. These are static files.
     """
 
     def __init__(self, **kwargs):
         super(CheckCriticalFilename, self).__init__(**kwargs)
         self.msg_level = 'error'
 
+class CheckDiscretionaryCriticalFilename(CheckCriticalFilename):
+    """
+    Checks whether a an optional file exists that may change software behavior
+    by being present. In otherwords, this can be none and still valid. If the not
+    then it registers an error if the string doesn't exist.
+    """
+
+    def __init__(self, **kwargs):
+        super(CheckCriticalFilename, self).__init__(**kwargs)
+        self.allow_none = True
 
 class CheckCriticalDirectory(CheckDirectory):
     """
-    Checks whether a critical directory exists.
+    Checks whether a critical directory exists. This is for any directories
+    that have to exist prior to launching some piece of software.
     """
 
     def __init__(self, **kwargs):
