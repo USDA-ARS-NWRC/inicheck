@@ -114,6 +114,7 @@ def check_config(config_obj):
 
                                     # If it is not in the list, invalid
                                     if str(v) not in mcfg[section][item].options:
+
                                         full_msg = msg.format(section,
                                                           print_item,
                                                           "Not a valid option")
@@ -234,7 +235,8 @@ def get_user_config(config_file, master_files=None, modules=None,
         mcfg: the master config object after it has been read in.
         changelog_file: Path to a changlog showing any changes to the config
                         file the developers have made
-        cli: boolean determining whether to attempt to process the changes which should be done from the CLI only
+        cli: boolean determining whether to attempt to process the changes
+            which should be done from the CLI only
 
     Returns:
         ucfg: Users config as an object

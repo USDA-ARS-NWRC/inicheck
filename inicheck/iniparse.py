@@ -24,7 +24,7 @@ def read_config(fname):
     return config
 
 
-def parse_entry(info, item = None, valid_names=None):
+def parse_entry(info, item=None, valid_names=None):
     """
     Parse the values found in the master config where the entries are a little
     more complicated. Specifically this deals with syntax issues and whether
@@ -48,6 +48,7 @@ def parse_entry(info, item = None, valid_names=None):
     last_three = []
 
     for s in info:
+
         if '=' in s:
             a = s.split('=')
 
@@ -60,12 +61,12 @@ def parse_entry(info, item = None, valid_names=None):
         name = (a[0].lower()).strip()
 
         # Check for constraints on potential names of entries
-        if valid_names != None and name not in valid_names:
-            raise ValueError("\nInvalid property set in the master config File,"
+        if valid_names != None and name not in valid_names or len(a) > 2:
+            raise ValueError("\nInvalid property set in the master config file,"
                             " available options are: \n * {0}\n"
                             "\nIf this is supposed to be a recipe, you may have"
                             " forgotten to add keyword 'recipe' to the section"
-                            " name.\nIssue generated from '{1}'"
+                            " name.\nIssue generated from: \n>> '{1}'"
                             "".format("\n * ".join(valid_names), s))
 
         value = a[1].strip()

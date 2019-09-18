@@ -450,15 +450,18 @@ class MasterConfig():
 
         for section in raw_config.keys():
             sec = OrderedDict()
+            # Look for keywords in section name e.g. recipe
             for word in __recipe_keywords__:
                 if word in section:
                     self.recipes.append(RecipeSection(raw_config[section],
                                                       name=section))
                     break
 
+                # Look for master properties
                 else:
                     for item in raw_config[section].keys():
-
+                        if item == "grid_local_n":
+                            print(section, item, raw_config[section][item])
                         sec[item] = ConfigEntry(name=item,
                                   parseable_line=raw_config[section][item])
 
