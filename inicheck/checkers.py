@@ -105,6 +105,9 @@ class CheckType(GenericCheck):
         kwargs_requires = ["item","section", "config", "is_list", 'maximum',
                                                                   'minimum']
 
+        # Allow None as a value?
+        self.allow_none = False
+
         for kw in kwargs_requires:
             if kw in kwargs.keys():
                 value = kwargs[kw]
@@ -224,7 +227,8 @@ class CheckType(GenericCheck):
             valid = False
 
         else:
-            valid, msg = is_valid(self.value, self.type_func, self.type)
+            valid, msg = is_valid(self.value, self.type_func, self.type,
+                                              allow_none=self.allow_none)
 
         # Check for bounds
         if valid:
@@ -557,7 +561,7 @@ class CheckDiscretionaryCriticalFilename(CheckCriticalFilename):
     """
 
     def __init__(self, **kwargs):
-        super(CheckCriticalFilename, self).__init__(**kwargs)
+        super(CheckDiscretionaryCriticalFilename, self).__init__(**kwargs)
         self.allow_none = True
 
 class CheckCriticalDirectory(CheckDirectory):

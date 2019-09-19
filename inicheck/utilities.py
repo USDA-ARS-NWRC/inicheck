@@ -278,7 +278,7 @@ def pmcfg(cfg):
                     out = value
                 print('\t\t\t' + repr(out))
 
-def is_valid(value, cast_fn, expected_data_type):
+def is_valid(value, cast_fn, expected_data_type, allow_none=False):
     """
     Checks whether a value can be converted using the cast_fn function.
 
@@ -287,6 +287,7 @@ def is_valid(value, cast_fn, expected_data_type):
         cast_fn: Function used to determine the validity, should throw an
                  excpetion if it cannot
         expected_data_type: string name of the expected data
+        allow_none: Boolean determining if none is valid
     Returns:
         tuple:
             **valid (boolean)**: whether it could be casted
@@ -294,13 +295,23 @@ def is_valid(value, cast_fn, expected_data_type):
     """
 
     try:
-        if type(value) != None:
+        if type(value) == str or value == None:
+            value = None
+            valid = True
+            msg = None
+
+        if value != None:
             value = cast_fn(value)
             valid = True
             msg = None
-        else:
+
+        elif allow_none and value == None:
             valid = True
             msg = None
+
+        else:
+            valid = False
+
 
     except Exception as e:
         valid = False
