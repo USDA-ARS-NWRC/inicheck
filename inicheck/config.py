@@ -60,16 +60,18 @@ class UserConfig():
         for r in self.mcfg.recipes:
 
             for trigger, recipe_entry in r.triggers.items():
+                # Full conditions met to handle mulitple triggers
                 conditions_met = 0
                 triggered = False
 
                 # All conditions must be met if to be applied
                 for condition in recipe_entry.conditions:
                     conditions_triggered = []
-
                     for section in self.cfg.keys():
-                        # is it a valid section
+
+                        # Is it a valid section
                         if section in self.mcfg.cfg.keys():
+
                             # Watch out for empty sections
                             if len(self.cfg[section].keys()) == 0:
                                 items = [None]
@@ -79,39 +81,44 @@ class UserConfig():
                             for item in items:
                                 # Confirm its a registered item
                                 if item in self.mcfg.cfg[section].keys():
-                                    # Watch for empties
-                                    if item == None:
-                                        vals = [None]
-                                    else:
-                                        vals = mk_lst(self.cfg[section][item])
-                                    for v in vals:
+                                    vals = mk_lst(self.cfg[section][item])
 
-                                        if (condition[0] == 'any' or
-                                            condition[0] == section):
-                                           if FULL_DEBUG:
-                                               print("Section Gate {0} == {1}"
-                                                     "".format(condition[0],
-                                                     section))
+                                # Watch for empties
+                                elif item == None:
+                                    vals = [None]
+                                else:
+                                    vals = []
 
-                                           if (condition[1] == 'any' or
-                                               condition[1] == item):
+                                for v in vals:
+                                    # Sections
+
+                                    if (condition[0] == 'any' or
+                                        condition[0] == section):
+
+                                       if FULL_DEBUG:
+                                           print("Section Gate {0} == {1}"
+                                                 "".format(condition[0],
+                                                 section))
+                                       # Items
+                                       if (condition[1] == 'any' or
+                                           condition[1] == item):
+                                          if FULL_DEBUG:
+                                              print("\t\tItem Gate {0} == {1}"
+                                                    "".format(condition[1],
+                                                              item))
+                                          # Values
+                                          if (condition[2] == 'any' or
+                                              condition[2] == v):
                                               if FULL_DEBUG:
-                                                  print("\t\tItem Gate {0} == {1}"
-                                                        "".format(condition[1],
-                                                                  item))
+                                                 print("\t\t\t\tValue Gate {0}"
+                                                       " == {1}"
+                                                       "".format(condition[2],
+                                                                 v))
 
-                                              if (condition[2] == 'any' or
-                                                  condition[2] == v):
-                                                  if FULL_DEBUG:
-                                                     print("\t\t\t\tValue Gate {0}"
-                                                           " == {1}"
-                                                           "".format(condition[2],
-                                                                     v))
-
-                                                  # No conditions == [any any any]
-                                                  conditions_triggered.append(
-                                                                (section, item, v))
-                                                  triggered = True
+                                              # No conditions == [any any any]
+                                              conditions_triggered.append(
+                                                            (section, item, v))
+                                              triggered = True
 
                     # Determine if the condition was met.
                     if triggered:
@@ -201,7 +208,11 @@ class UserConfig():
                         # Enable removing and defaulting
                         elif item in ['remove_item','default_item']:
                             i = value
-                            value = "default"
+
+                            if item == "default_item":
+                                value = "default"
+
+                            #value = "default"
                         # Nothing special asusme its a valid item name
                         else:
                             i = item
@@ -226,6 +237,7 @@ class UserConfig():
                             v = value
 
                         # Delete items
+
                         if item == 'remove_item':
                             if s in result.keys():
                                 if i in result[s].keys():

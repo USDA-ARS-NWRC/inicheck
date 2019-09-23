@@ -209,10 +209,10 @@ def cast_all_variables(config_obj, mcfg_obj):
                                              " ----> {0}".format(type_value))
 
                     # Developers can specify which items are lists in master cfg
-                    if not mcfg[s][i].listed or values[0]==None:
+                    if not mcfg[s][i].listed:
                         ucfg[s][i] = mk_lst(values, unlst=True)
                     else:
-                        ucfg[s][i] = values
+                        ucfg[s][i] = mk_lst(values)
 
                 # Not recognized items, keep them anyways
                 else:

@@ -220,6 +220,7 @@ class ChangeLog(object):
             # Avoid adding removed items
             if c[1] == "removed":
                 removal = True
+
             else:
                 s_n = c[1][0]
                 i_n = c[1][1]
@@ -227,8 +228,9 @@ class ChangeLog(object):
             #print(s_o, i_o, s_n, i_n)
 
             # Confirm new section in the config
-            if s_n not in ucfg.cfg.keys() and s_n != "removed":
-                cfg[s_n] = OrderedDict()
+            if not removal:
+                if s_n not in ucfg.cfg.keys():
+                    cfg[s_n] = OrderedDict()
 
             # Its been deprecated
             if removal:

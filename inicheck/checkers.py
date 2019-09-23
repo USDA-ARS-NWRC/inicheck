@@ -249,6 +249,9 @@ class CheckType(GenericCheck):
         elif self.value != None:
             return  self.type_func(self.value)
 
+        else:
+            return None
+
 class CheckDatetime(CheckType):
     """
     Check values that are declared as type datetime.
