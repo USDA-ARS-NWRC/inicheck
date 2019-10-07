@@ -168,9 +168,10 @@ class ConfigEntry:
             for name,value in parsed_dict.items():
                 setattr(self, name, value)
 
-        # Options should always be a list
+        # Options should always be a list and lower case
         if type(self.options) != list:
             self.options = [self.options]
+        self.options = [l.lower() for l in self.options]
 
         # types should always be lower case
         self.type = self.type.lower()

@@ -105,7 +105,7 @@ def check_config(config_obj):
 
                                 # If we care about the errors value position
                                 if print_lst:
-                                    print_item = "{0}[{1}]".format(item,ii)
+                                    print_item = "{0}[{1}]".format(item, ii+1)
                                 else:
                                     print_item = item
 
@@ -113,7 +113,7 @@ def check_config(config_obj):
                                 if mcfg[section][item].options:
 
                                     # If it is not in the list, invalid
-                                    if str(v) not in mcfg[section][item].options:
+                                    if str(v).lower() not in mcfg[section][item].options:
 
                                         full_msg = msg.format(section,
                                                           print_item,
