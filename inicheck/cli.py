@@ -10,7 +10,7 @@ from . config import MasterConfig, UserConfig
 from . import __version__
 from .utilities import find_options_in_recipes, ask_config_setup, get_inicheck_cmd
 from collections import OrderedDict
-
+from . import __version__
 
 def main():
 
@@ -44,9 +44,12 @@ def main():
                         " section item and value for details regarding them")
 
     parser.add_argument('--change', '-c', action='store_true',
-                        help="Actomatically apply changes to the config"
+                        help="Automatically apply changes to the config"
                         " according to a packages changelog. Including"
                         " recommended default changes.")
+
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {version}'.format(version=__version__))
 
     args = parser.parse_args()
 
@@ -146,6 +149,8 @@ def inidiff():
                     help="Modules name with an attribute __CoreConfig__ that"
                          " is a path to a master config file for checking"
                          " against")
+    parser.add_argument('--version', action='version',
+                         version='%(prog)s {version}'.format(version=__version__))
     args = parser.parse_args()
 
     # handle multiple files
@@ -268,6 +273,9 @@ def inimake():
                     help="Modules name with an attribute __CoreConfig__ that"
                          " is a path to a master config file for checking"
                          " against")
+
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {version}'.format(version=__version__))
 
     args = parser.parse_args()
 
