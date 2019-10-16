@@ -10,6 +10,7 @@ Contents:
    installation
    usage
    master_config
+   changelogs
    cli
    modules
    contributing

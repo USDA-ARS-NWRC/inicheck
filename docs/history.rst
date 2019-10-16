@@ -35,3 +35,11 @@ History
 * Fixed bug relating to Datetime Ordered Pairs
 * Added in inimake script for creating scripts from scratch
 * Added in more unittests (54% coverage)
+
+
+0.6.0 (2019-10-16)
+------------------
+
+* Built in a brand new feature for migrating large changes in configs
+* Added bounds checking for type checking allowing for continuous types
+* Fixes for #32, #31, #27, #25

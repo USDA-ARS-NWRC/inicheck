@@ -57,16 +57,17 @@ throw an error instead of a warning.
 
 Available types:
 
-  * bool
-  * string
-  * float
-  * integer
-  * datetime
-  * ordered datetime
-  * filename
-  * CriticalFilename
-  * directory
-  * CriticalDirectory
+  * Bool - :class:`~inicheck.checkers.CheckBool`
+  * String - :class:`~inicheck.checkers.CheckString`
+  * Float - :class:`~inicheck.checkers.CheckFloat`
+  * Integer - :class:`~inicheck.checkers.CheckInt`
+  * Datetime - :class:`~inicheck.checkers.CheckDatetime`
+  * Ordered datetime pair - :class:`~inicheck.checkers.CheckDatetimeOrderedPair`
+  * Filename - :class:`~inicheck.checkers.CheckFilename`
+  * CriticalFilename - :class:`~inicheck.checkers.CheckCriticalFilename`
+  * Discretionary Critical Filename - :class:`~inicheck.checkers.CheckDiscretionaryCriticalFilename`
+  * Directory - :class:`~inicheck.checkers.CheckDirectory`
+  * CriticalDirectory - :class:`~inicheck.checkers.CheckCriticalDirectory`
 
 **lists**: can be provided but are not checked, they are not specified as a type
 though. To provide a list you must use space separated bracketed lists in the entry

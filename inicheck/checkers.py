@@ -254,7 +254,8 @@ class CheckType(GenericCheck):
 
 class CheckDatetime(CheckType):
     """
-    Check values that are declared as type datetime.
+    Check values that are declared as type datetime. Parses anything that pandas
+    to_datetime can parse.
     """
 
     def __init__(self, **kwargs):
@@ -265,14 +266,15 @@ class CheckDatetime(CheckType):
 
 class CheckDatetimeOrderedPair(CheckDatetime):
     """
-    Checks to see if start and stop based items end are infact in fact ordered
+    Checks to see if start and stop based items are infact in fact ordered
     in the same section.
 
     Requires keywords section and item to ba passed as keyword args.
     Looks for keywords start/begin or stop/end in an item name. Then looks for a
     corresponding match with the opposite name.
 
-    e.g:
+    .. code-block:: ini
+
         start_simulation: 10-01-2019
         stop_simulation: 10-01-2017
 
