@@ -42,4 +42,9 @@ History
 
 * Built in a brand new feature for migrating large changes in configs
 * Added bounds checking for type checking allowing for continuous types
-* Fixes for #32, #31, #27, #25
+* Fixes for issues: 25_ , 27_ , 31_ , 32_
+
+.. _25: https://github.com/USDA-ARS-NWRC/inicheck/issues/25
+.. _27: https://github.com/USDA-ARS-NWRC/inicheck/issues/27
+.. _31: https://github.com/USDA-ARS-NWRC/inicheck/issues/31
+.. _32: https://github.com/USDA-ARS-NWRC/inicheck/issues/32
