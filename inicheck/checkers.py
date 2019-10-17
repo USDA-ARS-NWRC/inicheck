@@ -137,16 +137,17 @@ class CheckType(GenericCheck):
         """
 
         valid = True
-
-        msg = "Value must be"
+        msg = None
 
         if self.bounded:
+            msg = "Value must be"
+
             # Grab it from the config
             if self.config != None:
                 max_value = self.config.mcfg.cfg[self.section][self.item].max
                 min_value = self.config.mcfg.cfg[self.section][self.item].min
 
-            # grab the args
+            # Grab the args
             else:
                 max_value = self.maximum
                 min_value = self.minimum
@@ -184,24 +185,16 @@ class CheckType(GenericCheck):
 
     def is_it_a_lst(self):
         """
-        Check to see if an option should be a list of not and convert it if
-        necessary.
-        * If it is a list, check for single value lists and convert it,
-          return false.
-        * If it is a list and not single item, return True
-        * If its not a list return false
+        Checkers are use to evaluate single items in a list in a item and
+        section. This checks to see if the original entry was a list or not.
+        So instead of evaluating self.value which is always a single item,
+        we evaluate self.config[self.section][self.item]
 
         """
-        if type(self.value) == list:
-            # Its list but its a single item
-            if len(self.value) == 1:
-
-                self.value = mk_lst(self.value, unlst=True)
-                return False
-
-            # Its a list and not a single item
-            else:
-                return True
+        # Grab the original values and see if theyre in a list
+        values = self.config.cfg[self.section][self.item]
+        if type(values) == list:
+            return True
 
         # not a list, its good
         else:
@@ -219,9 +212,10 @@ class CheckType(GenericCheck):
         msg = None
         self.msg_level = 'error'
 
-        # Provide a list check
+        # Provide a list check by looking at the original entry
         currently_a_list = self.is_it_a_lst()
 
+        # Original entry is a list and its not supposed to be
         if currently_a_list and not self.is_list:
             msg = "Expected single value received list"
             valid = False
@@ -230,7 +224,7 @@ class CheckType(GenericCheck):
             valid, msg = is_valid(self.value, self.type_func, self.type,
                                               allow_none=self.allow_none)
 
-        # Check for bounds
+        # If we have the right type, Check for bounds
         if valid:
             valid, msg = self.check_bounds()
 

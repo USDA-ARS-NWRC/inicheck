@@ -260,7 +260,7 @@ def pmcfg(cfg):
     readability
 
     Args:
-        cfg: dict of dict in a heirarcy of  {section, {items, values}}
+        cfg: dict of dict in a hierarchy of  {section, {items, values}}
     """
 
     for sec in cfg.keys():
@@ -293,12 +293,11 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
             **valid (boolean)**: whether it could be casted
             **msg (string)**: Msg reporting what happen
     """
-
     try:
-        if type(value) == str or value == None:
-            value = None
-            valid = True
-            msg = None
+        # if type(value) == str or value == None:
+        #     value = None
+        #     valid = True
+        #     msg = None
 
         if value != None:
             value = cast_fn(value)

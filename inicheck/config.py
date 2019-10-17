@@ -367,7 +367,7 @@ class MasterConfig():
         # Paths were manually provided
         if path != None and modules == None:
             for p in mk_lst(path):
-                self.paths(os.path.abspath(p))
+                self.paths.append(os.path.abspath(p))
 
         # If a module was passed
         if modules != None and self.paths == []:
