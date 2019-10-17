@@ -285,7 +285,7 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
     Args:
         value: Value to be considered
         cast_fn: Function used to determine the validity, should throw an
-                 excpetion if it cannot
+                 exception if it cannot
         expected_data_type: string name of the expected data
         allow_none: Boolean determining if none is valid
     Returns:
@@ -294,10 +294,6 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
             **msg (string)**: Msg reporting what happen
     """
     try:
-        # if type(value) == str or value == None:
-        #     value = None
-        #     valid = True
-        #     msg = None
 
         if value != None:
             value = cast_fn(value)
@@ -322,6 +318,7 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
 def get_inicheck_cmd(config_file, modules=None, master_files=None):
     """
     Strings together an inicheck cli command based on modules and files
+
     """
 
     cmd = "inicheck -f {}".format(config_file)

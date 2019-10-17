@@ -468,6 +468,7 @@ class MasterConfig():
 
         for section in raw_config.keys():
             sec = OrderedDict()
+
             # Look for keywords in section name e.g. recipe
             for word in __recipe_keywords__:
                 if word in section:

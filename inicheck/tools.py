@@ -43,106 +43,103 @@ def get_checkers(module='inicheck.checkers', keywords="check",
 
     return func_dict
 
+def get_merged_checkers(ucfg):
+    """
+    Retrieve the dictionary of checker classes by grabbing all in inicheck and
+    any prescribed in the master config through another module
+
+    Args:
+        ucfg: User Config object containing modules
+    Returns:
+        dictionary: all_checks - dictionary of all the checkers from inicheck
+                    and any modules assigned to the master config.
+    """
+
+    # Grab all the original
+    all_checks = get_checkers()
+
+    # Add any checker modules if provided
+    if ucfg.mcfg.checker_modules:
+        for c in ucfg.mcfg.checker_modules:
+            new_checks = get_checkers(module=c)
+            all_checks.update(new_checks)
+
+    return all_checks
 
 def check_config(config_obj):
-            """
-            Looks at the users provided config file and checks it to a master
-            config file looking at correctness and missing info.
+    """
+    Looks at the users provided config file and checks it to a master
+    config file looking at correctness and missing info.
 
-            Args:
-                config_obj - UserConfig object produced by
-                             :class:`~inicheck.config.UserConfig`
-            Returns:
-                tuple:
-                - **warnings** - Returns a list of string messages that are
-                                 consider non-critical issues with config file.
-                - **errors** - Returns a list of string messages that are
-                               consider critical issues with the config file.
-            """
+    Args:
+        config_obj - UserConfig object produced by
+                     :class:`~inicheck.config.UserConfig`
+    Returns:
+        tuple:
+        - **warnings** - Returns a list of string messages that are
+                         consider non-critical issues with config file.
+        - **errors** - Returns a list of string messages that are
+                       consider critical issues with the config file.
+    """
 
-            msg = "{: <20} {: <30} {: <60}"
-            errors = []
-            warnings = []
+    msg = "{: <20} {: <30} {: <60}"
+    errors = []
+    warnings = []
 
-            mcfg = config_obj.mcfg.cfg
-            cfg = config_obj.cfg
+    mcfg = config_obj.mcfg.cfg
+    cfg = config_obj.cfg
 
-            standard_funcs = get_checkers()
+    # Grab a dictionary of all the checkers
+    all_checks = get_merged_checkers(config_obj)
 
-            # Add any checker modules if provided
-            if config_obj.mcfg.checker_modules:
-                for c in config_obj.mcfg.checker_modules:
-                    funcs = standard_funcs.update(
-                            get_checkers(module=c))
+    # Compare user config file to our master config
+    for s, configured in cfg.items():
 
-            # Compare user config file to our master config
-            for section, configured in cfg.items():
+        if s not in mcfg.keys():
+            err = "Not a valid section."
+            errors.append(msg.format(s, " ", err))
+        else:
+            # In the section check the values and options
+            for i, value in configured.items():
 
-                if section not in mcfg.keys():
-                    err = "Not a valid section."
-                    errors.append(msg.format(section, " ", err))
+                # lower case item
+                li = i.lower()
+
+                # Is the item known as a configurable item?
+                if li not in mcfg[s].keys():
+                    wrn = "Not a registered option."
+                    warnings.append(msg.format(s, i, wrn))
                 else:
-                    # In the section check the values and options
-                    for item, value in configured.items():
-                        litem = item.lower()
+                    issues = []
 
-                        # Is the item known as a configurable item?
-                        if litem not in mcfg[section].keys():
-                            wrn = "Not a registered option."
-                            warnings.append(msg.format(section, item, wrn))
-                        else:
-                            # Did the user provide a list value or single value
-                            val_lst = mk_lst(value)
+                    # Look at the available checkers find a match
+                    for name, fn in all_checks.items():
 
-                            # Check to see if we want to print the item
-                            # location as in the list as a part of the error
-                            if len(val_lst) > 1:
-                                print_lst = True
+                        if mcfg[s][i].type == name.lower():
+                            b = fn(config=config_obj, item=i, section=s)
+
+                            issues = b.check()
+                            # Once we find a match we should break
+                            break
+
+                    # Check the issues
+                    num_issues = len([True for p in issues if p != None])
+                    for ii, issue in enumerate(issues):
+                        if issue != None:
+                            print_item = item
+
+                            # If we had a list, provide position
+                            if num_issues > 1:
+                                # Show 1 based lists
+                                pi += "[{}]".format(ii + 1)
+
+                            full_msg = msg.format(s, print_item, issue)
+
+                            if b.msg_level == 'warning':
+                                warnings.append(full_msg)
                             else:
-                                print_lst = False
+                                errors.append(full_msg)
 
-                            for ii,v in enumerate(val_lst):
-
-                                # If we care about the errors value position
-                                if print_lst:
-                                    print_item = "{0}[{1}]".format(item, ii+1)
-                                else:
-                                    print_item = item
-
-                                # 1. Check for contraints by options lists
-                                if mcfg[section][item].options:
-
-                                    # If it is not in the list, invalid
-                                    if str(v).lower() not in mcfg[section][item].options:
-
-                                        full_msg = msg.format(section,
-                                                          print_item,
-                                                          "Not a valid option")
-                                        errors.append(full_msg)
-
-                                # 2. Check the type constraint.
-                                options_type = mcfg[section][item].type
-
-                                issue = None
-                                for name, fn in standard_funcs.items():
-                                    if options_type == name.lower():
-                                        b = fn(value=v, config=config_obj,
-                                        is_list=mcfg[section][item].listed,
-                                        item=item, section=section)
-                                        issue = b.check()
-
-                                        if issue != None:
-                                            full_msg = msg.format(section,
-                                                                  print_item,
-                                                                  issue)
-                                            if b.msg_level == 'error':
-                                                errors.append(full_msg)
-                                            elif b.msg_level == 'warning':
-                                                warnings.append(full_msg)
-                                            break
-
-                                    else:
-                                        issue = None
             return warnings, errors
 
 
@@ -165,13 +162,9 @@ def cast_all_variables(config_obj, mcfg_obj):
 
     ucfg = config_obj.cfg
     mcfg = mcfg_obj.cfg
-    all_checks = get_checkers()
 
-    # Add any checker modules if provided
-    if config_obj.mcfg.checker_modules:
-        for c in config_obj.mcfg.checker_modules:
-            new_checks = get_checkers(module=c)
-            all_checks.update(new_checks)
+    # Grab a dictionary of all the checkers
+    all_checks = get_merged_checkers(config_obj)
 
     # Confirm checks are valid
     check_types(mcfg, all_checks)
@@ -187,26 +180,18 @@ def cast_all_variables(config_obj, mcfg_obj):
                     type_value = (mcfg[s][i].type).lower()
 
                     # go through the list of values
-                    for z, v in enumerate(mk_lst(ucfg[s][i])):
-                        option_found = False
+                    option_found = False
 
-                        # when a checker match is found break so we check it once
-                        for name, fn in all_checks.items():
+                    # Make sure a valid checker is prescribed
+                    if type_value not in all_checks.keys():
+                        raise ValueError("Unknown type_value prescribed."
+                                         " ----> {0}".format(type_value))
 
-                            # Checker name and type match
-                            if  type_value == name.lower():
-                                b = fn(value=v, config=config_obj, section=s,
-                                                                   item=i)
+                    fn = all_checks[type_value]
+                    b = fn(config=config_obj, section=s, item=i)
 
-                                # cfg will be checked later all at once
-                                values.append(b.cast())
-
-                                option_found = True
-                                break
-
-                        if not option_found:
-                            raise ValueError("Unknown type_value prescribed."
-                                             " ----> {0}".format(type_value))
+                    # cfg will be checked later all at once
+                    values = b.cast()
 
                     # Developers can specify which items are lists in master cfg
                     if not mcfg[s][i].listed:

@@ -34,42 +34,75 @@ class GenericCheck(object):
         Instatiates the check and setups the message, value and msg_level.
 
         Args:
-            value: Value to be checked
-            config: UserConfig object
-            is_listed: Boolean determining whether to expect a list or not
+            section: Name of the section contain the value being evaluated
+            item: Name of the item in section which has a value being evaluated
+            config: UserConfig object containing
 
         Raises:
-            ValueError: Raises an error if Kwargs config or value is not
+            ValueError: Raises an error if Kwargs section, item, config is not
                         provided.
         """
 
-        if 'value' not in kwargs.keys():
-            raise ValueError("Must provided at least keyword value to "
-                             "Checkers.")
-        if 'config' not in kwargs.keys():
-            raise ValueError("Must provided at least keyword config to"
-                             " Checkers.")
+        # Keywords are more convenient to use, make these ones required
+        required = ["section", "item", "config"]
+        for req in required:
+            if req not in kwargs.keys():
+                raise ValueError("Must provided at least keywords {} to "
+                                "Checkers.".format(", ".join(required)))
+            else:
+                setattr(self,req,kwargs[req])
 
+        # initial error messgae is nothing
         self.message = None
-        self.msg_level = 'warning'
-        self.value = kwargs["value"]
 
-        self.config = kwargs["config"]
+        # Initial level of concern is just a warning (can also be error)
+        self.msg_level = 'warning'
 
         if not self.msg_level.lower() in ['warning', 'error']:
             raise ValueError("msg_level = {0} not allowed."
                              "".format(self.msg_level))
 
-    def is_valid(self):
+        # Initial values are set from the config directly, can be a list
+        self.values = self.config.cfg[self.section][self.item]
+
+        # Are the values received supposed to be a list?
+        self.is_list = self.config.mcfg.cfg[self.section][self.item].listed
+
+        # Allow None as a value?
+        self.allow_none = False
+
+    def is_it_a_lst(self, values):
+        """
+        This checks to see if the original entry was a list or not.
+        So instead of evaluating self.values  which is always a single item,
+        we evaluate self.config[self.section][self.item]
+
+        Args:
+            values: The uncasted entry from a config file section and item,
+                    can be a list or a single item
+
+        Returns:
+            boolean: True if its a list false if it is not.
+        """
+        # Grab the original values and see if theyre in a list
+        if type(values) == list:
+            return True
+
+        # not a list, its good
+        else:
+            return False
+
+    def is_valid(self, value):
         """
         Abstract function for defining how a value is checked for validity
 
         Args:
-            value: Value that is going to be check for validity
+            value: Single value to be evaluated
 
         Returns:
-            **(boolean, msg)**: Boolean result whether value valid and
-                              correspond error message if it is not
+            tuple:
+                **valid** - Boolean whether the value was acceptable
+                **msg** - string to print if value is not valid.
         """
         pass
 
@@ -78,19 +111,17 @@ class GenericCheck(object):
         Function that is ran by the checking function of the user config to
         return useful message to instruct user
 
-        Args:
-            value: value to be check for validity
         Returns:
-            msg: None is the entry is valid, else returns self.message
+            msgs: None if the entry is valid, else returns self.message
         """
+        valids = []
+        issues = []
 
-        valid, issue = self.is_valid()
+        for v in mk_lst(self.values):
+            valid, issue = self.is_valid(v)
+            issues.append(issue)
 
-        if valid:
-            msg = None
-        else:
-            msg = issue
-        return msg
+        return issues
 
 
 class CheckType(GenericCheck):
@@ -101,14 +132,8 @@ class CheckType(GenericCheck):
     def __init__(self, **kwargs):
         super(CheckType, self).__init__(**kwargs)
 
-        self.type = 'string'
-        kwargs_requires = ["item","section", "config", "is_list", 'maximum',
-                                                                  'minimum']
-
-        # Allow None as a value?
-        self.allow_none = False
-
-        for kw in kwargs_requires:
+        req = ['maximum', 'minimum']
+        for kw in req:
             if kw in kwargs.keys():
                 value = kwargs[kw]
             else:
@@ -116,17 +141,16 @@ class CheckType(GenericCheck):
 
             setattr(self, kw, value)
 
+        # Default type
+        self.type = 'string'
+
         # Function used for casting to types
         self.type_func = str
-
-        # Allow users to specify an option to be a list
-        if self.is_list == None:
-            self.is_list = False
 
         # Allow developers to specify bounds for certain types
         self.bounded = False
 
-    def check_bounds(self):
+    def check_bounds(self, value):
         """
         Checks the developers values for bounded checks on the config file.
 
@@ -153,8 +177,8 @@ class CheckType(GenericCheck):
                 min_value = self.minimum
 
             # Check upper and lower bounds
-            if self.value != None:
-                value = self.type_func(self.value)
+            if value != None:
+                value = self.type_func(value)
 
                 if min_value != None:
                     min_value = self.type_func(min_value)
@@ -183,68 +207,150 @@ class CheckType(GenericCheck):
 
         return valid, msg
 
-    def is_it_a_lst(self):
+    def check_list(self):
         """
-        Checkers are use to evaluate single items in a list in a item and
-        section. This checks to see if the original entry was a list or not.
-        So instead of evaluating self.value which is always a single item,
-        we evaluate self.config[self.section][self.item]
-
+        Checks to see if a list is desired and if so can it be made into a list
         """
-        # Grab the original values and see if theyre in a list
-        values = self.config.cfg[self.section][self.item]
-        if type(values) == list:
-            return True
 
-        # not a list, its good
+        # Is it currently a list
+        currently_a_list = self.is_it_a_lst(self.values)
+
+        # Is it a list and supposed to be a list?
+        if self.is_list and currently_a_list:
+            valid = True
+            msg = None
+
         else:
-            return False
+            msg = "Expected single value received list"
+            valid = False
 
-    def is_valid(self):
+        return valid, msg
+
+    def check_options(self, value):
         """
-        Checks for type validity
+        Confirms that options if used are infact valid.
+
+        Args:
+            list: A list of booleans indicating which values are valid and
+                  which are not
+            list: A list of strings indicating
+
+        """
+        valid = True
+        msg = None
+
+        if self.config.mcfg.cfg[self.section][self.item].options:
+
+            # If it is not in the options its invalid
+            if str(value).lower() not in self.config.mcfg.cfg[self.section][self.item].options:
+                msg = "Not a valid option"
+                valid = False
+
+        return valid, msg
+
+    def is_valid(self, value):
+        """
+        Checks for type validity by examininig a single value in an entry to an
+        item.
+
+        Args:
+            value: Single value to be evaluated
 
         Returns:
             tuple:
                 **valid** - Boolean whether the value was acceptable
                 **msg** - string to print if value is not valid.
         """
-        msg = None
-        self.msg_level = 'error'
+        valid, msg = is_valid(value, self.type_func, self.type,
+                                             allow_none=self.allow_none)
+        return valid, msg
 
-        # Provide a list check by looking at the original entry
-        currently_a_list = self.is_it_a_lst()
+    def check_none(self, value):
+        """
+        Determines if None is valid
 
-        # Original entry is a list and its not supposed to be
-        if currently_a_list and not self.is_list:
-            msg = "Expected single value received list"
-            valid = False
+        Args:
+            value: single value to be assessed whether none is valid
 
+        Returns:
+            tuple:
+                **valid** - Boolean whether the value was acceptable
+                **msg** - string to print if value is not valid.
+        """
+        # You got nones and you can't have them
+        if not self.allow_none and value == None:
+                valid = False
+                msg = "Value None not allowed."
         else:
-            valid, msg = is_valid(self.value, self.type_func, self.type,
-                                              allow_none=self.allow_none)
-
-        # If we have the right type, Check for bounds
-        if valid:
-            valid, msg = self.check_bounds()
+            valid = True
+            msg = None
 
         return valid, msg
 
+
+    def check(self):
+        """
+        Types are checked differently than some general checker.
+        Types check for lists, options, castability, and bounds.
+
+        Returns:
+            list: a full list of either None or messages relaying the issues
+        """
+        msgs = []
+        valids = []
+
+        self.msg_level = 'error'
+
+        # 1. Check for lists
+        valid, msg = self.check_list()
+
+        if valid:
+            for v in mk_lst(self.values):
+
+                # 2. Check if none is allowed.
+                valid, msg = self.check_none(v)
+
+                # 3. Check for option constraints
+                if valid:
+                    valid, msg = self.check_options(v)
+
+                # 4. Check for type constraints
+                if valid:
+                    valid, msg = self.is_valid(v)
+
+                # 5. Check for bounding constraints
+                if valid:
+                    valid, msg = self.check_bounds(v)
+
+                msgs.append(msg)
+                valids.append(valid)
+
+        return msgs
+
     def cast(self):
         """
-        Attempts to return the casted value
+        Attempts to return the casted values
+
+        Returns:
+            list: All values from self.values casted correctly.
         """
-        if type(self.value) == str:
-            if self.value.lower() == "none":
-                return None
+
+        result = []
+
+
+        for v in mk_lst(self.values):
+
+            # 1. Manage nones:
+            if str(v).lower() == "none":
+                result.append(None)
+
             else:
-                return  self.type_func(self.value)
+                result.append(self.type_func(v))
 
-        elif self.value != None:
-            return  self.type_func(self.value)
+        if not self.is_list:
+            result = mk_lst(result, unlst=True)
 
-        else:
-            return None
+        return result
 
 class CheckDatetime(CheckType):
     """
@@ -316,7 +422,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
             corresponding = get_kw_match(self.cfg_dict.keys(), init_kw)
 
         else:
-            raise ValueError("Ordered Date time pairs must be distinguishable "
+            raise ValueError("Ordered Datetime pairs must be distinguishable "
                              " by item name. {} was either found to have both "
                              " sets of keywords or none of them."
                              "".format(self.item))
@@ -325,9 +431,10 @@ class CheckDatetimeOrderedPair(CheckDatetime):
         corresponding_val = self.cfg_dict[corresponding]
 
         valid, msg = is_valid(corresponding_val, self.type_func, self.type)
+
         if valid:
             corresponding_val = self.type_func(corresponding_val)
-            value = self.type_func(self.value)
+            value = self.type_func(self.values )
 
             if is_start:
                 # validity check
@@ -345,17 +452,19 @@ class CheckDatetimeOrderedPair(CheckDatetime):
 
         return valid, msg
 
-    def is_valid(self):
+    def is_valid(self, value):
         """
         Checks whether it convertable to datetime, then checks for order.
 
+        Args:
+            value: Single value to be evaluated
+
         Returns:
-            valid: boolean representing whether the valid
-            msg: issue report string if there is an issue, otherwise returns
-                 None
+            tuple:
+                **valid** - Boolean whether the value was acceptable
+                **msg** - string to print if value is not valid.
         """
-        # Check for the datetime first
-        valid, msg = is_valid(self.value, self.type_func, self.type)
+        valid, msg = is_valid(value , pd.to_datetime, self.type)
 
         if valid:
             valid, msg = self.is_corresponding_valid()
@@ -400,18 +509,18 @@ class CheckInt(CheckType):
         Args:
             value: The value to be casted to integer
         Returns:
-            self.value: the value converted
+            self.values : the value converted
         """
 
-        self.value = float(value)
+        self.values  = float(value)
 
-        if self.value.is_integer():
-            self.value = int(self.value)
+        if self.values .is_integer():
+            self.values  = int(self.values)
 
         else:
             raise ValueError("Expecting integer and received float with "
                             " non-zero decimal")
-        return self.value
+        return self.values
 
 
 class CheckBool(CheckType):
@@ -482,41 +591,52 @@ class CheckPath(CheckType):
 
         self.dir_path = False
 
+        # SHOULD I BE DELETED?
         # Path should alsways be absolute or relative to the config file path
-        if type(self.value) == str:
-            if self.value.lower() == "none":
-                self.value = None
+        # if type(self.values ) == str:
+        #     if self.values .lower() == "none":
+        #         self.values  = None
+        #
+        # if self.values  != None and self.root_loc != None:
+        #     if not os.path.isabs(self.values ):
+        #         p = os.path.expanduser(os.path.dirname(self.root_loc))
+        #         self.values  = os.path.abspath(os.path.join(p, self.values ))
 
-        if self.value != None and self.root_loc != None:
-            if not os.path.isabs(self.value):
-                p = os.path.expanduser(os.path.dirname(self.root_loc))
-                self.value = os.path.abspath(os.path.join(p, self.value))
-
-    def is_valid(self):
+    def is_valid(self, value):
         """
         Checks for existing filename
-        """
-        # This avoids crashing on os.posix on none type
-        if self.value == None:
-            if self.allow_none:
-                exists = True
-            else:
-                exists = False
 
-        elif self.dir_path:
-            exists = os.path.isdir(self.value)
+        Args:
+            value: Single value to be evaluated
+
+        Returns:
+            tuple:
+                **valid** - Boolean whether the value was acceptable
+                **msg** - string to print if value is not valid.
+        """
+
+        valids = []
+        msgs = []
+
+        if self.dir_path:
+            valid = os.path.isdir(value)
 
         else:
-            exists = os.path.isfile(self.value)
+            valid = os.path.isfile(value)
 
-        return exists, self.message
+        if valid:
+            msg = None
+        else:
+            msg = self.message
+
+        return valid, msg
 
     def cast(self):
         """
         Special casting function to just pass the path through
         """
 
-        return self.value
+        return self.values
 
 
 class CheckDirectory(CheckPath):
@@ -584,23 +704,34 @@ class CheckURL(CheckType):
         self.type = 'url'
         self.msg_level = 'error'
 
-    def is_valid(self):
+    def is_valid(self, value):
         """
-        Makes a request to the URL to determine the validity
+        Makes a request to the URL to determine the validity.
+
+        Args:
+            value: Single value to be evaluated
+
+        Returns:
+            tuple:
+                **valid** - Boolean whether the value was acceptable
+                **msg** - string to print if value is not valid.
+
         """
         # Attempt to establish a connection
         try:
-            r = requests.get(self.value)
+            r = requests.get(value)
 
         except Exception as e:
-            self.message = "Invalid connection or URL"
+            msg = "Invalid connection or URL"
             r = None
 
-        exists = False
+        valid = False
         if r != None:
             if r.status_code == 200:
-                exists = True
+                valid = True
             else:
-                self.message = "Webpage does not exist"
+                msg = "Webpage does not exist"
+        valids.append(valid)
+        msgs.append(msg)
 
-        return exists, self.message
+        return valids, msgs
