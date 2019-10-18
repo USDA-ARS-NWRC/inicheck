@@ -15,15 +15,18 @@ class GenericCheck(object):
 
     Every check will run the check().
 
-
     Attributes:
         message: String message to report if the value passed is not valid
         msg_level: Urgency of the message which can be either a warning or error
-        value: value to be checked, casted, and reported on
+        values: value to be checked, casted, and reported on
         config: UserConfig object that the item/value being check resides
+        type: string name representing the datatype which is based off the class
+              name
+        is_list: Boolean specifying the resulting values as a list or not
+        allow_none: Boolean specifying the values can contain a value
 
-        e.g.
-            b = GenericCheck(value=v, config=ucfg)
+        E.G.
+            b = GenericCheck(section='test', item= 'tiem1', config=ucfg)
             issue = b.check()
             if issue != None:
                 log.info(b.message)
@@ -98,7 +101,10 @@ class GenericCheck(object):
 
     def is_valid(self, value):
         """
-        Abstract function for defining how a value is checked for validity
+        Abstract function for defining how a value is checked for validity.
+        It should always be used in check(). Is valid should always return
+        a boolean whether the result is valid, and the issue as a string stating
+        the problem. If no issue it should still return None.
 
         Args:
             value: Single value to be evaluated
@@ -113,7 +119,7 @@ class GenericCheck(object):
     def check(self):
         """
         Function that is ran by the checking function of the user config to
-        return useful message to instruct user
+        return useful message to instruct user.
 
         Returns:
             msgs: None if the entry is valid, else returns self.message
@@ -130,7 +136,15 @@ class GenericCheck(object):
 
 class CheckType(GenericCheck):
     """
-    Base class for type checking whether a value of the right type.
+    Base class for type checking whether a value of the right type. Here extra
+    Attributes are added such as maximum and minimum.
+
+    Attributes:
+            minimum: Minimum value for bounded entries.
+            maximum: Maximum value for bounded entries.
+            type_func: Function used to cast the data to the desired type.
+                      Default - str()
+            bounded: Boolean indicating if a value can be limited by a min or max.
     """
 
     def __init__(self, **kwargs):
@@ -157,12 +171,21 @@ class CheckType(GenericCheck):
 
     def check_bounds(self, value):
         """
-        Checks the developers values for bounded checks on the config file.
+        Checks the users values to see if its in the bounds specified by the
+        developer.
 
         If self.max or self.min == None then it is assumed no bounds on either
         end.
 
-        Function only runs when requested.
+        Function only runs when bounded = True in the master config.
+
+        Args:
+            value: Single value being evaluated against the bounds.
+
+        Returns:
+            tuple:
+                **valid** - Boolean whether the value was acceptable
+                **msg** - string to print if value is not valid.
         """
 
         valid = True
@@ -175,11 +198,6 @@ class CheckType(GenericCheck):
             if self.config != None:
                 max_value = self.config.mcfg.cfg[self.section][self.item].max
                 min_value = self.config.mcfg.cfg[self.section][self.item].min
-
-            # Grab the args
-            else:
-                max_value = self.maximum
-                min_value = self.minimum
 
             # Check upper and lower bounds
             if value != None:
@@ -214,7 +232,12 @@ class CheckType(GenericCheck):
 
     def check_list(self):
         """
-        Checks to see if a list is desired and if so can it be made into a list
+        Checks to see if self.values provided are in a list and if they should be.
+
+        Returns:
+            tuple:
+                **valid** - Boolean whether the value was acceptable in terms of being a list
+                **msg** - string to print if value is not valid.
         """
 
         # Is it currently a list
@@ -236,12 +259,18 @@ class CheckType(GenericCheck):
 
     def check_options(self, value):
         """
-        Confirms that options if used are infact valid.
+        Check to see if the current value being evaluated is also in the list of
+        provided options in the master config. Only runs if options were
+        provided.
 
         Args:
-            list: A list of booleans indicating which values are valid and
-                  which are not
-            list: A list of strings indicating
+            value: A single value which is checked against the list of options
+                   in the master config
+
+        Returns:
+            tuple:
+                **valid** - Boolean whether the value was in the options list
+                **msg** - string to print if value is not in the options.
 
         """
         valid = True
@@ -260,8 +289,8 @@ class CheckType(GenericCheck):
 
     def is_valid(self, value):
         """
-        Checks for type validity by examininig a single value in an entry to an
-        item.
+        Checks  a single value using the specified type function.
+        All checkers should have a version of this function.
 
         Args:
             value: Single value to be evaluated
@@ -277,7 +306,7 @@ class CheckType(GenericCheck):
 
     def check_none(self, value):
         """
-        Determines if None is valid
+        Check a single value if it is None and whether that is accecptable.
 
         Args:
             value: single value to be assessed whether none is valid
@@ -301,10 +330,23 @@ class CheckType(GenericCheck):
     def check(self):
         """
         Types are checked differently than some general checker.
-        Types check for lists, options, castability, and bounds.
+        The checking goes through 5 steps and if anyone of them is invalid
+        it will not check the rest. The process is as follows:
+
+        1. Check if self.values should be a list or not.
+
+        2. Check if a value in self.values should be None or not.
+
+        3. Check for options and if a single value from self.values is among them.
+
+        4. Check is a single value is valid according to self.valid.
+
+        5. Check if a single value is inside any defined bounds.
+
 
         Returns:
-            list: a full list of either None or messages relaying the issues
+            list: A list equal to the len(self.values) of either None or
+                  strings relaying the issues found
         """
         msgs = []
         valids = []
@@ -345,10 +387,13 @@ class CheckType(GenericCheck):
 
     def cast(self):
         """
-        Attempts to return the casted values
+        Attempts to return the casted values of the each value in self.values.
+
+        This is performed with self.type_func unless the value is none in which
+        we return None (NoneType)
 
         Returns:
-            list: All values from self.values casted correctly.
+            list: All values from self.values casted correctly
         """
 
         result = []
@@ -379,7 +424,7 @@ class CheckDatetime(CheckType):
 
         super(CheckDatetime, self).__init__(**kwargs)
         self.type_func = to_datetime
-        self.type = 'datetime'
+
 
 class CheckDatetimeOrderedPair(CheckDatetime):
     """
@@ -498,7 +543,6 @@ class CheckFloat(CheckType):
 
         super(CheckFloat, self).__init__(**kwargs)
         self.type_func = float
-        self.type = 'float'
 
         # Can be bounded but not required
         self.bounded = True
@@ -511,7 +555,6 @@ class CheckInt(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckInt, self).__init__(**kwargs)
-        self.type = 'int'
         self.type_func = self.convert_to_int
 
         # Can be bounded but not requried
@@ -548,7 +591,6 @@ class CheckBool(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckBool, self).__init__(**kwargs)
-        self.type = 'bool'
         self.type_func = self.convert_bool
 
         self.affirmatives = ['y', 'yes', 'true']
@@ -589,12 +631,11 @@ class CheckString(CheckType):
 
         super(CheckString, self).__init__(**kwargs)
         self.type_func = str
-        self.type = 'string'
 
 
 class CheckPath(CheckType):
     """
-    Checks whether a Path exists.
+    Checks whether a Path exists. Base for checking if paths exist.
     """
 
     def __init__(self, **kwargs):
@@ -607,17 +648,6 @@ class CheckPath(CheckType):
         self.root_loc = self.config.filename
 
         self.dir_path = False
-
-        # SHOULD I BE DELETED?
-        # Path should alsways be absolute or relative to the config file path
-        # if type(self.values ) == str:
-        #     if self.values .lower() == "none":
-        #         self.values  = None
-        #
-        # if self.values  != None and self.root_loc != None:
-        #     if not os.path.isabs(self.values ):
-        #         p = os.path.expanduser(os.path.dirname(self.root_loc))
-        #         self.values  = os.path.abspath(os.path.join(p, self.values ))
 
     def is_valid(self, value):
         """
@@ -658,7 +688,8 @@ class CheckPath(CheckType):
 
 class CheckDirectory(CheckPath):
     """
-    Checks whether a directory exists.
+    Checks whether a directory exists. These directories are allowed to be none
+    and only warn when they do not exist. E.g. Output folders
     """
 
     def __init__(self, **kwargs):
@@ -666,16 +697,17 @@ class CheckDirectory(CheckPath):
         self.dir_path = True
         self.allow_none = True
         self.message = "Directory does not exist."
-        print(self.type)
+
 class CheckFilename(CheckPath):
     """
     Checks whether a directory exists. These are files that the may be created
-    or not necessary to run.
+    or not necessary to run. E.g. Log files
     """
 
     def __init__(self, **kwargs):
         super(CheckFilename, self).__init__(**kwargs)
         self.message = "File does not exist."
+        self.allow_none = True
 
 
 class CheckCriticalFilename(CheckFilename):
@@ -721,7 +753,6 @@ class CheckURL(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckURL, self).__init__(**kwargs)
-        self.type = 'url'
         self.msg_level = 'error'
 
     def is_valid(self, value):
@@ -751,7 +782,5 @@ class CheckURL(CheckType):
                 valid = True
             else:
                 msg = "Webpage does not exist"
-        valids.append(valid)
-        msgs.append(msg)
 
-        return valids, msgs
+        return valid, msg

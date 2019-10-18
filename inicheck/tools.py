@@ -8,7 +8,7 @@ from . changes import ChangeLog
 
 
 def get_checkers(module='inicheck.checkers', keywords="check",
-                                             ignore=["type","generic"]):
+                                             ignore=["type","generic","path"]):
     """
     Args:
         module: The module to search for the classes
