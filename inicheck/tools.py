@@ -94,53 +94,50 @@ def check_config(config_obj):
 
     # Compare user config file to our master config
     for s, configured in cfg.items():
-
+        print(s)
+        # Section does not exists in master config
         if s not in mcfg.keys():
             err = "Not a valid section."
             errors.append(msg.format(s, " ", err))
-        else:
-            # In the section check the values and options
-            for i, value in configured.items():
 
+        else:
+
+            for i in configured.keys():
                 # lower case item
                 li = i.lower()
 
-                # Is the item known as a configurable item?
+                # Item does not exist in the Master Config
                 if li not in mcfg[s].keys():
                     wrn = "Not a registered option."
                     warnings.append(msg.format(s, i, wrn))
+
                 else:
                     issues = []
+                    fn = all_checks[mcfg[s][i].type]
 
-                    # Look at the available checkers find a match
-                    for name, fn in all_checks.items():
+                    b = fn(config=config_obj, item=i, section=s)
+                    issues = b.check()
 
-                        if mcfg[s][i].type == name.lower():
-                            b = fn(config=config_obj, item=i, section=s)
-
-                            issues = b.check()
-                            # Once we find a match we should break
-                            break
-
-                    # Check the issues
+                    # Examine the issues
                     num_issues = len([True for p in issues if p != None])
+
                     for ii, issue in enumerate(issues):
                         if issue != None:
-                            print_item = item
+                            pi = i
 
                             # If we had a list, provide position
                             if num_issues > 1:
                                 # Show 1 based lists
                                 pi += "[{}]".format(ii + 1)
 
-                            full_msg = msg.format(s, print_item, issue)
+                            full_msg = msg.format(s, pi, issue)
 
                             if b.msg_level == 'warning':
                                 warnings.append(full_msg)
                             else:
                                 errors.append(full_msg)
 
-            return warnings, errors
+    return warnings, errors
 
 
 def cast_all_variables(config_obj, mcfg_obj):
@@ -177,17 +174,8 @@ def cast_all_variables(config_obj, mcfg_obj):
 
                 # Ensure it is something we can check
                 if i in mcfg[s].keys():
-                    type_value = (mcfg[s][i].type).lower()
+                    fn = all_checks[mcfg[s][i].type]
 
-                    # go through the list of values
-                    option_found = False
-
-                    # Make sure a valid checker is prescribed
-                    if type_value not in all_checks.keys():
-                        raise ValueError("Unknown type_value prescribed."
-                                         " ----> {0}".format(type_value))
-
-                    fn = all_checks[type_value]
                     b = fn(config=config_obj, section=s, item=i)
 
                     # cfg will be checked later all at once

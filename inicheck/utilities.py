@@ -314,7 +314,6 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
                                                   type(value).__name__)
     return valid, msg
 
-
 def get_inicheck_cmd(config_file, modules=None, master_files=None):
     """
     Strings together an inicheck cli command based on modules and files

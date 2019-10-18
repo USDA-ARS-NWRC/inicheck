@@ -150,6 +150,10 @@ class CheckType(GenericCheck):
         # Allow developers to specify bounds for certain types
         self.bounded = False
 
+        # Default issue for type check is error
+        self.msg_level = 'error'
+
+
     def check_bounds(self, value):
         """
         Checks the developers values for bounded checks on the config file.
@@ -214,14 +218,17 @@ class CheckType(GenericCheck):
 
         # Is it currently a list
         currently_a_list = self.is_it_a_lst(self.values)
+        valid = True
+        msg = None
 
-        # Is it a list and supposed to be a list?
-        if self.is_list and currently_a_list:
-            valid = True
-            msg = None
+        # Is it supposed to be a list and isn't?
+        if self.is_list and not currently_a_list:
+            valid = False
+            msg = "Expected list recieved single item"
 
-        else:
-            msg = "Expected single value received list"
+        # Not supposed to be a list and is one?
+        elif not self.is_list and currently_a_list:
+            msg = "Expected single value received list."
             valid = False
 
         return valid, msg
@@ -242,7 +249,8 @@ class CheckType(GenericCheck):
         if self.config.mcfg.cfg[self.section][self.item].options:
 
             # If it is not in the options its invalid
-            if str(value).lower() not in self.config.mcfg.cfg[self.section][self.item].options:
+            options = self.config.mcfg.cfg[self.section][self.item].options
+            if str(value).lower() not in options:
                 msg = "Not a valid option"
                 valid = False
 
@@ -278,9 +286,9 @@ class CheckType(GenericCheck):
                 **msg** - string to print if value is not valid.
         """
         # You got nones and you can't have them
-        if not self.allow_none and value == None:
+        if not self.allow_none and str(value).lower() == 'none':
                 valid = False
-                msg = "Value None not allowed."
+                msg = "None is not a valid option."
         else:
             valid = True
             msg = None
@@ -299,12 +307,17 @@ class CheckType(GenericCheck):
         msgs = []
         valids = []
 
-        self.msg_level = 'error'
 
         # 1. Check for lists
         valid, msg = self.check_list()
+        msgs.append(msg)
+        valids.append(valid)
 
         if valid:
+            # We clear the nones since check_list is only checking the whole entry
+            msgs = []
+            valids = []
+
             for v in mk_lst(self.values):
 
                 # 2. Check if none is allowed.
@@ -337,16 +350,17 @@ class CheckType(GenericCheck):
 
         result = []
 
-
         for v in mk_lst(self.values):
 
             # 1. Manage nones:
             if str(v).lower() == "none":
                 result.append(None)
 
+            # 2. Manage the value types
             else:
                 result.append(self.type_func(v))
 
+        # 3. Manage the list
         if not self.is_list:
             result = mk_lst(result, unlst=True)
 
@@ -464,7 +478,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
                 **valid** - Boolean whether the value was acceptable
                 **msg** - string to print if value is not valid.
         """
-        valid, msg = is_valid(value , pd.to_datetime, self.type)
+        valid, msg = is_valid(value , to_datetime, self.type)
 
         if valid:
             valid, msg = self.is_corresponding_valid()
