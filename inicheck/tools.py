@@ -94,7 +94,7 @@ def check_config(config_obj):
 
     # Compare user config file to our master config
     for s, configured in cfg.items():
-        print(s)
+
         # Section does not exists in master config
         if s not in mcfg.keys():
             err = "Not a valid section."

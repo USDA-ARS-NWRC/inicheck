@@ -145,27 +145,26 @@ class ConfigEntry:
 
     """
 
-    def __init__(self, name=None, value=None, default=None,
-                 entry_type='string', options=[], maximum=None, minimmum=None,
-                 option_length = None, parseable_line=None):
+    def __init__(self, name=None, value=None, parseable_line=None):
 
         self.name = name
         self.value = value
-        self.default = default
-        self.options = options
+        self.default = None
+        self.options = []
         self.description = ''
         self.listed = False
-        self.type = entry_type
-        self.max = maximum
-        self.min = minimmum
-        self.option_length = option_length
+        self.type = 'string'
+        self.max = None
+        self.min = None
+        self.allow_none = True
+
         self.valid_names = ['default', 'type', 'options', 'description','max',
-                            'min','length']
+                            'min', 'allow_none']
 
         if parseable_line != None:
             parsed_dict = parse_entry(parseable_line, item=name,
                                                   valid_names=self.valid_names)
-            for name,value in parsed_dict.items():
+            for name, value in parsed_dict.items():
                 setattr(self, name, value)
 
         # Options should always be a list and lower case
@@ -183,3 +182,7 @@ class ConfigEntry:
                 self.type = self.type.replace(kw,'')
                 self.type = self.type.strip()
                 break
+
+        # Allow none should always be a bool
+        if str(self.allow_none).lower() == 'false':
+            self.allow_none = False

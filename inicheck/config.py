@@ -338,14 +338,15 @@ class UserConfig():
             mcfg = self.mcfg.cfg
             cfg = self.cfg
 
-            #Cycle thru users config
+            # Cycle thru users config
             for section in cfg.keys():
                 for item in cfg[section].keys():
                     d = cfg[section][item]
-                    #Does master have this and is it not none
+
+                    # Does master have this and is it not none
                     if item in mcfg[section].keys() and d != None:
                         m = mcfg[section][item]
-                        #Any paths
+                        # Any paths
                         if m.type == 'filename' or  m.type == 'directory':
                             cfg[section][item] = \
                             get_relative_to_cfg(cfg[section][item],

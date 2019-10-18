@@ -69,7 +69,11 @@ class GenericCheck(object):
         self.is_list = self.config.mcfg.cfg[self.section][self.item].listed
 
         # Allow None as a value?
-        self.allow_none = False
+        self.allow_none = self.config.mcfg.cfg[self.section][self.item].allow_none
+
+        # Auto retrieve the type name from the class name which is always Check<type name>
+        self.type = type(self).__name__.lower().replace('check','')
+
 
     def is_it_a_lst(self, values):
         """
@@ -141,10 +145,7 @@ class CheckType(GenericCheck):
 
             setattr(self, kw, value)
 
-        # Default type
-        self.type = 'string'
-
-        # Function used for casting to types
+        # Default Function used for casting to types
         self.type_func = str
 
         # Allow developers to specify bounds for certain types
@@ -250,6 +251,7 @@ class CheckType(GenericCheck):
 
             # If it is not in the options its invalid
             options = self.config.mcfg.cfg[self.section][self.item].options
+
             if str(value).lower() not in options:
                 msg = "Not a valid option"
                 valid = False
@@ -288,7 +290,7 @@ class CheckType(GenericCheck):
         # You got nones and you can't have them
         if not self.allow_none and str(value).lower() == 'none':
                 valid = False
-                msg = "None is not a valid option."
+                msg = "Value cannot be None"
         else:
             valid = True
             msg = None
@@ -323,17 +325,18 @@ class CheckType(GenericCheck):
                 # 2. Check if none is allowed.
                 valid, msg = self.check_none(v)
 
-                # 3. Check for option constraints
-                if valid:
-                    valid, msg = self.check_options(v)
+                if str(v).lower() != "none":
+                    # 3. Check for option constraints
+                    if valid:
+                        valid, msg = self.check_options(v)
 
-                # 4. Check for type constraints
-                if valid:
-                    valid, msg = self.is_valid(v)
+                    # 4. Check for type constraints
+                    if valid:
+                        valid, msg = self.is_valid(v)
 
-                # 5. Check for bounding constraints
-                if valid:
-                    valid, msg = self.check_bounds(v)
+                    # 5. Check for bounding constraints
+                    if valid:
+                        valid, msg = self.check_bounds(v)
 
                 msgs.append(msg)
                 valids.append(valid)
@@ -661,9 +664,9 @@ class CheckDirectory(CheckPath):
     def __init__(self, **kwargs):
         super(CheckDirectory, self).__init__(**kwargs)
         self.dir_path = True
+        self.allow_none = True
         self.message = "Directory does not exist."
-
-
+        print(self.type)
 class CheckFilename(CheckPath):
     """
     Checks whether a directory exists. These are files that the may be created
@@ -675,7 +678,6 @@ class CheckFilename(CheckPath):
         self.message = "File does not exist."
 
 
-
 class CheckCriticalFilename(CheckFilename):
     """
     Checks whether a critical file exists. This would be any files that absolutely
@@ -685,17 +687,20 @@ class CheckCriticalFilename(CheckFilename):
     def __init__(self, **kwargs):
         super(CheckCriticalFilename, self).__init__(**kwargs)
         self.msg_level = 'error'
+        self.allow_none = False
+
 
 class CheckDiscretionaryCriticalFilename(CheckCriticalFilename):
     """
     Checks whether a an optional file exists that may change software behavior
-    by being present. In otherwords, this can be none and still valid. If the not
-    then it registers an error if the string doesn't exist.
+    by being present. In other words, this can be none and still valid. If the
+    not then it registers an error if the string doesn't exist as path.
     """
 
     def __init__(self, **kwargs):
         super(CheckDiscretionaryCriticalFilename, self).__init__(**kwargs)
         self.allow_none = True
+
 
 class CheckCriticalDirectory(CheckDirectory):
     """
@@ -706,6 +711,7 @@ class CheckCriticalDirectory(CheckDirectory):
     def __init__(self, **kwargs):
         super(CheckCriticalDirectory, self).__init__(**kwargs)
         self.msg_level = 'error'
+        self.allow_none = True
 
 class CheckURL(CheckType):
     """
