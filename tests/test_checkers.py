@@ -10,12 +10,13 @@ Tests for `inicheck.checkers` module.
 import unittest
 from inicheck.checkers import *
 from inicheck.config import UserConfig, MasterConfig
+import inicheck
 
 class TestCheckers(unittest.TestCase):
 
-    def run_a_checker(self, valids, invalids, checker, ucfg=None, is_list=False,
-                                                                  section=None,
-                                                                  item=None):
+    def run_a_checker(self, valids, invalids, checker, section='section',
+                                                       item='item',
+                                                       extra_config={}):
         """
         Runs a loop over all the valids and applies the checker and asserts
         theyre true. Same thing is done for the invalids
@@ -27,61 +28,47 @@ class TestCheckers(unittest.TestCase):
             is_list: is it expected to be a list?
             section: section name the item being checked is occurring
             item: Item name in the config
-        """
-        for v in valids:
-            b = checker(value=v, config=ucfg, is_list=is_list, section=section,
-                                                               item=item)
-            valid, msg = b.is_valid()
-            if not valid:
-                print(msg)
-            assert valid
-
-        for v in invalids:
-            b = checker(value=v, config=ucfg, is_list=is_list, section=section,
-                                                               item=item)
-            valid, msg = b.is_valid()
-            if valid:
-                print(msg)
-
-            assert not valid
-
-    def test_datetime(self):
-        """
-        Test we see datetime as datetime
-        """
-        valids = ['2018-01-10 10:10','10-10-2018', "October 10 2018"]
-        invalids = ['Not-a-date', 'Wednesday 5th']
-        self.run_a_checker(valids, invalids, CheckDatetime)
-
-    def test_float(self):
-        """
-        Test we see floats as floats
+            extra_config: Pass in contextual config info to test more complicated checkers. E.g. ordered datetime pair.
         """
 
-        valids = [-1.5, '2.5']
-        invalids =  ['tough']
-        self.run_a_checker(valids, invalids, CheckFloat)
+        cfg = self.ucfg.cfg
+        cfg.update({section:{item:" "}})
 
-    def test_int(self):
+        # Added info for testing e.g. ordered datetime pair
+        if extra_config:
+            cfg.update(extra_config)
+
+        for z,values in enumerate([valids,invalids]):
+            for v in values:
+
+                cfg[section][item] = v
+
+                b = checker(config=self.ucfg, section=section, item=item)
+                msg = b.check()
+
+                if len([True for m in msg if m==None]) == len(msg):
+                    valid = True
+                else:
+                    valid = False
+
+                # Expected valid
+                print(z, v, msg, valid)
+                if z == 0:
+                    assert valid
+                else:
+                    assert not valid
+
+    @classmethod
+    def setUpClass(self):
         """
-        Test we see int as ints and not floats
+        Create some key structures for testing
         """
+        tests_p = os.path.join(os.path.dirname(inicheck.__file__),'../tests')
+        self.mcfg = MasterConfig(path=os.path.join(tests_p,
+                                    'test_configs/master.ini'))
 
-        # Confirm we these values are valid
-        valids = [10, '2', 1.0]
-        invalids = ['tough', '1.5', '']
-        self.run_a_checker(valids, invalids, CheckInt, ucfg=None)
-
-
-    def test_bool(self):
-        """
-        Test we see booleans as booleans
-        """
-
-        # Confirm we these values are valid
-        valids = [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
-        invalids = ['Fasle', 'treu']
-        self.run_a_checker(valids, invalids, CheckBool)
+        self.ucfg = UserConfig(os.path.join(tests_p,"test_configs/base_cfg.ini"),
+                               mcfg=self.mcfg)
 
 
     def test_string(self):
@@ -91,45 +78,83 @@ class TestCheckers(unittest.TestCase):
 
         # Confirm we these values are valid
         valids = ['test']
-        self.run_a_checker(valids, [], CheckString)
+        self.run_a_checker(valids, [], CheckString, section='basic', item='username')
+
+    def test_bool(self):
+        """
+        Test we see booleans as booleans
+        """
+
+        # Confirm we these values are valid
+        valids = [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
+        invalids = ['Fasle', 'treu']
+        self.run_a_checker(valids, invalids, CheckBool, section='basic',
+                                                        item='debug')
+
+
+    def test_float(self):
+        """
+        Test we see floats as floats
+        """
+        valids = [-1.5, '2.5']
+        invalids =  ['tough']
+
+        self.run_a_checker(valids, invalids, CheckFloat, section='basic',
+                                                         item='time_out')
+
+
+    def test_int(self):
+        """
+        Test we see int as ints and not floats
+        """
+
+        # Confirm we these values are valid
+        valids = [10, '2', 1.0]
+        invalids = ['tough', '1.5', '']
+        self.run_a_checker(valids, invalids, CheckInt, section='basic',
+                                                       item='num_users')
+
+
+    def test_datetime(self):
+        """
+        Test we see datetime as datetime
+        """
+
+        valids = ['2018-01-10 10:10','10-10-2018', "October 10 2018"]
+        invalids = ['Not-a-date', 'Wednesday 5th']
+        self.run_a_checker(valids, invalids, CheckDatetime, section='basic',
+                                                            item='start_date')
 
     def test_list(self):
         """
-        Test our listing methods.
-
-        Case a. The user wants a list and recieves a single item. The result
-        should be a list of length one.
-
-        Case B. The user enters a list of lenght > 1 and requests it not to be
-        as list, the result should be the value is invalid
-
-        Case C. The user enters a single value and requests it not to be
-        as list, the result should be the value is valid and not type list
+        Test our listing methods using lists of dates.
         """
 
-        valids = ["test"]
-        invalids = [["test", "test2"]]
-        self.run_a_checker(valids, [], CheckString,  is_list=True)
-        self.run_a_checker([], invalids, CheckString,  is_list=False)
+        valids = ['10-10-2019',['10-10-2019'],['10-10-2019','11-10-2019']]
+        self.run_a_checker(valids, [], CheckDatetime, section='basic',
+                                                      item='epochs')
+
+        # # We have a list in the config when we don't want one
+        # self.ucfg.cfg['section']['item'] = ["test", "test2"]
+        # invalids = ['test']
+        # self.run_a_checker([], invalids, CheckFilename,  is_list=False)
 
     def test_directory(self):
         """
         Tests the base class for path based checkers
         """
 
-        ucfg = UserConfig("./tests/test_configs/base_cfg.ini")
         valids = ["../"]
         invalids = ['./somecrazy_location!/']
-        self.run_a_checker(valids, invalids, CheckDirectory, ucfg=ucfg)
+        self.run_a_checker(valids, invalids, CheckDirectory, ucfg=self.ucfg)
 
     def test_filename(self):
         """
         Tests the base class for path based checkers
         """
 
-        ucfg = UserConfig("./tests/test_configs/base_cfg.ini")
         valids = ["../test_entries.py"]
-        self.run_a_checker(valids, [], CheckFilename, ucfg=ucfg)
+        self.run_a_checker(valids, [], CheckFilename, ucfg=self.ucfg)
 
     def test_url(self):
         """
@@ -145,40 +170,22 @@ class TestCheckers(unittest.TestCase):
         <keyword>_end pairs and confirms they occurs in the correct order.
 
         """
-        mcfg = MasterConfig(path='./tests/test_configs/CoreConfig.ini')
-        ucfg = UserConfig(None, mcfg=mcfg)
-
-        ucfg.raw_cfg = {"topo":{"test_end":"10-01-2019"}}
-        ucfg.apply_recipes()
-        valids = ["9-01-2019"]
-        invalids = ["10-02-2019"]
+        valids = ["1-02-2019"]
+        invalids = ["01-01-2018"]
+        acfg = {'basic':{'start_date':'1-1-2019'}}
         self.run_a_checker(valids, invalids, CheckDatetimeOrderedPair,
-                                             section="topo",
-                                             item="test_start",
-                                             ucfg=ucfg)
-    def test_bounds_checking(self):
+                                             section="basic",
+                                             item="end_date",
+                                             extra_config=acfg)
+    def test_bounds(self):
         """
         MasterConfig options now have max and min values to constrain continuous
         types. This tests whether that works
         """
-        mcfg = MasterConfig(path='./tests/test_configs/CoreConfig.ini')
-        ucfg = UserConfig(None, mcfg=mcfg)
-        s = "air_temp"
-        i = "dk_nthreads"
 
-        ucfg.raw_cfg = {s:{i:None}}
-
-        ucfg.apply_recipes()
-        valids = [0, 5, 10]
-        invalids = [-1,11]
-        for v in valids:
-            ucfg.cfg[s][i] = v
-            self.run_a_checker([v], [], CheckInt, ucfg=ucfg, section=s, item=i)
-
-        for v in invalids:
-            ucfg.cfg[s][i] = v
-            self.run_a_checker([], [v], CheckInt, ucfg=ucfg, section=s, item=i)
-
+        self.run_a_checker([1.0, 0.0, '0.5'], [1.1,-1.0, '10'], CheckFloat,
+                                                                section='basic',
+                                                                item='fraction')
 
 if __name__ == '__main__':
     import sys
