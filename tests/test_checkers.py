@@ -14,7 +14,7 @@ import inicheck
 
 class TestCheckers(unittest.TestCase):
 
-    def run_a_checker(self, valids, invalids, checker, section='section',
+    def run_a_checker(self, valids, invalids, checker, section='basic',
                                                        item='item',
                                                        extra_config={}):
         """
@@ -38,21 +38,19 @@ class TestCheckers(unittest.TestCase):
         if extra_config:
             cfg.update(extra_config)
 
-        for z,values in enumerate([valids,invalids]):
+        for z,values in enumerate([valids, invalids]):
             for v in values:
 
                 cfg[section][item] = v
-
                 b = checker(config=self.ucfg, section=section, item=item)
-                msg = b.check()
+                msgs = b.check()
 
-                if len([True for m in msg if m==None]) == len(msg):
+                if len([True for m in msgs if m==None]) == len(msgs):
                     valid = True
                 else:
                     valid = False
 
                 # Expected valid
-                print(z, v, msg, valid)
                 if z == 0:
                     assert valid
                 else:
@@ -78,7 +76,7 @@ class TestCheckers(unittest.TestCase):
 
         # Confirm we these values are valid
         valids = ['test']
-        self.run_a_checker(valids, [], CheckString, section='basic', item='username')
+        self.run_a_checker(valids, [], CheckString,  item='username')
 
     def test_bool(self):
         """
@@ -88,8 +86,7 @@ class TestCheckers(unittest.TestCase):
         # Confirm we these values are valid
         valids = [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
         invalids = ['Fasle', 'treu']
-        self.run_a_checker(valids, invalids, CheckBool, section='basic',
-                                                        item='debug')
+        self.run_a_checker(valids, invalids, CheckBool, item='debug')
 
 
     def test_float(self):
@@ -99,8 +96,7 @@ class TestCheckers(unittest.TestCase):
         valids = [-1.5, '2.5']
         invalids =  ['tough']
 
-        self.run_a_checker(valids, invalids, CheckFloat, section='basic',
-                                                         item='time_out')
+        self.run_a_checker(valids, invalids, CheckFloat, item='time_out')
 
 
     def test_int(self):
@@ -111,8 +107,7 @@ class TestCheckers(unittest.TestCase):
         # Confirm we these values are valid
         valids = [10, '2', 1.0]
         invalids = ['tough', '1.5', '']
-        self.run_a_checker(valids, invalids, CheckInt, section='basic',
-                                                       item='num_users')
+        self.run_a_checker(valids, invalids, CheckInt, item='num_users')
 
 
     def test_datetime(self):
@@ -122,8 +117,7 @@ class TestCheckers(unittest.TestCase):
 
         valids = ['2018-01-10 10:10','10-10-2018', "October 10 2018"]
         invalids = ['Not-a-date', 'Wednesday 5th']
-        self.run_a_checker(valids, invalids, CheckDatetime, section='basic',
-                                                            item='start_date')
+        self.run_a_checker(valids, invalids, CheckDatetime, item='start_date')
 
     def test_list(self):
         """
@@ -131,8 +125,7 @@ class TestCheckers(unittest.TestCase):
         """
 
         valids = ['10-10-2019',['10-10-2019'],['10-10-2019','11-10-2019']]
-        self.run_a_checker(valids, [], CheckDatetime, section='basic',
-                                                      item='epochs')
+        self.run_a_checker(valids, [], CheckDatetime, item='epochs')
 
         # # We have a list in the config when we don't want one
         # self.ucfg.cfg['section']['item'] = ["test", "test2"]
@@ -144,17 +137,18 @@ class TestCheckers(unittest.TestCase):
         Tests the base class for path based checkers
         """
 
-        valids = ["../"]
+        valids = ["./"]
         invalids = ['./somecrazy_location!/']
-        self.run_a_checker(valids, invalids, CheckDirectory, ucfg=self.ucfg)
+        self.run_a_checker(valids, invalids, CheckDirectory, item='tmp')
 
     def test_filename(self):
         """
         Tests the base class for path based checkers
         """
-
-        valids = ["../test_entries.py"]
-        self.run_a_checker(valids, [], CheckFilename, ucfg=self.ucfg)
+        # Remember paths are relative to the config
+        valids = ["../test_checkers.py"]
+        invalids = ['dumbfilename']
+        self.run_a_checker(valids, invalids, CheckFilename, item='log')
 
     def test_url(self):
         """
@@ -162,7 +156,8 @@ class TestCheckers(unittest.TestCase):
         """
         valids = ["https://google.com"]
         invalids = ["https://micah_subnaught_is_awesome.com"]
-        self.run_a_checker(valids, [], CheckURL, is_list=True)
+        self.run_a_checker(valids, invalids, CheckURL,
+                                                 item='favorite_web_site')
 
     def test_datetime_ordered_pairs(self):
         """
@@ -174,7 +169,6 @@ class TestCheckers(unittest.TestCase):
         invalids = ["01-01-2018"]
         acfg = {'basic':{'start_date':'1-1-2019'}}
         self.run_a_checker(valids, invalids, CheckDatetimeOrderedPair,
-                                             section="basic",
                                              item="end_date",
                                              extra_config=acfg)
     def test_bounds(self):
@@ -184,7 +178,6 @@ class TestCheckers(unittest.TestCase):
         """
 
         self.run_a_checker([1.0, 0.0, '0.5'], [1.1,-1.0, '10'], CheckFloat,
-                                                                section='basic',
                                                                 item='fraction')
 
 if __name__ == '__main__':

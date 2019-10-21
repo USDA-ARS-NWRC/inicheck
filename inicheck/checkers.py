@@ -242,16 +242,18 @@ class CheckType(GenericCheck):
 
         # Is it currently a list
         currently_a_list = self.is_it_a_lst(self.values)
+
         valid = True
         msg = None
 
-        # Is it supposed to be a list and isn't?
-        if self.is_list and not currently_a_list:
-            valid = False
-            msg = "Expected list recieved single item"
+        # NOTE This is for checking single items but we can cast these no matter what so its viable.
+        # # Is it supposed to be a list and isn't?
+        # if self.is_list and not currently_a_list:
+        #     valid = False
+        #     msg = "Expected list recieved single item"
 
         # Not supposed to be a list and is one?
-        elif not self.is_list and currently_a_list:
+        if not self.is_list and currently_a_list:
             msg = "Expected single value received list."
             valid = False
 
@@ -475,12 +477,14 @@ class CheckDatetimeOrderedPair(CheckDatetime):
         is_start = is_kw_matched(self.item, init_kw)
         is_end = is_kw_matched(self.item, final_kw)
 
+        # The current item is the beginning of an ordered datetime pair
         if is_start and not is_end:
             # Look for a corresponding end
             corresponding = get_kw_match(self.cfg_dict.keys(), final_kw)
 
+        # The current item is the end of an ordered datetime pair
         elif is_end and not is_start:
-            # Look for the start
+            # Look for the corresponding start
             corresponding = get_kw_match(self.cfg_dict.keys(), init_kw)
 
         else:
@@ -491,7 +495,6 @@ class CheckDatetimeOrderedPair(CheckDatetime):
 
         # Is corresponding castable?
         corresponding_val = self.cfg_dict[corresponding]
-
         valid, msg = is_valid(corresponding_val, self.type_func, self.type)
 
         if valid:
@@ -504,7 +507,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
                 incorrect_context = "after"
 
             elif is_end:
-                # validity check
+                # Check if the
                 order_valid = value > corresponding_val
                 incorrect_context = "before"
 
@@ -645,9 +648,9 @@ class CheckPath(CheckType):
         # Allow None as a value?
         self.allow_none = False
 
-        self.root_loc = self.config.filename
-
+        self.root_loc = os.path.dirname(self.config.filename)
         self.dir_path = False
+        self.type_func = self.make_abs_from_cfg
 
     def is_valid(self, value):
         """
@@ -662,14 +665,12 @@ class CheckPath(CheckType):
                 **msg** - string to print if value is not valid.
         """
 
-        valids = []
-        msgs = []
-
+        v = os.path.join(self.root_loc, value)
         if self.dir_path:
-            valid = os.path.isdir(value)
+            valid = os.path.isdir(v)
 
         else:
-            valid = os.path.isfile(value)
+            valid = os.path.isfile(v)
 
         if valid:
             msg = None
@@ -678,12 +679,21 @@ class CheckPath(CheckType):
 
         return valid, msg
 
-    def cast(self):
+    def make_abs_from_cfg(self, value):
         """
-        Special casting function to just pass the path through
-        """
+        Looks at a path and determines its absolute path. All paths should be
+        either absolute or relative to the config file in which they will be
+        converted to absolute paths
 
-        return self.values
+        Args:
+            value: single path or filename
+        Returns:
+            str: absolute path or filename
+        """
+        if not os.path.abspath(value):
+            value = os.path.join(self.root_loc, value)
+
+        return value
 
 
 class CheckDirectory(CheckPath):
@@ -712,8 +722,9 @@ class CheckFilename(CheckPath):
 
 class CheckCriticalFilename(CheckFilename):
     """
-    Checks whether a critical file exists. This would be any files that absolutely
-    have to exist to avoid crashing the software. These are static files.
+    Checks whether a critical file exists. This would be any files that
+    absolutely have to exist to avoid crashing the software. These are static
+    files.
     """
 
     def __init__(self, **kwargs):
@@ -770,17 +781,19 @@ class CheckURL(CheckType):
         """
         # Attempt to establish a connection
         try:
-            r = requests.get(value)
+            r = requests.get(value, timeout=5)
 
         except Exception as e:
             msg = "Invalid connection or URL"
             r = None
 
+
         valid = False
+        msg = "Webpage does not exist"
+
         if r != None:
             if r.status_code == 200:
                 valid = True
-            else:
-                msg = "Webpage does not exist"
+                msg = None
 
         return valid, msg

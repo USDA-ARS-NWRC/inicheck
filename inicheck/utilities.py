@@ -200,7 +200,6 @@ def is_kw_matched(single_word, kw_list, kw_count=1):
         boolean: Whether a keyword match was found
     """
     truths = [True for kw in kw_list if kw in single_word]
-
     if len(truths) >= kw_count:
         return True
     else:
@@ -221,11 +220,14 @@ def get_kw_match(potential_matches, kw_list, kw_count=1):
         result: The first potential found with the keyword match
     """
     result = False
+
     for potential in potential_matches:
         match = is_kw_matched(potential, kw_list, kw_count=kw_count)
-        result = potential
+
         if match:
+            result = potential
             break
+
     return result
 
 
