@@ -15,6 +15,17 @@ class UserConfig():
     """
     Class meant for managing the the users config, here we operate on the
     config repeatedly making it available through the attribute self.cfg
+
+    Attributes:
+        raw_cfg: Untouched original OrderedDict that inicheck read from file
+        cfg: OrderedDict of the config file that inicheck will check, cast, list, etc
+        recipes: List of entries.recipes.RecipesSection that apply to this config
+        sections: List of strings that represent the unique sections for the whole config file
+        items: List of strings that represent the unique items for the whole config file
+        values: List of strings that represent the unique values for the whole config file
+        mcfg: config.MasterConfig object that represents the standard the cfg is checked against
+
+
     """
 
     def __init__(self, filename, mcfg=None):
@@ -33,7 +44,7 @@ class UserConfig():
         if self.filename != None:
             self.raw_cfg = read_config(filename)
 
-            # Version inicheck will mess with
+            # The version  of the config that inicheck will mess with
             self.cfg = copy.deepcopy(self.raw_cfg)
 
             self.sections, self.items, self.values = \

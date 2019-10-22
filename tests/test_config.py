@@ -11,6 +11,7 @@ import unittest
 import os
 from inicheck.config import *
 from inicheck.tools import cast_all_variables, get_checkers
+import datetime
 
 def compare_config(generated_config, truth_config, master=False, mcfg_attr='default'):
     """
@@ -64,64 +65,50 @@ def compare_config(generated_config, truth_config, master=False, mcfg_attr='defa
 
 
 class TestUserConfig(unittest.TestCase):
-    def setUp(self):
-        """
-        Stage truth data here, grab the config to pass around
-        """
 
-        fname = os.path.abspath(os.path.dirname(__file__)+'/test_configs/base_cfg.ini')
-
-        mcfg = MasterConfig(modules = 'inicheck')
+    @classmethod
+    def setUpClass(self):
+        """
+        """
+        fname = os.path.abspath(os.path.dirname(__file__)+'/test_configs/full_config.ini')
+        mcfg = MasterConfig(modules='inicheck')
         self.ucfg = UserConfig(fname, mcfg=mcfg)
 
-    def test_base_config(self):
+    def test_ucfg_init(self):
         """
         Simply opens and looks at the base config BEFORE all the recipes and
         stuff has been applied
         """
-        truth = {'topo':
-                        {},
-                 'air_temp':
-                        {}
-                }
 
-        assert compare_config(self.ucfg.cfg,truth)
+        # Assert important attributes
+        for a in ['mcfg','cfg','raw_cfg','recipes']:
+            assert(hasattr(self.ucfg, a))
+
 
     def test_apply_recipes(self):
         """
-        Tests that the correct variables are in place after recipes
+        Tests that the correct recipes were identified to be used for
+        interpretation
         """
 
         truth = {'topo':
-                        {'filename':None,
+                        {'filename':['None'],
                         'type':'netcdf'},
-                 'air_temp':
-                        {'distribution': 'idw',
-                         'detrend':'true',
-                         'slope':'1'}
+                 'cloud_factor':
+                        {'distribution': 'idw'}
                 }
 
         self.ucfg.apply_recipes()
-        assert compare_config(self.ucfg.cfg,truth)
-
-    def test_apply_casting(self):
-        """
-        Tests that the correct variables are in place after recipes
-        """
-
-        truth = {'topo':
-                        {'filename':None,
-                        'type':'netcdf'},
-                 'air_temp':
-                        {'distribution': 'idw',
-                         'detrend':True,
-                         'slope':1.0}
-                }
-
-        self.ucfg.apply_recipes()
-        self.ucfg = cast_all_variables(self.ucfg, self.ucfg.mcfg)
-
-        assert compare_config(self.ucfg.cfg,truth)
+        valid_recipes = ['topo_basic_recipe', 'time_recipe', 'air_temp_recipe',
+                         'vp_recipe', 'wind_recipe', 'precip_recipe',
+                         'non_winstral_recipe', 'cloud_factor_recipe',
+                         'albedo_recipe', 'date_decay_method_recipe',
+                         'solar_recipe', 'thermal_recipe', 'soil_recipe',
+                         'output_recipe', 'system_recipe', 'csv_recipe',
+                         'remove_wind_ninja_recipe', 'non_grid_local_recipe',
+                         'dk_recipe', 'idw_recipe']
+        for v in valid_recipes:
+            assert v in [r.name for r in self.ucfg.recipes]
 
 
 class TestMasterConfig(unittest.TestCase):
@@ -131,35 +118,51 @@ class TestMasterConfig(unittest.TestCase):
         """
         self.truth_defaults = {'topo':
                                       {'type': 'netcdf',
-                                       'dem': None,
-                                       'filename': None},
+                                       'filename': ['./common_data/topo/topo.nc']},
                                'air_temp':
                                        {'distribution': 'idw',
                                         'detrend': 'true',
-                                        'dk_nthreads': '1'}}
+                                        'dk_ncores': '1'}}
 
-    def test_from_module(self):
+    def test_grabbing_mcfg(self):
         """
-        Builds a master config from the module, check it.
+        Builds a master config from the module and paths, check it.
         """
         # Build a master config file using multiple files
-        mcfg = MasterConfig(modules = 'inicheck')
-        assert compare_config(mcfg.cfg,self.truth_defaults, master=True,
-                                                            mcfg_attr='default')
+        try:
+            mcfg = MasterConfig(modules = 'inicheck')
+            assert True
+        except:
+            assert False
 
-    def test_from_paths(self):
+        base = os.path.dirname(__file__)
+        master = os.path.join(base,"./test_configs/CoreConfig.ini")
+        recipes = os.path.join(base,"./test_configs/recipes.ini")
+
+        try:
+            mcfg = MasterConfig(path = [master,recipes])
+            assert True
+        except:
+            assert False
+
+    def test_add_files(self):
         """
         Builds a master config from the files, check it.
         """
         # Build a master config file using multiple files
         base = os.path.dirname(__file__)
-        master = os.path.join(base,"./test_configs/CoreConfig.ini")
-        recipes = os.path.join(base,"./test_configs/recipes.ini")
+        master = os.path.join(base,"test_configs/CoreConfig.ini")
+        recipes = os.path.join(base,"test_configs/recipes.ini")
 
-        mcfg = MasterConfig(path = [master,recipes])
+        mcfg = MasterConfig(path=master)
+        mcfg.cfg = mcfg.add_files([master,recipes])
 
-        assert compare_config(mcfg.cfg, self.truth_defaults, master=True,
-                                                            mcfg_attr='default')
+        valid_sections = ['topo','csv','air_temp']
+        for v in valid_sections:
+            assert v in mcfg.cfg.keys()
+
+        assert 'topo_basic_recipe' in [r.name for r in mcfg.recipes]
+
 
     def test_check_types(self):
         """
