@@ -10,6 +10,7 @@ Tests for `inicheck.changes` module.
 import unittest
 from inicheck.changes import *
 from inicheck.config import UserConfig, MasterConfig
+import os
 
 class TestChanges(unittest.TestCase):
 
@@ -17,18 +18,16 @@ class TestChanges(unittest.TestCase):
         """
         Test we can detect valid syntax
         """
-        mcfg = MasterConfig(path = ['./tests/test_configs/CoreConfig.ini',
-                                         './tests/test_configs/recipes.ini'])
+        base = os.path.dirname(__file__)
+        master = os.path.join(base,'test_configs/CoreConfig.ini')
+        recipes = os.path.join(base,'test_configs/recipes.ini')
+        mcfg = MasterConfig(path=[master, recipes])
+        cf = os.path.join(base,'test_configs/changelog.ini')
         try:
-            c = ChangeLog(filename='./tests/test_configs/change_log.ini', mcfg=mcfg)
+            c = ChangeLog(paths=cf, mcfg=mcfg)
             assert True
-        except:
+        except Exception as e:
             assert False
-
-        changes=["topo/test/-> nonexistent"]
-        self.assertRaises(ValueError, ChangeLog, changes, mcfg)
-
-
 
 if __name__ == '__main__':
     import sys
