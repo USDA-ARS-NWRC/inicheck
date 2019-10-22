@@ -101,7 +101,6 @@ class TestIniparse(unittest.TestCase):
         d = ["section/item -> new_section/item", "section/item -> REMOVED"]
 
         changes = parse_changes(d)
-        print(changes[0][1][0])
         assert changes[0][1][0] == "new_section"
         assert changes[1][1][0] == "removed"
 

@@ -44,6 +44,12 @@ History
 * Added bounds checking for type checking allowing for continuous types
 * Fixes for issues: 25_ , 27_ , 31_ , 32_
 
+
+0.7.0 (2019-10-22)
+------------------
+* Restructure the checkers some to better handle types
+* Fixed several broken tests.
+
 .. _25: https://github.com/USDA-ARS-NWRC/inicheck/issues/25
 .. _27: https://github.com/USDA-ARS-NWRC/inicheck/issues/27
 .. _31: https://github.com/USDA-ARS-NWRC/inicheck/issues/31
