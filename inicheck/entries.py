@@ -141,14 +141,13 @@ class ConfigEntry:
         * description
         * max
         * min
-        * length
+        * allow_none
 
     """
 
-    def __init__(self, name=None, value=None, parseable_line=None):
+    def __init__(self, name=None, parseable_line=None):
 
         self.name = name
-        self.value = value
         self.default = None
         self.options = []
         self.description = ''

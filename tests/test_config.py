@@ -152,10 +152,13 @@ class TestMasterConfig(unittest.TestCase):
         Builds a master config from the files, check it.
         """
         # Build a master config file using multiple files
-        mcfg = MasterConfig(path = ['./tests/test_configs/CoreConfig.ini',
-                                         './tests/test_configs/recipes.ini'])
+        base = os.path.dirname(__file__)
+        master = os.path.join(base,"./test_configs/CoreConfig.ini")
+        recipes = os.path.join(base,"./test_configs/recipes.ini")
 
-        assert compare_config(mcfg.cfg,self.truth_defaults, master=True,
+        mcfg = MasterConfig(path = [master,recipes])
+
+        assert compare_config(mcfg.cfg, self.truth_defaults, master=True,
                                                             mcfg_attr='default')
 
     def test_check_types(self):
@@ -164,19 +167,25 @@ class TestMasterConfig(unittest.TestCase):
         type is requested
         """
 
-        # Call out an BS type to raise the error
+        # Call out a BS entry type to raise the error
         checkers = get_checkers()
-        for kw in ['str','filepath']:
-            cfg = {"section":{"test": ConfigEntry(entry_type=kw)}}
-            self.assertRaises(ValueError, check_types, cfg, checkers)
+        invalids = ['str','filepath']
+        valids = ['bool', 'criticaldirectory', 'criticalfilename',
+                  'discretionarycriticalfilename', 'datetime',
+                  'datetimeorderedpair', 'directory', 'filename', 'float',
+                  'int', 'string', 'url']
 
-        types = ['bool', 'criticaldirectory', 'criticalfilename', 'datetime',
-                 'datetimeorderedpair', 'directory', 'filename', 'float', 'int',
-                 'path', 'string', 'url']
+        for z, values in enumerate([invalids,valids]):
+            for kw in values:
+                line = ["type = {}".format(kw), "description = test"]
+                cfg = {"section":{"test": ConfigEntry(name='test',
+                                                      parseable_line=line)}}
 
-        for kw in types:
-            cfg = {"section":{"test": ConfigEntry(entry_type=kw)}}
-            assert check_types(cfg, checkers)
+                if z == 0:
+                    self.assertRaises(ValueError, check_types, cfg, checkers)
+
+                else:
+                    assert check_types(cfg, checkers)
 
 
 if __name__ == '__main__':
