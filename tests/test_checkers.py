@@ -78,6 +78,13 @@ class TestCheckers(unittest.TestCase):
         valids = ['test']
         self.run_a_checker(valids, [], CheckString,  item='username')
 
+        # Confirm that casting a string with uppers will auto produce lowers
+        self.ucfg.cfg['basic']['username'] = 'Test'
+
+        b = CheckString(config=self.ucfg, section='basic', item='username')
+        result = b.cast()
+        assert result == 'test'
+
     def test_bool(self):
         """
         Test we see booleans as booleans

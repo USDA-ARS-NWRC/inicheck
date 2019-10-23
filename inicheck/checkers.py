@@ -633,7 +633,9 @@ class CheckString(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckString, self).__init__(**kwargs)
-        self.type_func = str
+
+        # Most strings types that are not paths should be lower case
+        self.type_func = lambda x: str(x).lower()
 
 
 class CheckPath(CheckType):

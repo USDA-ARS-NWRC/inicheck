@@ -172,7 +172,7 @@ def cast_all_variables(config_obj, mcfg_obj):
             for i in ucfg[s].keys():
                 values = []
 
-                # Ensure it is something we can check
+                # Ensure it is an item we can check
                 if i in mcfg[s].keys():
                     fn = all_checks[mcfg[s][i].type]
 
