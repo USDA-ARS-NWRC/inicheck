@@ -10,7 +10,7 @@ import copy
 import importlib
 import copy
 
-DEBUG = True
+DEBUG = False
 FULL_DEBUG = False
 
 class UserConfig():
