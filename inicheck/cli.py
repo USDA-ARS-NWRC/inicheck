@@ -15,7 +15,7 @@ from . import __version__
 def main():
 
     parser = argparse.ArgumentParser(description="Examine and auto populate"
-                                                 " ini files with a master
+                                                 " ini files with a master"
                                                  " file comparison.")
 
     parser.add_argument('--config_file','-f', dest='config_file', type=str,
@@ -386,8 +386,8 @@ def inimake():
     print("Outputting to {}".format(out_f))
     generate_config(ucfg, out_f, cli=True)
 
-    msg = "Your config still need some populating, use the command below to "
-          "see:\n\n inicheck -f {}".format(out_f)
+    msg = ("Your config still need some populating, use the command below to "
+          "see:\n\n inicheck -f {}").format(out_f)
     if args.modules != None:
         msg += " -m {}".format(args.module)
     else:
