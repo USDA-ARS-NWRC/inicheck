@@ -58,7 +58,7 @@ def compare_config(generated_config, truth_config, master=False, mcfg_attr='defa
                                                                               v)
                 # Confirm values are the same
                 if gv != v:
-                        print(emsg)
+                        #print(emsg)
                         return False
 
     return True
@@ -222,7 +222,6 @@ class TestRecipes(unittest.TestCase):
 
         test = {'precip':{'distribution':'kriging','dk_ncores':'2'}}
         self.modify_cfg(test)
-        print(self.ucfg.cfg['precip'])
         assert 'krig_variogram_model' in self.ucfg.cfg['precip'].keys()
         assert 'dk_ncores' not in self.ucfg.cfg['precip'].keys()
 

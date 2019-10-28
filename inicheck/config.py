@@ -3,12 +3,14 @@ from .utilities import mk_lst, get_relative_to_cfg
 from .entries import ConfigEntry, RecipeSection
 from . import __recipe_keywords__
 from collections import OrderedDict
-import os
+from os.path import abspath
+from os.path import join as pjoin
+
 import copy
 import importlib
 import copy
 
-DEBUG = False
+DEBUG = True
 FULL_DEBUG = False
 
 class UserConfig():
@@ -18,12 +20,18 @@ class UserConfig():
 
     Attributes:
         raw_cfg: Untouched original OrderedDict that inicheck read from file
-        cfg: OrderedDict of the config file that inicheck will check, cast, list, etc
-        recipes: List of entries.recipes.RecipesSection that apply to this config
-        sections: List of strings that represent the unique sections for the whole config file
-        items: List of strings that represent the unique items for the whole config file
-        values: List of strings that represent the unique values for the whole config file
-        mcfg: config.MasterConfig object that represents the standard the cfg is checked against
+        cfg: OrderedDict of the config file that inicheck will check, cast,
+            list, etc
+        recipes: List of entries.recipes.RecipesSection that apply to this
+            config
+        sections: List of strings that represent the unique sections for the
+            whole config file
+        items: List of strings that represent the unique items for the whole
+            config file
+        values: List of strings that represent the unique values for the whole
+            config file
+        mcfg: config.MasterConfig object that represents the standard the cfg
+            is checked against
 
 
     """
@@ -62,7 +70,7 @@ class UserConfig():
             user_cfg: User config dictionary with defaults added.
         """
 
-        # Add this in case the user has added anything to the config obj on the fly
+        # Add this in case the user has added anything to the config obj
         self.cfg = copy.deepcopy(self.raw_cfg)
 
         # Start fresh with recipes to avoid over populating the recipes list
@@ -174,8 +182,15 @@ class UserConfig():
         """
         User inserts a partial config by using each situation that
         triggered a recipe. A triggering situation consists of a tuple of
-        (section, item, value) that represent the specific settings that trigger
+        (section, item, value) that represent the specific settings that
+        trigger
         the recipe.
+
+        Args:
+            partial_cfg: dictionary of edits to be applied to the cfg
+            situation: List of len=3 describing the trigger mechanism
+        Return:
+            result: Modified dictionary
         """
         result = copy.deepcopy(self.cfg)
 
@@ -190,7 +205,8 @@ class UserConfig():
                     # Defaults Keyword
                     if item == 'apply_defaults':
                         if str(value).lower() == 'true':
-                            result = self.add_defaults(result, sections=section)
+                            result = self.add_defaults(result,
+                                                       sections=section)
 
                     # Keyword removal
                     elif item == 'remove_section':
@@ -240,8 +256,9 @@ class UserConfig():
                                 raise Exception('{0} is not a valid item for '
                                 'the master config section {1}, check your '
                                 'recipes for a situation triggering on {2}, '
-                                '{3}, {4}'.format(i,s,situation[0],situation[1],
-                                                                  situation[2]))
+                                '{3}, {4}'.format(i, s, situation[0],
+                                                        situation[1],
+                                                        situation[2]))
                         # default items were sepcified.
                         else:
 
@@ -266,14 +283,16 @@ class UserConfig():
                             # Dictionary exists
                             else:
 
-                                # Handle a item not provided by automatically adding it
+                                # Handle a item not provided by automatically
+                                # adding it
                                 if i not in result[s].keys():
                                     if DEBUG:
                                         print("Adding {0} {1} {2}"
                                               "".format(s, i, v))
                                     result[s][i] = v
 
-                                # If the item was provided we don't want to overide the user with defaults
+                                # If the item was provided we don't want to
+                                # overide the user with defaults
                                 elif value != 'default':
                                     if DEBUG:
                                         print("Changing {0} {1} {2}"
@@ -288,6 +307,11 @@ class UserConfig():
         Appends all the values in the user config to respectives lists of
         section names, item names, and values. Afterwards any copy is
         removed so all is left is a unique list of names and values
+
+        Args:
+            cfg: OrderedDict of the config file
+        Returns:
+            tuple: tuple of len=3 of sets of unique sections items and values
         """
 
         unique_sections = []
@@ -324,7 +348,7 @@ class UserConfig():
         """
         master = self.mcfg.cfg
         result = copy.deepcopy(cfg)
-        #Either go through specified sections or all sections provided by the user.
+        #Either go through specified sections or all sections provided by user.
         if sections == None:
             sections = result.keys()
         else:
@@ -379,14 +403,14 @@ class MasterConfig():
         # Paths were manually provided
         if path != None and modules == None:
             for p in mk_lst(path):
-                self.paths.append(os.path.abspath(p))
+                self.paths.append(abspath(p))
 
         # If a module was passed
         if modules != None and self.paths == []:
 
             for m in mk_lst(modules):
                 i = importlib.import_module(m)
-                self.paths.append(os.path.abspath(os.path.join(i.__file__,
+                self.paths.append(abspath(pjoin(i.__file__,
                                                          i.__core_config__)))
 
                 # Search for possible recipes provided in the module
@@ -404,11 +428,12 @@ class MasterConfig():
                 # Search for custom checkers
                 if hasattr(i, '__config_checkers__'):
                     self.checker_modules.append(m + '.' +
-                                              getattr(i, '__config_checkers__'))
+                                              getattr(i,
+                                                     '__config_checkers__'))
                 # Grab ayny change logs
                 if hasattr(i,"__config_changelog__"):
-                    self.changelogs.append(os.path.abspath(os.path.join(i.__file__,
-                                                         i.__config_changelog__)))
+                    self.changelogs.append(abspath(pjoin(i.__file__,
+                                                     i.__config_changelog__)))
 
         # Add any extra ones provided
         if checkers != None:
@@ -520,9 +545,9 @@ def check_types(cfg, checkers):
             type_value = cfg[s][i].type
             # Is the specified type recognized?
             if type_value not in checkers.keys():
-                raise ValueError("\n\nIn master config, SECTION: {0} at ITEM: "
-                                 "{1} attempts to use undefined type name '{2}'"
-                                 " which has no checker associated.\nAvailable "
-                                 "checkers are:\n\n{3}"
+                raise ValueError("\n\nIn master config, SECTION: {0} at ITEM:"
+                                 " {1} attempts to use undefined type name "
+                                 " '{2}' which has no checker associated."
+                                 "\nAvailable checkers are:\n\n{3}"
                                  "".format(s, i, type_value, checkers.keys()))
     return True
