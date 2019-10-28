@@ -4,25 +4,26 @@ import argparse
 from . output import *
 from . tools import get_user_config, check_config
 from . changes import ChangeLog
-import os
+from os.path import basename, abspath
 import sys
 from . config import MasterConfig, UserConfig
 from . import __version__
-from .utilities import find_options_in_recipes, ask_config_setup, get_inicheck_cmd
+from .utilities import *
 from collections import OrderedDict
 from . import __version__
 
 def main():
 
     parser = argparse.ArgumentParser(description="Examine and auto populate"
-                                                 " ini files with a master file"
-                                                 " comparison.")
+                                                 " ini files with a master
+                                                 " file comparison.")
 
     parser.add_argument('--config_file','-f', dest='config_file', type=str,
                         help='Path to a config file that needs checking')
 
     parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
-                        help='Path to a config file that used to check against')
+                        help='Path to a config file that used to check '
+                        ' against')
 
     parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
                     help="Modules name with an attribute __CoreConfig__ that"
@@ -30,8 +31,8 @@ def main():
                          " against")
 
     parser.add_argument('--write','-w', dest='write', action='store_true',
-                        help="Determines whether to write out the file with all"
-                             " the defaults")
+                        help="Determines whether to write out the file with"
+                        " all the defaults")
 
     parser.add_argument('--recipes','-r', dest='recipes', action='store_true',
                         help="Prints out the recipe summary")
@@ -49,7 +50,8 @@ def main():
                         " recommended default changes.")
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {version}'.format(version=__version__))
+                                     version=('%(prog)s {version}'
+                                     '').format(version=__version__))
 
     args = parser.parse_args()
 
@@ -81,7 +83,7 @@ def main():
 
         # Requesting a check on a config file
         else:
-            f = os.path.abspath(args.config_file)
+            f = abspath(args.config_file)
             ucfg = get_user_config(f, master_files=args.master,
                                       modules=args.modules, cli=True)
 
@@ -122,7 +124,7 @@ def main():
             # Output the config file as inicheck interprets it.
             if args.write:
                 out_f = './{0}_full.ini'.format(
-                                              os.path.basename(f).split('.')[0])
+                                              basename(f).split('.')[0])
 
                 print("Writing complete config file with all recipes and"
                       " necessary defaults...")
@@ -150,7 +152,8 @@ def inidiff():
                          " is a path to a master config file for checking"
                          " against")
     parser.add_argument('--version', action='version',
-                         version='%(prog)s {version}'.format(version=__version__))
+                                     version=('%(prog)s {version}'
+                                     '').format(version=__version__))
     args = parser.parse_args()
 
     # handle multiple files
@@ -176,11 +179,11 @@ def inidiff():
     # Instatiates CFGs and prints out legend
     for i,f in enumerate(args.config_files):
 
-        fname = os.path.abspath(f)
+        fname = abspath(f)
         cfgs.append(get_user_config(fname, master_files=args.master,
                                            modules=args.modules))
 
-        cfg_rename = "CFG {}".format(i+1)
+        cfg_rename = "CFG {}".format(i + 1)
 
         # Print out the Config rename legend at the top
         print(msg.format(cfg_rename, fname))
@@ -256,18 +259,21 @@ def inimake():
     Currently config files can have different configurations based on recipes.
     This script will ask the user for a decision by looking for:
 
-    * Triggers built on sections and if that section is removed in another conditional
-    * tiggers built on any_section item trigger which is also removed in another conditional
+    * Triggers built on sections and if that section is removed in another
+      conditional
+    * Triggers built on any_section item trigger which is also removed in
+      another conditional
 
     """
 
     parser = argparse.ArgumentParser(description=" Walk through creating a "
-                                                 " brand new config file guided"
-                                                 " by the master config and "
-                                                 " recipes!")
+                                                 " brand new config file "
+                                                 " guided by the master "
+                                                 " config and recipes!")
 
     parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
-                        help='Path to a config file that used to check against')
+                        help='Path to a config file that used to check '
+                        'against')
 
     parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
                     help="Modules name with an attribute __CoreConfig__ that"
@@ -275,7 +281,8 @@ def inimake():
                          " against")
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {version}'.format(version=__version__))
+                                     version=('%(prog)s {version}'
+                                     '').format(version=__version__))
 
     args = parser.parse_args()
 
@@ -293,7 +300,7 @@ def inimake():
     print("Building a new config file from scratch, if I have any questions"
           " I will ask!")
 
-    ################################# SECTIONS #################################
+    ################################# SECTIONS ################################
     print("Looking through {:0.0f} config recipes that could be potential "
           " decisions...".format(len(mcfg.recipes)))
 
@@ -318,7 +325,7 @@ def inimake():
     ucfg.apply_recipes()
 
 
-    ################################# ITEMS ####################################
+    ################################# ITEMS ###################################
     # # Look at all the items in all the sections
     # print("Great! Let's go through items inside each section...")
     # decisions = {}
@@ -335,14 +342,15 @@ def inimake():
     #       "".format(questions))
     #
     # for s, choices in decisions.items():
-    #     selections = ask_config_setup(choices, section=s, num_questions=questions)
+    #     selections = ask_config_setup(choices, section=s,
+    #                                            num_questions=questions)
     #     for i in selections:
     #         ucfg.raw_cfg[s][i] = mcfg.cfg[s][i].default
     #
     # # Apply recipes to clean up stuff that was added and populate ucfg.cfg
     # ucfg.apply_recipes()
     #
-    # ################################ Values ####################################
+    # ################################ Values #################################
     # # Look at all the values in all the items
     # print("Great! Let's go through the values that might need choosing...")
     # decisions = {}
@@ -366,7 +374,8 @@ def inimake():
     #       "".format(questions))
     #
     # for s, choices in decisions.items():
-    #     selections = ask_config_setup(choices, section=s, num_questions=questions)
+    #     selections = ask_config_setup(choices, section=s,
+    #                                            num_questions=questions)
     #     for i in selections:
     #         ucfg.raw_cfg[s][i] = mcfg.cfg[s][i].default
 
@@ -377,7 +386,8 @@ def inimake():
     print("Outputting to {}".format(out_f))
     generate_config(ucfg, out_f, cli=True)
 
-    msg = "Your config still need some populating, use the command below to see:\n\n inicheck -f {}".format(out_f)
+    msg = "Your config still need some populating, use the command below to "
+          "see:\n\n inicheck -f {}".format(out_f)
     if args.modules != None:
         msg += " -m {}".format(args.module)
     else:
