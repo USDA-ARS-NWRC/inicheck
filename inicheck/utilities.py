@@ -180,9 +180,8 @@ def get_relative_to_cfg(path, user_cfg_path):
     Returns:
         path: absolute path of the input considering it was relative to the cfg
     """
-    if not os.path.isabs(path):
-        path = os.path.abspath(os.path.join(os.path.dirname(user_cfg_path),
-                                                            path))
+    if os.path.isabs(path):
+        path = os.path.relpath(path, os.path.dirname(user_cfg_path))
     return path
 
 
@@ -297,19 +296,23 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
     """
     try:
 
-        if value != None:
+        # Check for a non-none value
+        if str(value).lower() != 'none':
             value = cast_fn(value)
             valid = True
             msg = None
 
-        elif allow_none and value == None:
+        # Handle the error for none when not allowed
+        elif not allow_none and str(value).lower() == 'none':
+            valid = False
+            msg = 'Value cannot be None'
+
+        # Report all good for nones when they are allowed
+        else:
             valid = True
             msg = None
 
-        else:
-            valid = False
-
-
+    # Report an exception when the casting goes bad.
     except Exception as e:
         valid = False
         msg = "Expecting {0} received {1}".format(expected_data_type,
