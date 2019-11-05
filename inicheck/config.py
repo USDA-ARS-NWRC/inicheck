@@ -183,8 +183,8 @@ class UserConfig():
         User inserts a partial config by using each situation that
         triggered a recipe. A triggering situation consists of a tuple of
         (section, item, value) that represent the specific settings that
-        trigger
-        the recipe.
+        trigger the recipe. All default references should avoid overwriting the
+        users selection.
 
         Args:
             partial_cfg: dictionary of edits to be applied to the cfg
@@ -249,8 +249,12 @@ class UserConfig():
                             v = situation[2]
 
                         elif value == 'default':
+                            # Confirm existence in master
                             if i in self.mcfg.cfg[s].keys():
-                                v = self.mcfg.cfg[s][i].default
+
+                                # Prefer user selection oover default
+                                if i not in self.cfg[s]:
+                                    v = self.mcfg.cfg[s][i].default
 
                             else:
                                 raise Exception('{0} is not a valid item for '
