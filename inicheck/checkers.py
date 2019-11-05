@@ -411,7 +411,7 @@ class CheckType(GenericCheck):
                 result.append(self.type_func(v))
 
         # 3. Manage the list
-        if not self.is_list:
+        if not self.is_list or (len(result) == 1 and result[0] == None):
             result = mk_lst(result, unlst=True)
 
         return result
@@ -455,7 +455,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
         self.cfg_dict = kwargs['config'].cfg[self.section]
         self.msg_level = "error"
 
-    def is_corresponding_valid(self):
+    def is_corresponding_valid(self, value):
         """
         Looks in the config section for an opposite match for the item.
 
@@ -499,7 +499,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
 
         if valid:
             corresponding_val = self.type_func(corresponding_val)
-            value = self.type_func(self.values )
+            value = self.type_func(value)
 
             if is_start:
                 # validity check
@@ -529,10 +529,10 @@ class CheckDatetimeOrderedPair(CheckDatetime):
                 **valid** - Boolean whether the value was acceptable
                 **msg** - string to print if value is not valid.
         """
-        valid, msg = is_valid(value , to_datetime, self.type)
+        valid, msg = is_valid(value, to_datetime, self.type)
 
         if valid:
-            valid, msg = self.is_corresponding_valid()
+            valid, msg = self.is_corresponding_valid(value)
 
         return valid, msg
 
@@ -572,18 +572,18 @@ class CheckInt(CheckType):
         Args:
             value: The value to be casted to integer
         Returns:
-            self.values : the value converted
+            value : the value converted
         """
 
-        self.values  = float(value)
+        value  = float(value)
 
-        if self.values .is_integer():
-            self.values  = int(self.values)
+        if value.is_integer():
+            value  = int(value)
 
         else:
             raise ValueError("Expecting integer and received float with "
                             " non-zero decimal")
-        return self.values
+        return value
 
 
 class CheckBool(CheckType):
@@ -627,15 +627,26 @@ class CheckBool(CheckType):
 
 class CheckString(CheckType):
     """
-    Float checking whether a value of the right type.
+    String checking non paths and passwords. These types of strings are always
+    lower case.
     """
 
     def __init__(self, **kwargs):
 
         super(CheckString, self).__init__(**kwargs)
 
-        # Most strings types that are not paths should be lower case
+        # Most strings types that are not paths or passowrds should be lower case
         self.type_func = lambda x: str(x).lower()
+
+class CheckPassword(CheckType):
+    """
+    No checking of any kind here other than avoids alterring it.
+    """
+
+    def __init__(self, **kwargs):
+
+        super(CheckPassword, self).__init__(**kwargs)
+        self.type_func = str
 
 
 class CheckPath(CheckType):
@@ -650,7 +661,7 @@ class CheckPath(CheckType):
         # Allow None as a value?
         self.allow_none = False
 
-        self.root_loc = os.path.dirname(self.config.filename)
+        self.root_loc = os.path.dirname(os.path.abspath(self.config.filename))
         self.dir_path = False
         self.type_func = self.make_abs_from_cfg
 
@@ -692,9 +703,8 @@ class CheckPath(CheckType):
         Returns:
             str: absolute path or filename
         """
-        if not os.path.abspath(value):
-            value = os.path.join(self.root_loc, value)
-
+        if not os.path.isabs(value):
+            value = os.path.abspath(os.path.join(self.root_loc, value))
         return value
 
 
