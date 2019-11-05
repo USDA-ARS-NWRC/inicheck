@@ -171,25 +171,20 @@ def cast_all_variables(config_obj, mcfg_obj):
         if s in mcfg.keys():
             for i in ucfg[s].keys():
                 values = []
-
                 # Ensure it is an item we can check
                 if i in mcfg[s].keys():
                     fn = all_checks[mcfg[s][i].type]
 
                     b = fn(config=config_obj, section=s, item=i)
-
-                    # cfg will be checked later all at once
                     values = b.cast()
-
-                    # Developers can specify which items are lists in master cfg
-                    if not mcfg[s][i].listed:
-                        ucfg[s][i] = mk_lst(values, unlst=True)
-                    else:
-                        ucfg[s][i] = mk_lst(values)
 
                 # Not recognized items, keep them anyways
                 else:
                     values.append(ucfg[s][i])
+                    values = mk_lst(values, unlst=True)
+
+                # Reassign the values
+                ucfg[s][i] = values
 
     config_obj.cfg = ucfg
     return config_obj
@@ -254,7 +249,6 @@ def get_user_config(config_file, master_files=None, modules=None,
     # Fill in the gaps and make sure they're the right types
     ucfg.apply_recipes()
     ucfg = cast_all_variables(ucfg, mcfg)
-
     return ucfg
 
 def config_documentation(out_f, paths=None, modules=None,
