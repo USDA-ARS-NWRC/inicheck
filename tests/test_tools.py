@@ -15,8 +15,9 @@ class TestTools(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         base = os.path.dirname(__file__)
-        self.ucfg = get_user_config(os.path.join(base,"test_configs/full_config.ini"),
-                                                            modules="inicheck")
+        self.ucfg = get_user_config(os.path.join(base,
+                                    "test_configs/full_config.ini"),
+                                    modules="inicheck")
 
     def test_get_checkers(self):
         """
@@ -69,6 +70,41 @@ class TestTools(unittest.TestCase):
         for i,v in enumerate(tests):
             assert results[i] in type(v).__name__.lower()
 
+    def test_get_user_config(self):
+        """
+        Tests getting the user config
+        """
+
+        base = os.path.dirname(__file__)
+        path = os.path.join(base,"test_configs/full_config.ini")
+
+        # check for the Exception
+        with self.assertRaises(IOError):
+            get_user_config(path)
+
+        with self.assertRaises(IOError):
+            get_user_config('not_a_file.ini')
+
+
+        ucfg = get_user_config(path, modules='inicheck')
+        assert ucfg
+
+    def test_config_documentation(self):
+        """
+        Confirms that we still make config documentation
+        """
+        # Confirm exception when file doesnt exist
+        with self.assertRaises(IOError):
+            f = '/no/folder/exists/f.rst'
+            config_documentation(f, modules='inicheck')
+
+        # Try it hope it runs
+        f = 'test.rst'
+        config_documentation(f, modules='inicheck')
+        assert True
+
+        # Clean up
+        os.remove(f)
 
 if __name__ == '__main__':
     import sys
