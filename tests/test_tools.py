@@ -45,7 +45,7 @@ class TestTools(unittest.TestCase):
 
         warnings, errors = check_config(ucfg)
 
-        assert len(errors) == 12
+        assert len(errors) == 11
 
     def test_cast_all_variables(self):
         """
