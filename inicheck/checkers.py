@@ -719,6 +719,7 @@ class CheckDirectory(CheckPath):
         self.dir_path = True
         self.allow_none = True
         self.message = "Directory does not exist."
+        self.msg_level = "warning"
 
 class CheckFilename(CheckPath):
     """
@@ -730,6 +731,7 @@ class CheckFilename(CheckPath):
         super(CheckFilename, self).__init__(**kwargs)
         self.message = "File does not exist."
         self.allow_none = True
+        self.msg_level = "warning"
 
 
 class CheckCriticalFilename(CheckFilename):
