@@ -274,26 +274,26 @@ def print_non_defaults(ucfg):
 
     # Cycle through option/items checking defaults, print em if they don't match
     for s in mcfg.keys():
+        # if the master section is in the users
         if s in cfg.keys():
             for i in mcfg[s].keys():
+                # If the masters item is in the users config
                 if i in cfg[s].keys():
+                    # Grab the default, make it a string list
                     default_lst = mk_lst(mcfg[s][i].default)
-                    str_default_lst =  [str(kk).lower() for kk in default_lst]
+                    str_default_lst =  [str(kk).lower() for kk in default_lst if str(kk).lower() != 'none']
+
+                    # Grab the default, make it a string list
                     user_lst = mk_lst(cfg[s][i])
                     str_lst = [str(kk).lower() for kk in user_lst]
 
-                    for vi, v in enumerate(str_default_lst):
+                    for uv in str_lst:
                         # Single entries
-                        if v != 'none':
-                            if len(str_lst) == 1:
-                                if str_lst[vi] != v:
-                                    print(msg.format(s, i,str(user_lst[vi]),
-                                                          str(default_lst[vi])))
-
-                            # Handle awkward list comparisons
-                            elif v not in str_lst:
-                                print(msg.format(s, i,"all values",
-                                                       str(default_lst[vi])))
+                        for vi, v in enumerate(str_default_lst):
+                            if v != 'none':
+                                if uv not in str_default_lst:
+                                     print(msg.format(s, i,uv,", ".join(str_default_lst)))
+                                     break
 
     print("")
 
