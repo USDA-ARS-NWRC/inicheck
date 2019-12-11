@@ -1,8 +1,9 @@
 bumpversion==0.5.3
 pandas>=0.18.1
-flake8==3.5.0
-tox==3.0.0
-coverage==4.1
+requests>=2.0.0
+flake8==3.7.9
+tox==3.14.2
+coverage==4.5.4
 Sphinx==1.8.5
 sphinx-rtd-theme==0.4.3
 pytest==3.0.0
