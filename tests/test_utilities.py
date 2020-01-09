@@ -24,7 +24,9 @@ class TestUtilities(unittest.TestCase):
         Test our remove comments code
         """
         values = {"test":"test#comment",
-                  "test":"test;comment"}
+                  "test1":"test1;comment",
+                  "":";full in line comment",
+                  "testboth": "testboth; test a comment with both types of # comments "}
         for k,v in values.items():
             out = remove_comment(v)
 

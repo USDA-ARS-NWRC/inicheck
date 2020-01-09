@@ -119,13 +119,12 @@ def remove_comment(string_entry):
     Takes a single line and removes and .ini type comments.
     Also remove any spaces at the begining or end of a commented line
     """
+    result = string_entry
+
     # Comment checking
-    if '#' in string_entry:
-        result = string_entry.split('#')[0]
-    elif ';' in string_entry:
-        result = string_entry.split(';')[0]
-    else:
-        result = string_entry
+    for c in '#;':
+        if c in result:
+            result = result.split(c)[0]
 
     return result
 
