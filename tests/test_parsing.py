@@ -26,12 +26,17 @@ class TestIniparse(unittest.TestCase):
         """
 
         info = ["# Test our line comments",
+                "; Test our other line comments",
+                ";[old section I am not interested in] test line comments on sections",
                 "[unit]",
                 "a:10; in line comment",
                 "[test CASe] # another inline comment test",
                 "b:5",
                 "[ spaces ]",
-                "test:now"]
+                "test:now",
+                "[single_line_test]a:10",
+                "[single_line_test_recipe]options = [a:10]"]
+
         sections = parse_sections(info)
 
         # Confirm we see a normal section
@@ -42,8 +47,15 @@ class TestIniparse(unittest.TestCase):
 
         assert(sections['spaces'][0] == "test:now")
 
-        # Confirm we catch dumb errors before we find a section name
+        # Confirm we can handle a section and an item in the same line
+        assert(sections['single_line_test'][0] == "a:10")
+        assert(sections['single_line_test_recipe'][0] == "options = [a:10]")
+
+        # Catch non-comment chars before the first section
         self.assertRaises(Exception, parse_sections,['a#','#','[test]'])
+
+        # Catch repeat sections in config
+        self.assertRaises(Exception, parse_sections,['[test]','#','[test]'])
 
 
     def test_parse_items(self):
@@ -59,7 +71,7 @@ class TestIniparse(unittest.TestCase):
         info = {"unit":["a:10"],
                 "test case":[" a :10,","15,20"],
                 'recipe':['a: default=10,',
-                          'options=[10 15 20]']} # Handle wrapped lines with tabs
+                          'options=[10 15 20]']} # Handle wrapped lines
 
         items = parse_items(info)
 

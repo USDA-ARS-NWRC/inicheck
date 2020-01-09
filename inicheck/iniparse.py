@@ -122,13 +122,26 @@ def parse_sections(lines):
             if line.startswith('['):
                 # Look for open brackets
                 if ']' in line:
+                    # Isolate the section and anything else in the same line
+                    data = line.split("]")
+                    section = data[0]
 
-                    section = (remove_chars(line,'[]')).lower().strip()
+                    # join the rest bask together
+                    data = "]".join(data[1:])
+
+                    # Clean up the section name
+                    section = (remove_chars(section,'[]')).lower().strip()
+
+                    # If the section already exists then we have seen it twice
                     if section in result.keys():
                         raise ValueError("Section name {} already used in "
                                          "config, consider renaming it to "
                                          "something unique.".format(section))
                     result[section] = []
+
+                    # If the data is not empty append it
+                    if data:
+                        result[section].append(data)
 
             else:
                 # This protects from funky syntax in a config file and alerts the user
