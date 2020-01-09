@@ -54,45 +54,59 @@ def main():
                                      '').format(version=__version__))
 
     args = parser.parse_args()
+    inicheck_main(config_file=args.config_file, master=args.master,
+                  modules=args.modules, write_out=args.write,
+                  show_recipes=args.recipes, show_non_defaults=args.defaults,
+                  details=args.details, apply_changelog=args.change)
 
+
+def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
+                  show_recipes=False, show_non_defaults=False, details=None,
+                  apply_changelog=False):
+    """
+    Function used for the CLI for inicheck. This is mostly for cleaner
+    testing. Allows users to look at master config details, check their config
+    file against the master, look at recipes applied, examine non-default
+    entries, write new config files, and apply changes from a changelog
+
+    """
     # Module not provided, or master config
-    if args.modules == None and args.master == None:
+    if modules == None and master == None:
         print("ERROR: Please provide either a module or a path to a master"
              " config, or ask for details on config entries")
         sys.exit()
 
-
     # Normal operation
     else:
         # Requesting details for a section and item
-        if args.details != None:
-            if len(args.details) == 1:
+        if details != None:
+            if len(details) == 1:
                 print("Providing details for section {0}..."
-                "".format(args.details[0]))
+                "".format(details[0]))
 
-            elif len(args.details) == 2:
+            elif len(details) == 2:
                 print("Providing details for section {0} and item {1}..."
-                      "".format(args.details[0], args.details[1]))
+                      "".format(details[0], details[1]))
 
             else:
                 print("Details option can at most recieve section and item ")
                 sys.exit()
 
-            mcfg = MasterConfig(path=args.master, modules=args.modules)
-            print_details(args.details, mcfg.cfg)
+            mcfg = MasterConfig(path=master, modules=modules)
+            print_details(details, mcfg.cfg)
 
         # Requesting a check on a config file
         else:
-            f = abspath(args.config_file)
-            ucfg = get_user_config(f, master_files=args.master,
-                                      modules=args.modules, cli=True)
+            f = abspath(config_file)
+            ucfg = get_user_config(f, master_files=master,
+                                      modules=modules, cli=True)
 
             # Check out any change logs for issues
             chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
             potentials, required = chlog.get_active_changes(ucfg)
 
             # Request to apply changes
-            if args.change:
+            if apply_changelog:
                     print("Applying {} changes due to deprecation..."
                           "".format(len(required) + len(potentials)))
                     ucfg.cfg = chlog.apply_changes(ucfg, potentials, required)
@@ -100,9 +114,9 @@ def main():
 
             # report issues if there are recommended changes
             if len(required) > 0:
-                cmd = get_inicheck_cmd(args.config_file,
-                                       master_files=args.master,
-                                       modules=args.modules)
+                cmd = get_inicheck_cmd(config_file,
+                                       master_files=master,
+                                       modules=modules)
                 cmd += " --change -w"
                 print_change_report(potentials, required, ucfg)
                 print("Please make the above changes before continuing."
@@ -114,15 +128,15 @@ def main():
                 print_config_report(warnings, errors)
 
                 # Print out the recipes summary
-                if args.recipes:
+                if show_recipes:
                     print_recipe_summary(ucfg.recipes)
 
                 # Print out the summary of non-defaults values
-                if args.defaults:
+                if show_non_defaults:
                     print_non_defaults(ucfg)
 
             # Output the config file as inicheck interprets it.
-            if args.write:
+            if write_out:
                 out_f = './{0}_full.ini'.format(
                                               basename(f).split('.')[0])
 
@@ -155,6 +169,9 @@ def inidiff():
                                      version=('%(prog)s {version}'
                                      '').format(version=__version__))
     args = parser.parse_args()
+    inidiff_main(args.config_files, master=args.master, modules=args.modules)
+
+def inidiff_main(config_files, master=None, modules=None):
 
     # handle multiple files
     cfgs = []
@@ -177,11 +194,11 @@ def inidiff():
     print("\nChecking the differences...\n")
 
     # Instatiates CFGs and prints out legend
-    for i,f in enumerate(args.config_files):
+    for i,f in enumerate(config_files):
 
         fname = abspath(f)
-        cfgs.append(get_user_config(fname, master_files=args.master,
-                                           modules=args.modules))
+        cfgs.append(get_user_config(fname, master_files=master,
+                                           modules=modules))
 
         cfg_rename = "CFG {}".format(i + 1)
 
