@@ -8,7 +8,7 @@ Tests for `inicheck.entries` module.
 """
 
 import unittest
-from inicheck.entries import RecipeSection, TriggerEntry
+from inicheck.entries import RecipeSection, TriggerEntry, ConfigEntry
 from collections import OrderedDict
 
 class TestEntries(unittest.TestCase):
@@ -39,7 +39,7 @@ class TestEntries(unittest.TestCase):
         assert(t.conditions[1] == ['any', 'test2', 'any'])
 
 
-    def test_config_entry(self):
+    def test_config_tigger_entry(self):
         """
         Tests to see if we correctly gather a trigger for a recipe
         """
@@ -49,7 +49,28 @@ class TestEntries(unittest.TestCase):
         assert(t.conditions[0] == ['topo', 'type', 'ipw'])
 
 
+    def test_config(self):
+        """
+        User should be able to make a single item a list by requesting it by
+        with a master config entry like the following
+        ```
+            points_values_property:
+             default= [swe_z],
+             type= string list,
+             description = stuff
+         ```
+        Issue #20
+        """
+        s = ["default= [swe_z]",
+             "type= string list",
+             "description = stuff"]
 
+        e = ConfigEntry(name="points_values_property", parseable_line=s)
+
+        # Assert the defaults a signle item list
+        assert e.default == ['swe_z']
+        assert e.type == 'string'
+        assert e.listed == True
 
 
 if __name__ == '__main__':

@@ -126,11 +126,10 @@ class ConfigEntry:
 
     .. code-block:: python
 
-        {item:
-            ["type = <value>",
-             "options = [<value> <value>"],
-             "description=text describing entry"]
-        }
+            parseable_line = ["type = <value>",
+                             "options = [<value> <value>"],
+                             "description=text describing entry"]
+            name = item
 
     Config entry then will parse the strings looking for space separated
     lists, values denoted with =, and will only receive:

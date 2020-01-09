@@ -33,7 +33,8 @@ def parse_entry(info, item=None, valid_names=None):
     This should be used only after knowning the section and item.
 
     Args:
-        info: Potential line to parse containing masater config options
+        info: a single line or a List of lines to parse containing master
+             config options
         item: Item name were parsing. Only for reporting errors purposes
         valid_names: valid property names to be parsing.
 
