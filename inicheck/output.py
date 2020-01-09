@@ -206,7 +206,7 @@ def print_details(details, mcfg):
 
     Args:
         details: a list in [section item value] requesting details.
-        mcfg: master config object to gather the details from
+        mcfg: master config dictionary to gather the details from
 
 
     """

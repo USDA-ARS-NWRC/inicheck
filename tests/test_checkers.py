@@ -28,7 +28,8 @@ class TestCheckers(unittest.TestCase):
             is_list: is it expected to be a list?
             section: section name the item being checked is occurring
             item: Item name in the config
-            extra_config: Pass in contextual config info to test more complicated checkers. E.g. ordered datetime pair.
+            extra_config: Pass in contextual config info to test more
+                          complicated checkers. E.g. ordered datetime pair.
         """
 
         cfg = self.ucfg.cfg
@@ -84,6 +85,17 @@ class TestCheckers(unittest.TestCase):
         b = CheckString(config=self.ucfg, section='basic', item='username')
         result = b.cast()
         assert result == 'test'
+
+        # Check we can capture a single item list for strings
+        b.is_list = True
+        result = b.cast()
+        assert result == ['test']
+
+        # Check we capture the when alist is passed and were not expecting one
+        b.is_list = False
+        result = b.cast()
+        assert type(result) != list
+
 
     def test_bool(self):
         """

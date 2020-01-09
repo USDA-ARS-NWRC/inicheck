@@ -147,6 +147,14 @@ class TestUtilities(unittest.TestCase):
         assert 'float' in result
         assert 'str' in result
 
+    def test_get_inicheck_cmd(self):
+        """
+        Test if the cmd used to generate the str command is working
+
+        """
+        cmd = get_inicheck_cmd(self.ucfg.filename, modules='inicheck', master_files=None)
+        assert cmd == 'inicheck -f {} -m inicheck'.format(self.ucfg.filename)
+
 
 if __name__ == '__main__':
     import sys
