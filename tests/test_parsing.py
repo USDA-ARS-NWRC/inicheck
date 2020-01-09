@@ -35,7 +35,8 @@ class TestIniparse(unittest.TestCase):
                 "[ spaces ]",
                 "test:now",
                 "[single_line_test]a:10",
-                "[single_line_test_recipe]options = [a:10]"]
+                "[single_line_test_recipe]options = [a:10]",
+                "b:5"]
 
         sections = parse_sections(info)
 
@@ -49,7 +50,7 @@ class TestIniparse(unittest.TestCase):
 
         # Confirm we can handle a section and an item in the same line
         assert(sections['single_line_test'][0] == "a:10")
-        assert(sections['single_line_test_recipe'][0] == "options = [a:10]")
+        assert(sections['single_line_test_recipe'] == ["options = [a:10]","b:5"])
 
         # Catch non-comment chars before the first section
         self.assertRaises(Exception, parse_sections,['a#','#','[test]'])
