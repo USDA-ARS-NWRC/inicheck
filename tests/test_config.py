@@ -287,7 +287,7 @@ class TestMasterConfig(unittest.TestCase):
 
         # Call out a BS entry type to raise the error
         checkers = get_checkers()
-        invalids = ['str','filepath']
+        invalids = ['str','filepath','criticalfile']
         valids = ['bool', 'criticaldirectory', 'criticalfilename',
                   'discretionarycriticalfilename', 'datetime',
                   'datetimeorderedpair', 'directory', 'filename', 'float',
@@ -298,10 +298,11 @@ class TestMasterConfig(unittest.TestCase):
                 line = ["type = {}".format(kw), "description = test"]
                 cfg = {"section":{"test": ConfigEntry(name='test',
                                                       parseable_line=line)}}
-
+                # invalids
                 if z == 0:
                     self.assertRaises(ValueError, check_types, cfg, checkers)
 
+                # valids
                 else:
                     assert check_types(cfg, checkers)
 
