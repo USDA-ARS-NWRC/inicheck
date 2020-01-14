@@ -58,8 +58,10 @@ History
 0.8.0 (TBD)
 -----------
 * Increased unittest coverage (57%-83%)
-* Fixes for 35_ , 38_ , 39_
+* Added in a CLI tool to find changelog impacts in python files
+* Fixes for 35_ , 38_ , 39_,  40_
 
 .. _35: https://github.com/USDA-ARS-NWRC/inicheck/issues/25
 .. _38: https://github.com/USDA-ARS-NWRC/inicheck/issues/27
 .. _39: https://github.com/USDA-ARS-NWRC/inicheck/issues/31
+.. _40: https://github.com/USDA-ARS-NWRC/inicheck/issues/40

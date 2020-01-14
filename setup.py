@@ -38,7 +38,8 @@ setup(
         'console_scripts': [
             'inicheck=inicheck.cli:main',
             'inidiff=inicheck.cli:inidiff',
-            'inimake=inicheck.cli:inimake'
+            'inimake=inicheck.cli:inimake',
+            'inichangefind=inicheck.cli:detect_file_changes'
         ]
     },
     include_package_data=True,

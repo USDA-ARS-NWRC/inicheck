@@ -4,7 +4,7 @@ import argparse
 from . output import *
 from . tools import get_user_config, check_config
 from . changes import ChangeLog
-from os.path import basename, abspath
+from os.path import basename, abspath, join
 import sys
 from . config import MasterConfig, UserConfig
 from . import __version__
@@ -411,5 +411,124 @@ def inimake():
         msg += " -mf {}".format(" ".join(mcfg.paths))
 
     print(msg)
+
+
+def check_for_changes(directory, modules=[], paths=[]):
+    """
+    Returns files with changes found in the changelog. Using the change log
+    this function goes through all the files in the directory and returns any
+    filenames with a config entry in python code that will error out
+
+    This script only looks at and reports changes in found for sections and
+    items listed in the changelog. Currently ignores default changes.
+
+    Args:
+        directory: Folder with python scripts to check for instances of changes
+        paths: list of paths to an inicheck changelog
+        modules: list of python modules with an __config_changelog__ attribute
+    Returns:
+        change_instances: dictionary with filenames as keys and line numbers in a list as the value.
+    """
+    changelogs = []
+    change_instances = {}
+
+    if modules:
+        mcfg = MasterConfig(modules=modules)
+        changelogs += mcfg.changelogs
+
+    if paths:
+        changelogs += paths
+
+    ch = ChangeLog(paths=changelogs, mcfg=mcfg)
+
+    # Cycle through all the changes listed in changelogs
+    for change in ch.changes:
+        old = "/".join([c for c in change[0] if c != 'any'])
+        new = "/".join([c for c in change[1] if c not in ['removed','any']])
+
+        if not new:
+            new = 'Removed'
+
+        # Format a string to show the change found
+        full_change_str = "{} --> {}".format(old, new)
+
+        # Form the item name in a config scenario
+        item_str = "['{}']".format(change[0][1])
+
+        # Formulate a section string in a config usage scenario
+        perfect_match = "['{}']{}".format(change[0][0], item_str)
+        secondary_match = "config{}".format(item_str)
+
+        # Assign empty list to the file name for line numbers
+        change_instances[full_change_str] = []
+
+        # Look at every file each time
+        for r, directories, files in os.walk(directory):
+            pyfiles = [join(r,f) for f in files if f.split(".")[-1] == 'py']
+
+            #  only at python files
+            for f in pyfiles:
+                # Read in file contents
+                with open(f,'r') as fp:
+                    lines = fp.readlines()
+                    fp.close()
+
+                line_numbers = []
+
+                # Check every line
+                for i, line in enumerate(lines):
+
+                    # replace all quotes to single
+                    simple = line.replace('"', "'")
+
+                    if perfect_match in simple or secondary_match in simple.lower():
+                        line_numbers.append(i)
+
+                if line_numbers:
+                    change_instances[full_change_str].append([f, line_numbers])
+
+    return change_instances
+
+def detect_file_changes():
+    """
+    CLI tool for examining a python repo and reporting any old python code that
+    references a deprecated config file entry as reported in a changelog
+    """
+
+    parser = argparse.ArgumentParser(description='Search for python code '
+                                                 'referencing old config items '
+                                                 'and reports them')
+    parser.add_argument('directory', help='Directory containing python code to '
+                                          'search for old config items')
+    parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
+                    help="Modules name with an attribute __CoreConfig__ that"
+                         " is a path to a master config file for checking"
+                         " against")
+    parser.add_argument('--version', action='version',
+                                     version=('%(prog)s {version}'
+                                     '').format(version=__version__))
+    args = parser.parse_args()
+
+    print("\nSearching {} for any deprecated config file sections/items in "
+          "any python files...\n".format(args.directory))
+
+    instances = check_for_changes(args.directory, modules=args.modules)
+
+    found = False
+    msg = "{0:<50}{1:<50}{2:<50}"
+    hdr = msg.format("Suggested Change", "Affected File", "Line Numbers")
+    print(hdr)
+    print("=" * len(hdr))
+    for change, affected in instances.items():
+
+        if affected:
+            for file, line_numbers in affected:
+                found = True
+                print("{0:<50}{1:<50}{2:<50}".format(change, file, ', '.join([str(s) for s in set(line_numbers)])))
+
+    if not found:
+        print("No instances from the changelog(s) were found in the code under "
+              "{}".format(args.directory))
+    print("")
 if __name__ == '__main__':
     main()

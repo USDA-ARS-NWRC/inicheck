@@ -83,3 +83,24 @@ different from another or different from the master config.
     Total items checked: 15
     Total Non-default values: 6
     Total config mismatches: 1
+
+5. For projects that utilize config files from other projects which may have
+changelogs, inicheck has a script to find instances of deprecated config items
+in python files and report the impact. For example, if project A utilizes
+project B's config file and project B's has a changelog. In this scenario you
+can use the following to search python code in project A's repo to determine
+any necessary updates. This could also be used to find changes in the same repo
+the changelog lives in.
+
+
+.. code-block:: console
+
+    $ inichangefind ./repo_A --modules module_B
+
+    Searching ./repo_A for any deprecated config file sections/items in any python files...
+
+    Suggested Change                        Affected File                   Line Numbers
+    =====================================================================================
+    gridded/n_forecast_hours --> Removed    ./repo_A/framework/framework.py   121
+    gridded/file --> gridded/wrf_file       ./repo_A/interface.py             189
+    topo/type --> Removed                   ./repo_A/topo/grid.py             277
