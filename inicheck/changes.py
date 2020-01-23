@@ -1,11 +1,12 @@
 from . iniparse import parse_sections, parse_items, parse_changes
-from pandas import to_datetime
 from . entries import ConfigEntry
 from . utilities import mk_lst
 import importlib
 from os.path import join as pjoin
 from os.path import abspath
 from collections import OrderedDict
+import dateparser
+
 
 class ChangeLog(object):
 
@@ -58,7 +59,7 @@ class ChangeLog(object):
         # Parse meta data the same way as everything
         sec_and_items = parse_items(sections)
         self.info = sec_and_items['meta']['info']
-        self.date = to_datetime(sec_and_items["meta"]['date'])
+        self.date = dateparser.parse(sec_and_items["meta"]['date'], settings={'STRICT_PARSING': True})
 
         # Parse the change list
         changes = parse_changes(raw_changes)
