@@ -11,6 +11,7 @@ import unittest
 from inicheck.utilities import *
 from inicheck.tools import get_user_config
 
+
 class TestUtilities(unittest.TestCase):
     @classmethod
     def setUpClass(self):

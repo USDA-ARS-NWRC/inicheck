@@ -3,10 +3,9 @@ Functions for checking values in a config file and producing errors and warnings
 '''
 
 import os
-import dateparser
 from functools import partial
 import requests
-from .utilities import mk_lst, is_valid, is_kw_matched, get_kw_match
+from .utilities import mk_lst, is_valid, is_kw_matched, get_kw_match, parse_date
 
 
 class GenericCheck(object):
@@ -425,7 +424,7 @@ class CheckDatetime(CheckType):
     def __init__(self, **kwargs):
 
         super(CheckDatetime, self).__init__(**kwargs)
-        self.type_func = partial(dateparser.parse, settings={'STRICT_PARSING': True})
+        self.type_func = parse_date
 
 
 class CheckDatetimeOrderedPair(CheckDatetime):
@@ -529,7 +528,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
                 **valid** - Boolean whether the value was acceptable
                 **msg** - string to print if value is not valid.
         """
-        valid, msg = is_valid(value, partial(dateparser.parse, settings={'STRICT_PARSING': True}), self.type)
+        valid, msg = is_valid(value, parse_date, self.type)
 
         if valid:
             valid, msg = self.is_corresponding_valid(value)

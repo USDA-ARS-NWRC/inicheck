@@ -12,6 +12,7 @@ from inicheck.checkers import *
 from inicheck.config import UserConfig, MasterConfig
 import inicheck
 
+
 class TestCheckers(unittest.TestCase):
 
     def run_a_checker(self, valids, invalids, checker, section='basic',
@@ -39,14 +40,14 @@ class TestCheckers(unittest.TestCase):
         if extra_config:
             cfg.update(extra_config)
 
-        for z,values in enumerate([valids, invalids]):
+        for z, values in enumerate([valids, invalids]):
             for v in values:
 
                 cfg[section][item] = v
                 b = checker(config=self.ucfg, section=section, item=item)
                 msgs = b.check()
 
-                if len([True for m in msgs if m==None]) == len(msgs):
+                if len([True for m in msgs if m is None]) == len(msgs):
                     valid = True
                 else:
                     valid = False
