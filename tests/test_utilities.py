@@ -129,13 +129,12 @@ class TestUtilities(unittest.TestCase):
 
         # Check to can handle a normal scenario
         result = is_valid('10.0', float, 'float', allow_none=False)
-        assert result[1] == None
-        assert result[0] == True
+        assert result[1] is None
+        assert result[0]
 
         # Test the handling of Nones
         for b in [False, True]:
             result = is_valid(None, float, 'float', allow_none=b)[0]
-            print(result)
             assert b == result
 
         # Check to see that we return an error message

@@ -1,14 +1,22 @@
 import dateparser
+from datetime import date, datetime
 import sys
 import os
 
 
 def parse_date(value):
-    converted = dateparser.parse(value, settings = {'STRICT_PARSING': True})
-    if converted is None:
-        raise ValueError("{} is not a date".format(value))
+    if isinstance(value, date):
+        return datetime(value.year, value.month, value.day)
+    elif isinstance(value, datetime):
+        return value
+    else:
+        if not isinstance(value, str):
+            return None
+        converted = dateparser.parse(value, settings={'STRICT_PARSING': True})
+        if converted is None:
+            raise ValueError("{} is not a date".format(value))
 
-    return converted
+        return converted
 
 
 def find_options_in_recipes(recipes, choice_search, action_kw, condition_position=0):
