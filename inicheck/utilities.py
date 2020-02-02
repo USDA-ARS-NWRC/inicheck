@@ -10,11 +10,9 @@ def parse_date(value):
     elif isinstance(value, datetime):
         return value
     else:
-        if not isinstance(value, str):
-            return None
         converted = dateparser.parse(value, settings={'STRICT_PARSING': True})
         if converted is None:
-            raise ValueError("{} is not a date".format(value))
+            raise TypeError("{} is not a date".format(value))
 
         return converted
 

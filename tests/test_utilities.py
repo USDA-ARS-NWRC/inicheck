@@ -8,6 +8,7 @@ Tests for `inicheck.utilities` module.
 """
 
 import unittest
+from datetime import datetime, date
 from inicheck.utilities import *
 from inicheck.tools import get_user_config
 
@@ -155,6 +156,24 @@ class TestUtilities(unittest.TestCase):
         cmd = get_inicheck_cmd(self.ucfg.filename, modules='inicheck', master_files=None)
         assert cmd == 'inicheck -f {} -m inicheck'.format(self.ucfg.filename)
 
+    def test_parse_date_str(self):
+        value = parse_date("2019-10-1")
+        self.assertEqual(datetime(2019, 10, 1), value)
+
+    def test_parse_date_fails_int(self):
+        with self.assertRaises(TypeError):
+            value = parse_date(10)
+
+    def test_parse_date_datetime(self):
+        to_convert = datetime(2019, 10, 1)
+        value = parse_date(to_convert)
+        self.assertEqual(value, to_convert)
+
+    def test_parse_date_date(self):
+        to_convert = date(2019, 10, 1)
+        expected = datetime(2019, 10, 1)
+        value = parse_date(to_convert)
+        self.assertEqual(value, expected)
 
 if __name__ == '__main__':
     import sys
