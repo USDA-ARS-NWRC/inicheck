@@ -22,7 +22,7 @@ def parse_date(value):
         return datetime(value.year, value.month, value.day)
 
     else:
-        converted = dateparser.parse(value)
+        converted = dateparser.parse(value, settings={'STRICT_PARSING': True})
         if converted is None:
             raise TypeError("{} is not a date".format(value))
 
