@@ -157,8 +157,16 @@ class TestUtilities(unittest.TestCase):
         assert cmd == 'inicheck -f {} -m inicheck'.format(self.ucfg.filename)
 
     def test_parse_date_str(self):
+        """
+        Test the parse_date function which is used in the checks for datetime
+        """
         value = parse_date("2019-10-1")
         self.assertEqual(datetime(2019, 10, 1), value)
+
+        # Test for odd issue that came up with casting a value twice
+        value = parse_date("2019-10-1 10:00")
+        value = parse_date(value)
+        self.assertEqual(datetime(2019, 10, 1, 10), value)
 
     def test_parse_date_fails_int(self):
         with self.assertRaises(TypeError):

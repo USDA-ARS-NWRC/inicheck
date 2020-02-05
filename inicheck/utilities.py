@@ -5,12 +5,24 @@ import os
 
 
 def parse_date(value):
-    if isinstance(value, date):
-        return datetime(value.year, value.month, value.day)
-    elif isinstance(value, datetime):
+    """
+    Function used to cast items to datetime from string. Meant to prevent the
+    importing of pandas just for the to_datetime function.
+
+    Args:
+        value: string of a datetime
+    Returns:
+        converted: Datetime object representing the value passed.
+    """
+
+    if isinstance(value, datetime):
         return value
+
+    elif isinstance(value, date):
+        return datetime(value.year, value.month, value.day)
+
     else:
-        converted = dateparser.parse(value, settings={'STRICT_PARSING': True})
+        converted = dateparser.parse(value)
         if converted is None:
             raise TypeError("{} is not a date".format(value))
 

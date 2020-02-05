@@ -185,12 +185,26 @@ class TestCheckers(unittest.TestCase):
         <keyword>_end pairs and confirms they occurs in the correct order.
 
         """
-        valids = ["1-02-2019"]
-        invalids = ["01-01-2018"]
-        acfg = {'basic':{'start_date':'1-1-2019'}}
-        self.run_a_checker(valids, invalids, CheckDatetimeOrderedPair,
-                                             item="end_date",
-                                             extra_config=acfg)
+
+        # Test end dates com after start dates
+        starts = ["1-01-2019", "2019-10-01", "1998-01-14 15:00:00"]
+        ends = ["1-02-2019", "2019-10-02", "1998-01-14 19:00:00"]
+
+        invalids_starts = ["01-01-2020", "2020-06-01", "1998-01-14 20:00:00"]
+        invalids_ends = ["01-01-2018", "2018-10-01", "1998-01-14 10:00:00"]
+
+        # Check for starts being before the end date
+        for s, e, es, ee in zip(starts, ends, invalids_starts, invalids_ends):
+            acfg = {'basic':{'end_date': e}}
+            self.run_a_checker([s], [es], CheckDatetimeOrderedPair,
+                                         item="start_date",
+                                         extra_config=acfg)
+
+            acfg = {'basic':{'start_date': s}}
+            self.run_a_checker([e], [ee], CheckDatetimeOrderedPair,
+                                         item="end_date",
+                                         extra_config=acfg)
+
     def test_bounds(self):
         """
         MasterConfig options now have max and min values to constrain continuous
