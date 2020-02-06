@@ -65,6 +65,7 @@ Features
 * Use custom types for your config file
 * Use multiple master config files for cleaner files
 * Auto config file documentation
+* Create changelogs to automatically manage deprecated config options
 
 
 Credits

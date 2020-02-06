@@ -43,7 +43,11 @@ Aiming to be User Proof
 
 For a further demo, let's say the our user think themselves funny and enters the
 following into their configuration file:
-/home/micahjohnson/projects/inicheck/docs/usage.rst
+
+.. code-block:: console
+
+    age: nunya!
+    job_class: king
 
 inicheck will produce errors and report them in the following manner:
 
@@ -61,7 +65,7 @@ inicheck will produce errors and report them in the following manner:
 This takes alot of issues out of the hands of the developer so they can focus
 more on functionality rather than the sometimes erratic behavior of users.
 
-For information take a look at `Command Line Tools`_.
+For information take a look at :ref:`CLI`.
 
 .. _ForAProject:
 

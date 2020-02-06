@@ -25,7 +25,7 @@ sys.path.insert(0, project_dir)
 import inicheck
 
 project = 'inicheck'
-copyright = '2019, Micah Johnson'
+copyright = '2020, Micah Johnson'
 author = 'Micah Johnson'
 
 
