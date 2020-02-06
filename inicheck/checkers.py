@@ -490,7 +490,7 @@ class CheckDatetimeOrderedPair(CheckDatetime):
             raise ValueError("Ordered Datetime pairs must be distinguishable "
                              " by item name. {} was either found to have both "
                              " sets of keywords or none of them."
-                             "".format(self.item))
+                             " ".format(self.item))
 
         # Is corresponding castable?
         corresponding_val = self.cfg_dict[corresponding]
@@ -500,14 +500,22 @@ class CheckDatetimeOrderedPair(CheckDatetime):
             corresponding_val = self.type_func(corresponding_val)
             value = self.type_func(value)
 
-            if is_start:
-                # validity check
+            # Check for equal value entries
+            if value == corresponding_val:
+                # Message context stating start value is euqla to end value
+                incorrect_context = 'equal to'
+                order_valid = False
+
+            # Check start value is before end value
+            elif is_start:
                 order_valid = value < corresponding_val
+                # Message context stating start value is after end value
                 incorrect_context = "after"
 
+            # Check end value is after start value
             elif is_end:
-                # Check if the
                 order_valid = value > corresponding_val
+                # Message context stating end value is before start value
                 incorrect_context = "before"
 
             msg = "Date is {} {} value".format(incorrect_context, corresponding)
