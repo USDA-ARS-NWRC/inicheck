@@ -161,6 +161,12 @@ class TestCheckers(unittest.TestCase):
         invalids = ['./somecrazy_location!/']
         self.run_a_checker(valids, invalids, CheckDirectory, item='tmp')
 
+        # ISSUE #44 check for default when string is empty
+        self.ucfg.cfg.update({'basic':{'tmp':''}})
+        b = CheckDirectory(config=self.ucfg, section='basic', item='tmp')
+        value = b.cast()
+        assert os.path.split(value)[-1] == 'temp'
+
     def test_filename(self):
         """
         Tests the base class for path based checkers
@@ -169,6 +175,12 @@ class TestCheckers(unittest.TestCase):
         valids = ["../test_checkers.py"]
         invalids = ['dumbfilename']
         self.run_a_checker(valids, invalids, CheckFilename, item='log')
+
+        # ISSUE #44 check for default when string is empty
+        self.ucfg.cfg.update({'basic':{'log':''}})
+        b = CheckFilename(config=self.ucfg, section='basic', item='log')
+        value = b.cast()
+        assert os.path.split(value)[-1] == 'log.txt'
 
     def test_url(self):
         """

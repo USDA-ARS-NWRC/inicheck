@@ -676,8 +676,8 @@ class CheckPath(CheckType):
                 **valid** - Boolean whether the value was acceptable
                 **msg** - string to print if value is not valid.
         """
+        v = self.make_abs_from_cfg(value)
 
-        v = os.path.join(self.root_loc, value)
         if self.dir_path:
             valid = os.path.isdir(v)
 
@@ -702,6 +702,10 @@ class CheckPath(CheckType):
         Returns:
             str: absolute path or filename
         """
+        # Watch out for empty strings, assume default
+        if value == '':
+            value = self.config.mcfg.cfg[self.section][self.item].default
+
         if not os.path.isabs(value):
             value = os.path.abspath(os.path.join(self.root_loc, value))
         return value
