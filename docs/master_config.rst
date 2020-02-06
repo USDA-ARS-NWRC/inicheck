@@ -33,6 +33,9 @@ The attributes describing/constraining an entry are:
   * type - the type the value should be casted into, if it is not castable, then throw an error
   * options - a list of options that the entry value must be in.
   * description- a description of the entry to be used for documentation and self help
+  * max - A Maximum value used for checking if a numeric input is under it.
+  * min - A minimum value used for checking if a numeric input is over it.
+  * allow_none - A Bool to check if None is an acceptable input
 
 While these are the available attributes they are not required but always exist for each entry. If
 it is not provided in the master configuration file the following defaults are used.
@@ -41,6 +44,9 @@ it is not provided in the master configuration file the following defaults are u
   * type - str
   * options - None
   * description- ''
+  * max - None
+  * min - None
+  * allow_none - True
 
 if your options are set to none then inicheck assumes the entry can be
 unconstrained e.g. filenames are a great example where a user would not want a
@@ -69,21 +75,44 @@ Available types:
   * Directory - :class:`~inicheck.checkers.CheckDirectory`
   * CriticalDirectory - :class:`~inicheck.checkers.CheckCriticalDirectory`
 
-**lists**: can be provided but are not checked, they are not specified as a type
-though. To provide a list you must use space separated bracketed lists in the entry
-in the config file.
-
 The following example required the users input to be a string, and must match
 nearest, linear, or cubic.
 
 .. code-block:: ini
 
-  [interpolation]
-    method:
-          default = linear,
-					options = [nearest linear cubic],
-					description = interpolation method to use for this variable
+    [interpolation]
+      method:
+            default = linear,
+            options = [nearest linear cubic],
+            description = interpolation method to use for this variable
 
+**NOTE ON PATHS**: All paths (filenames and directories) in inicheck are
+assumed to be either relative to the config file or absolute. e.g.
+
+.. code-block:: ini
+
+  [path_management]
+    log:
+          default = ../log.txt,
+          type = filename,
+          description = path to log file
+
+This will default to a path up one directory from the location of the config.
+
+
+**Notes on lists**: Listed input checking can be performed. To assign a type
+as a list, simply add the keyword list to the type name. This will force the
+output to be a list and still check every entry in a provided list. To provide
+a list in inicheck master configs use bracketed space separated lists. An
+example of adding the list keyword and a list default is below
+
+.. code-block:: ini
+
+  [financial_plots]
+    quarterly_dates:
+          default = [01-01 04-01 07-01 10-01] ,
+          type = datetimelist
+          description = List of datetimes to plot up for earnings
 
 Recipes
 --------
@@ -93,7 +122,7 @@ config file bloat on the users end by only entering the information that matters
 to them. The the information that matters to the software can be added later by
 use of recipes.
 
-Recipes are entered like sections **but** they must have the keyword *recipe** in
+Recipes are entered like sections **but** they must have the keyword **recipe** in
 the section name. Each recipe is composed of triggers and edits.
 
 Recipe Triggers
@@ -101,7 +130,7 @@ Recipe Triggers
 
 A trigger describes the conditions for which you want to apply the edits to a
 configuration file. So you can think of a trigger as a conditional statement.
-Every trigger is distingguished from edits by having **trigger** in its entry
+Every trigger is distinguished from edits by having **trigger** in its entry
 name. This is required for inicheck to see the triggers!
 
 Triggers can be defined using keywords and to create complex scenarios you can
