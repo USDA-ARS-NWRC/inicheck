@@ -8,8 +8,10 @@ Tests for `inicheck.utilities` module.
 """
 
 import unittest
+from datetime import datetime, date
 from inicheck.utilities import *
 from inicheck.tools import get_user_config
+
 
 class TestUtilities(unittest.TestCase):
     @classmethod
@@ -128,13 +130,12 @@ class TestUtilities(unittest.TestCase):
 
         # Check to can handle a normal scenario
         result = is_valid('10.0', float, 'float', allow_none=False)
-        assert result[1] == None
-        assert result[0] == True
+        assert result[1] is None
+        assert result[0]
 
         # Test the handling of Nones
         for b in [False, True]:
             result = is_valid(None, float, 'float', allow_none=b)[0]
-            print(result)
             assert b == result
 
         # Check to see that we return an error message
@@ -155,6 +156,32 @@ class TestUtilities(unittest.TestCase):
         cmd = get_inicheck_cmd(self.ucfg.filename, modules='inicheck', master_files=None)
         assert cmd == 'inicheck -f {} -m inicheck'.format(self.ucfg.filename)
 
+    def test_parse_date_str(self):
+        """
+        Test the parse_date function which is used in the checks for datetime
+        """
+        value = parse_date("2019-10-1")
+        self.assertEqual(datetime(2019, 10, 1), value)
+
+        # Test for odd issue that came up with casting a value twice
+        value = parse_date("2019-10-1 10:00")
+        value = parse_date(value)
+        self.assertEqual(datetime(2019, 10, 1, 10), value)
+
+    def test_parse_date_fails_int(self):
+        with self.assertRaises(TypeError):
+            value = parse_date(10)
+
+    def test_parse_date_datetime(self):
+        to_convert = datetime(2019, 10, 1)
+        value = parse_date(to_convert)
+        self.assertEqual(value, to_convert)
+
+    def test_parse_date_date(self):
+        to_convert = date(2019, 10, 1)
+        expected = datetime(2019, 10, 1)
+        value = parse_date(to_convert)
+        self.assertEqual(value, expected)
 
 if __name__ == '__main__':
     import sys

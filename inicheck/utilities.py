@@ -1,5 +1,32 @@
+import dateparser
+from datetime import date, datetime
 import sys
 import os
+
+
+def parse_date(value):
+    """
+    Function used to cast items to datetime from string. Meant to prevent the
+    importing of pandas just for the to_datetime function.
+
+    Args:
+        value: string of a datetime
+    Returns:
+        converted: Datetime object representing the value passed.
+    """
+
+    if isinstance(value, datetime):
+        return value
+
+    elif isinstance(value, date):
+        return datetime(value.year, value.month, value.day)
+
+    else:
+        converted = dateparser.parse(value, settings={'STRICT_PARSING': True})
+        if converted is None:
+            raise TypeError("{} is not a date".format(value))
+
+        return converted
 
 
 def find_options_in_recipes(recipes, choice_search, action_kw, condition_position=0):

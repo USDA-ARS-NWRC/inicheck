@@ -58,7 +58,7 @@ class TestTools(unittest.TestCase):
         ucfg.cfg['air_temp']['detrend'] = "true"
 
         ucfg = cast_all_variables(ucfg, ucfg.mcfg)
-        results = ['timestamp','int','bool','float','list','str']
+        results = ['datetime','int','bool','float','list','str']
 
         tests = [ucfg.cfg['time']['start_date'],
                   ucfg.cfg['air_temp']['dk_ncores'],
