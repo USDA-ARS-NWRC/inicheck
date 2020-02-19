@@ -252,7 +252,7 @@ class UserConfig():
                             # Confirm existence in master
                             if i in self.mcfg.cfg[s].keys():
 
-                                # Prefer user selection oover default
+                                # Prefer user selection over default
                                 if i not in self.cfg[s]:
                                     v = self.mcfg.cfg[s][i].default
 

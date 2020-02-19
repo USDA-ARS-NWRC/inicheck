@@ -241,10 +241,15 @@ def parse_values(parsed_items):
 
                 # For use later always make it a list
                 else:
-                    final = [value]
+                    # watch out for items that have commented out values
+                    if value != '':
+                        final = [value]
+                    else:
+                        final = []
 
-                # Assign it finally and replace none
-                result[section][item] = final
+                # If there are values provided add them
+                if final:
+                    result[section][item] = final
 
         return result
 

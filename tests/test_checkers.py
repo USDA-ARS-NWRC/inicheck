@@ -178,6 +178,14 @@ class TestCheckers(unittest.TestCase):
 
         # ISSUE #44 check for default when string is empty
         self.ucfg.cfg.update({'basic':{'log':''}})
+        self.ucfg.mcfg.cfg['basic']['log'].default = None
+        b = CheckFilename(config=self.ucfg, section='basic', item='log')
+        value = b.cast()
+        assert value == None
+
+        # ISSUE #44 check for default when string is empty but default is a path
+        self.ucfg.cfg.update({'basic':{'log':''}})
+        self.ucfg.mcfg.cfg['basic']['log'].default = 'log.txt'
         b = CheckFilename(config=self.ucfg, section='basic', item='log')
         value = b.cast()
         assert os.path.split(value)[-1] == 'log.txt'

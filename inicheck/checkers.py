@@ -713,9 +713,10 @@ class CheckPath(CheckType):
         # Watch out for empty strings, assume default
         if value == '':
             value = self.config.mcfg.cfg[self.section][self.item].default
+        if str(value).lower() != 'none':
+            if not os.path.isabs(value):
+                value = os.path.abspath(os.path.join(self.root_loc, value))
 
-        if not os.path.isabs(value):
-            value = os.path.abspath(os.path.join(self.root_loc, value))
         return value
 
 
