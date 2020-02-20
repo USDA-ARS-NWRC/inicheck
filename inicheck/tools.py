@@ -223,7 +223,8 @@ def get_user_config(config_file, master_files=None, modules=None,
             if modules != None:
                 modules = mk_lst(modules)
 
-            mcfg = MasterConfig(path=master_files, modules=modules)
+            mcfg = MasterConfig(path=master_files, modules=modules,
+                                changelogs=changelog_file)
 
     else:
         raise IOError("Config file path {0} doesn't exist."

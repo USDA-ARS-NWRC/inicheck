@@ -41,8 +41,6 @@ class UserConfig():
         Args:
             filename: String to path containing config in .ini format
             mcfg: Object of the master config
-            changelog: Object of changes.ChangeLog representing config file
-                       entry changes by developers
         """
         self.filename = filename
         self.recipes = []
@@ -449,6 +447,9 @@ class MasterConfig():
 
         if header != None:
             self.header = header
+
+        if changelogs != None:
+            self.changelogs.append(changelogs)
 
         if len(self.paths) == 0 and modules == None:
             raise ValueError("No file was either provided or found when"

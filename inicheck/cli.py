@@ -49,6 +49,10 @@ def main():
                         " according to a packages changelog. Including"
                         " recommended default changes.")
 
+    parser.add_argument('--chlog', '-ch', dest='changelog', type=str, nargs='+',
+                    help="Files indicating how the config file has deprecated "
+                         "information")
+
     parser.add_argument('--version', action='version',
                                      version=('%(prog)s {version}'
                                      '').format(version=__version__))
@@ -57,12 +61,13 @@ def main():
     inicheck_main(config_file=args.config_file, master=args.master,
                   modules=args.modules, write_out=args.write,
                   show_recipes=args.recipes, show_non_defaults=args.defaults,
-                  details=args.details, apply_changelog=args.change)
+                  details=args.details, apply_changelog=args.change,
+                  changelog_file=args.changelog)
 
 
 def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
                   show_recipes=False, show_non_defaults=False, details=None,
-                  apply_changelog=False):
+                  apply_changelog=False, changelog_file=None,):
     """
     Function used for the CLI for inicheck. This is mostly for cleaner
     testing. Allows users to look at master config details, check their config
@@ -99,10 +104,12 @@ def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
         else:
             f = abspath(config_file)
             ucfg = get_user_config(f, master_files=master,
+                                      changelog_file=changelog_file,
                                       modules=modules, cli=True)
 
             # Check out any change logs for issues
-            chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
+            print(changelog_file)
+            chlog = ChangeLog(paths=ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
             potentials, required = chlog.get_active_changes(ucfg)
 
             # Request to apply changes
