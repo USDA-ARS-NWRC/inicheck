@@ -11,3 +11,4 @@ pytest-runner==2.11.1
 sphinxcontrib-apidoc==0.3.0
 twine==1.13.0
 coveralls==1.11.1
+pyyaml==5.3
