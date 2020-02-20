@@ -57,9 +57,10 @@ History
 
 0.8.0 (TBD)
 -----------
-* Increased unittest coverage (57%-83%)
+* Increased unittest coverage from ~57% to ~83%)
 * Added in a CLI tool to find changelog impacts in python files
 * Switch from pandas to_datetime to dateparser to reduce package size
+* Added inicheck to traviCI and Coveralls
 * Fixes for 35_ , 38_ , 39_, 40_, 41_, 42_ 43_, 44_, 45_
 
 .. _35: https://github.com/USDA-ARS-NWRC/inicheck/issues/25
