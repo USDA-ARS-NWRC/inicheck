@@ -10,6 +10,8 @@ Welcome to inicheck
         :target: https://inicheck.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://travis-ci.org/USDA-ARS-NWRC/inicheck.svg?branch=master
+    :target: https://travis-ci.org/USDA-ARS-NWRC/inicheck
 
 What is inicheck?
 -----------------
