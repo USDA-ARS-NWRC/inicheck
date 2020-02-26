@@ -10,5 +10,5 @@ sphinxcontrib-apidoc==0.3.0
 twine==1.13.0
 coveralls==1.11.1
 pyyaml==5.3
-utopep8==1.5
+autopep8==1.5
 isort==4.3.21
