@@ -47,12 +47,13 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
-lint: ## check style with flake8
-	flake8 inicheck tests
+lint: ## check style with isort and pep8
+	isort inicheck/*.py tests/*.py
+	autopep8 --aggressive --in-place inicheck/*.py tests/*.py
 
 test: ## run tests quickly with the default Python
 	py.test
-	
+
 
 test-all: ## run tests on every Python version with tox
 	tox
@@ -75,7 +76,7 @@ servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 release: clean dist # package and upload a release
-	twine upload --repository pypi dist/* 
+	twine upload --repository pypi dist/*
 
 dist: clean ## builds source and wheel package
 	python setup.py sdist

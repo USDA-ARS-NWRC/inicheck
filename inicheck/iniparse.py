@@ -1,6 +1,7 @@
 import os
-from .utilities import  remove_chars, remove_comment
 from collections import OrderedDict
+
+from .utilities import remove_chars, remove_comment
 
 
 def read_config(fname):
@@ -13,7 +14,7 @@ def read_config(fname):
     Returns:
         config: dict of dicts containing the info in a config file
     """
-    with open(fname, encoding = 'utf-8') as f:
+    with open(fname, encoding='utf-8') as f:
         lines = f.readlines()
         f.close()
 
@@ -43,7 +44,7 @@ def parse_entry(info, item=None, valid_names=None):
     """
 
     properties = OrderedDict()
-    if type(info) != list:
+    if not isinstance(info, list):
         info = [info]
 
     last_three = []
@@ -55,26 +56,26 @@ def parse_entry(info, item=None, valid_names=None):
 
         else:
             raise ValueError('\n\nMaster Config file missing an equals sign in'
-                            ' entry or missing a comma right before the item '
-                            '"{0}" in the entry:\n"{1}"\nIssue generated from:'
-                            ' \n>> "{2}"'.format(item, info, s))
+                             ' entry or missing a comma right before the item '
+                             '"{0}" in the entry:\n"{1}"\nIssue generated from:'
+                             ' \n>> "{2}"'.format(item, info, s))
 
         name = (a[0].lower()).strip()
 
         # Check for constraints on potential names of entries
-        if valid_names != None and name not in valid_names or len(a) > 2:
+        if valid_names is not None and name not in valid_names or len(a) > 2:
             raise ValueError("\nInvalid property set in the master config file,"
-                            " available options are: \n * {0}\n"
-                            "\nIf this is supposed to be a recipe, you may have"
-                            " forgotten to add keyword 'recipe' to the section"
-                            " name.\nIssue generated from: \n>> '{1}'"
-                            "".format("\n * ".join(valid_names), s))
+                             " available options are: \n * {0}\n"
+                             "\nIf this is supposed to be a recipe, you may have"
+                             " forgotten to add keyword 'recipe' to the section"
+                             " name.\nIssue generated from: \n>> '{1}'"
+                             "".format("\n * ".join(valid_names), s))
 
         value = a[1].strip()
 
         result = []
-        value = value.replace('\n'," ")
-        value = value.replace('\t',"")
+        value = value.replace('\n', " ")
+        value = value.replace('\t', "")
 
         # Is there a list of values provided?
         if '[' in value:
@@ -110,7 +111,7 @@ def parse_sections(lines):
     i = 0
 
     for i in range(len(lines)):
-        line = remove_chars(lines[i],'\t')
+        line = remove_chars(lines[i], '\t')
         # Comment checking
         line = remove_comment(line)
 
@@ -131,7 +132,7 @@ def parse_sections(lines):
                     data = "]".join(data[1:])
 
                     # Clean up the section name
-                    section = (remove_chars(section,'[]')).lower().strip()
+                    section = (remove_chars(section, '[]')).lower().strip()
 
                     # If the section already exists then we have seen it twice
                     if section in result.keys():
@@ -145,8 +146,9 @@ def parse_sections(lines):
                         result[section].append(data)
 
             else:
-                # This protects from funky syntax in a config file and alerts the user
-                if section == None:
+                # This protects from funky syntax in a config file and alerts
+                # the user
+                if section is None:
                     raise Exception("Non-section like syntax before any "
                                     "sections were identified at line {0} in "
                                     "config file. Please use bracketed sections"
@@ -172,17 +174,18 @@ def parse_items(parsed_sections_dict, mcfg=None):
     """
     result = OrderedDict()
 
-    for k,v in parsed_sections_dict.items():
+    for k, v in parsed_sections_dict.items():
         item = None
         result[k] = OrderedDict()
-        for i,val in enumerate(v):
+        for i, val in enumerate(v):
             val = val.lstrip()
             # Look for item notation
 
             if ':' in val:
-                # Only split on the first colon to avoid collisions with datetime
+                # Only split on the first colon to avoid collisions with
+                # datetime
                 parse_loc = val.index(':')
-                parseable = [val[0:parse_loc],val[parse_loc + 1:]]
+                parseable = [val[0:parse_loc], val[parse_loc + 1:]]
                 item = parseable[0].lower().strip()
 
                 result[k][item] = ''
@@ -203,7 +206,7 @@ def parse_items(parsed_sections_dict, mcfg=None):
                 result[k][item] += " " + val
 
         # Perform a final cleanup
-        if item != None:
+        if item is not None:
             if ',' in result[k][item]:
                 final = [e.strip() for e in result[k][item].split(',')]
                 result[k][item] = ", ".join(final)
@@ -214,44 +217,44 @@ def parse_items(parsed_sections_dict, mcfg=None):
 
 
 def parse_values(parsed_items):
-        """
-        Takes the output from parse_items and parses any values or
-        properties provided in each item placing the strings into a list.
-        If no properties are defined then it will clean up values provided
-        and put them in a list of len one.
+    """
+    Takes the output from parse_items and parses any values or
+    properties provided in each item placing the strings into a list.
+    If no properties are defined then it will clean up values provided
+    and put them in a list of len one.
 
-        Args:
-            parsed_sections_dict: dict of dicts containing joined strings
-                                  found under each item
-        Returns:
-            result: dictionary of dictionaries containing sections, items,
-                    and the values provided as a list
-        """
-        result = OrderedDict()
+    Args:
+        parsed_sections_dict: dict of dicts containing joined strings
+                              found under each item
+    Returns:
+        result: dictionary of dictionaries containing sections, items,
+                and the values provided as a list
+    """
+    result = OrderedDict()
 
-        for section in parsed_items.keys():
-            result[section] = OrderedDict()
+    for section in parsed_items.keys():
+        result[section] = OrderedDict()
 
-            for item, val in parsed_items[section].items():
-                value = val.strip()
+        for item, val in parsed_items[section].items():
+            value = val.strip()
 
-                # list was provided
-                if ',' in val:
-                    final = [v.strip() for v in value.split(',') if v != '']
+            # list was provided
+            if ',' in val:
+                final = [v.strip() for v in value.split(',') if v != '']
 
-                # For use later always make it a list
+            # For use later always make it a list
+            else:
+                # watch out for items that have commented out values
+                if value != '':
+                    final = [value]
                 else:
-                    # watch out for items that have commented out values
-                    if value != '':
-                        final = [value]
-                    else:
-                        final = []
+                    final = []
 
-                # If there are values provided add them
-                if final:
-                    result[section][item] = final
+            # If there are values provided add them
+            if final:
+                result[section][item] = final
 
-        return result
+    return result
 
 
 def parse_changes(change_list):
@@ -273,7 +276,7 @@ def parse_changes(change_list):
     """
     results = []
 
-    for i,s in enumerate(change_list):
+    for i, s in enumerate(change_list):
         if "->" in s:
             changes = [c.lower().strip() for c in s.split("->")]
         else:
@@ -286,7 +289,7 @@ def parse_changes(change_list):
         # build out an any list and populate it
         final_changes = []
 
-        for ii,c in enumerate(changes):
+        for ii, c in enumerate(changes):
             mods = ["any" for i in range(4)]
             mod_lst = []
             if "/" in c:

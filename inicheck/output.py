@@ -1,7 +1,9 @@
-from datetime import date
 import os
 import sys
-from . utilities import mk_lst
+from datetime import date
+
+from .utilities import mk_lst
+
 
 def generate_config(config_obj, fname, cli=False):
     """
@@ -26,7 +28,7 @@ def generate_config(config_obj, fname, cli=False):
     config_str += pg_sep
 
     # File header with specific package option
-    if config_obj.mcfg.header != None:
+    if config_obj.mcfg.header is not None:
         header = config_obj.mcfg.header.split('\n')
         for line in header:
             config_str += ('\n# ' + line)
@@ -47,7 +49,7 @@ def generate_config(config_obj, fname, cli=False):
     mcfg = config_obj.mcfg.cfg
 
     # Check to see if section titles were provided
-    has_section_titles = hasattr(config_obj.mcfg,'titles')
+    has_section_titles = hasattr(config_obj.mcfg, 'titles')
 
     # Generate the string for the file, creating them in order.
     for section in mcfg.keys():
@@ -59,7 +61,8 @@ def generate_config(config_obj, fname, cli=False):
             if has_section_titles:
                 if section in config_obj.mcfg.titles.keys():
                     # Add the header
-                    s_hdr = section_header.format(config_obj.mcfg.titles[section])
+                    s_hdr = section_header.format(
+                        config_obj.mcfg.titles[section])
 
             else:
                 config_str += s_hdr
@@ -75,7 +78,7 @@ def generate_config(config_obj, fname, cli=False):
                     astr = ", ".join(str(c).strip() for c in v)
                 else:
                     astr = str(v)
-                config_str += "{0:<30} {1:<10}\n".format((k+':'), astr)
+                config_str += "{0:<30} {1:<10}\n".format((k + ':'), astr)
 
     # Write out the string generated
     with open(os.path.abspath(fname), 'w') as f:
@@ -100,17 +103,16 @@ def print_config_report(warnings, errors, logger=None):
     msg = "{: <20} {: <25} {: <60}"
 
     # Check to see if user wants the logger or stdout
-    if logger != None:
+    if logger is not None:
         out = logger.info
     else:
         out = print
-
 
     msg_len = 90
     out(" ")
     out(" ")
     out("Configuration File Status Report:")
-    header = "="*msg_len
+    header = "=" * msg_len
     out(header)
     any_warnings = False
     any_errors = False
@@ -121,7 +123,7 @@ def print_config_report(warnings, errors, logger=None):
         out("WARNINGS:")
         out(" ")
         out(msg.format(" Section", "Item", "Message"))
-        out("-"*msg_len)
+        out("-" * msg_len)
         for w in warnings:
             out(w)
         out(" ")
@@ -133,7 +135,7 @@ def print_config_report(warnings, errors, logger=None):
         out("ERRORS:")
         out(" ")
         out(msg.format("Section", "Item", "Message"))
-        out("-"*msg_len)
+        out("-" * msg_len)
         for e in errors:
             out(e)
         out(" ")
@@ -155,7 +157,7 @@ def print_recipe_summary(lst_recipes):
     msg_len = 80
     header = "=" * msg_len
     recipe_hdr = "-" * msg_len
-    r_msg = "\n{0: <20}\n"+recipe_hdr
+    r_msg = "\n{0: <20}\n" + recipe_hdr
     cfg_msg = "\t\t{0: <20} {1: <20} {2: <20}"
 
     msg = "\t\t{0: <20} {1: <25}"
@@ -178,12 +180,12 @@ def print_recipe_summary(lst_recipes):
                     print(msg.format("", c))
 
         print_cfg_for_recipe(r.adj_config, cfg_msg, hdr="\n\tEdits:")
-        #print('\n')
+        # print('\n')
     print('\n')
 
 
 def print_cfg_for_recipe(cfg, fmt, hdr=None):
-    if hdr != None:
+    if hdr is not None:
         print(hdr)
 
     for section in cfg.keys():
@@ -212,10 +214,10 @@ def print_details(details, mcfg):
     """
 
     msg = "{: <15} {: <15} {: <15} {: <25} {: <60}"
-    hdr  = '\n' + msg.format('Section', 'Item', 'Default', 'Options',
-                           'Description')
+    hdr = '\n' + msg.format('Section', 'Item', 'Default', 'Options',
+                            'Description')
     print(hdr)
-    print('='*len(hdr))
+    print('=' * len(hdr))
     nopts = len(details)
     # At least a section was provided
     if nopts >= 1:
@@ -224,9 +226,9 @@ def print_details(details, mcfg):
             if nopts == 2:
                 if details[1] in mcfg[details[0]].keys():
                     print(msg.format(details[0], details[1],
-                                    str(mcfg[details[0]][details[1]].default),
-                                    str(mcfg[details[0]][details[1]].options),
-                                    str(mcfg[details[0]][details[1]].description)))
+                                     str(mcfg[details[0]][details[1]].default),
+                                     str(mcfg[details[0]][details[1]].options),
+                                     str(mcfg[details[0]][details[1]].description)))
                 else:
                     print("Item {0} in not a registered item."
                           "".format(details[1]))
@@ -264,15 +266,16 @@ def print_non_defaults(ucfg):
     cfg = ucfg.cfg
 
     msg = "{: <20} {: <20} {: <40} {: <40}"
-    hdr = '\n'+msg.format("Section","Item","Value","Default")
+    hdr = '\n' + msg.format("Section", "Item", "Value", "Default")
 
     print("\n\nConfiguration File Non-Defaults Report:")
     print("The following are all the items that had non-defaults values specified.")
-    print("="*len(hdr))
+    print("=" * len(hdr))
     print(hdr)
-    print('-'*len(hdr))
+    print('-' * len(hdr))
 
-    # Cycle through option/items checking defaults, print em if they don't match
+    # Cycle through option/items checking defaults, print em if they don't
+    # match
     for s in mcfg.keys():
         # if the master section is in the users
         if s in cfg.keys():
@@ -281,7 +284,8 @@ def print_non_defaults(ucfg):
                 if i in cfg[s].keys():
                     # Grab the default, make it a string list
                     default_lst = mk_lst(mcfg[s][i].default)
-                    str_default_lst =  [str(kk).lower() for kk in default_lst if str(kk).lower() != 'none']
+                    str_default_lst = [
+                        str(kk).lower() for kk in default_lst if str(kk).lower() != 'none']
 
                     # Grab the default, make it a string list
                     user_lst = mk_lst(cfg[s][i])
@@ -292,13 +296,16 @@ def print_non_defaults(ucfg):
                         for vi, v in enumerate(str_default_lst):
                             if v != 'none':
                                 if uv not in str_default_lst:
-                                     print(msg.format(s, i,uv,", ".join(str_default_lst)))
-                                     break
+                                    print(
+                                        msg.format(
+                                            s, i, uv, ", ".join(str_default_lst)))
+                                    break
 
     print("")
 
 
-def print_change_report(potential_changes, required_changes, ucfg, logger=None):
+def print_change_report(
+        potential_changes, required_changes, ucfg, logger=None):
     """
     Pass in the list of changes generated by check_config file.
     print out in a pretty format the changes required
@@ -314,11 +321,10 @@ def print_change_report(potential_changes, required_changes, ucfg, logger=None):
     msg = "{: <20} {: <25} {: <25} {: <25}"
 
     # Check to see if user wants the logger or stdout
-    if logger != None:
+    if logger is not None:
         out = logger.info
     else:
         out = print
-
 
     msg_len = 90
     out(" ")
@@ -332,7 +338,7 @@ def print_change_report(potential_changes, required_changes, ucfg, logger=None):
     if len(potential_changes) > 0:
 
         out("Default changes - Warnings issued only when old default values are "
-        "detected in file.\n")
+            "detected in file.\n")
 
         out("Default Changes:")
         out("No. of default changes: {:0.0f}".format(len(potential_changes)))
@@ -340,7 +346,7 @@ def print_change_report(potential_changes, required_changes, ucfg, logger=None):
         any_warnings = True
         out(" ")
         out(msg.format(" Section", "Item", "Old Default", "New Default"))
-        out("-"*msg_len)
+        out("-" * msg_len)
 
         for w in potential_changes:
             out(msg.format(w[0][0], w[0][1], w[0][3], w[1][3]))
@@ -357,7 +363,7 @@ def print_change_report(potential_changes, required_changes, ucfg, logger=None):
         out("No. of necessary changes: {:0.0f}".format(len(required_changes)))
         out(" ")
         out(msg.format("From", "To"))
-        out("-"*msg_len)
+        out("-" * msg_len)
         for e in required_changes:
             orig = "{}/{}".format(e[0][0], e[0][1])
             if e[1] != "removed":
@@ -365,7 +371,7 @@ def print_change_report(potential_changes, required_changes, ucfg, logger=None):
             else:
                 to = e[1]
 
-            out(msg.format(orig,to))
+            out(msg.format(orig, to))
         out(" ")
         out(" ")
 

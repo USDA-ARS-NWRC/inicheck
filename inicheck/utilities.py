@@ -1,7 +1,8 @@
-import dateparser
-from datetime import date, datetime
-import sys
 import os
+import sys
+from datetime import date, datetime
+
+import dateparser
 
 
 def parse_date(value):
@@ -29,7 +30,8 @@ def parse_date(value):
         return converted
 
 
-def find_options_in_recipes(recipes, choice_search, action_kw, condition_position=0):
+def find_options_in_recipes(recipes, choice_search,
+                            action_kw, condition_position=0):
     """
     Looks through the master config at recipes and entries to determine if
     there are place the developer made distince choices, this is used in the
@@ -73,8 +75,8 @@ def find_options_in_recipes(recipes, choice_search, action_kw, condition_positio
                         if action_kw in v.keys():
                             choices.append(condition[pos])
                             # Look inside the adjustment for more choices
-                            for kk,vv in v.items():
-                                actions = [k,kk,vv]
+                            for kk, vv in v.items():
+                                actions = [k, kk, vv]
 
                                 if kk == action_kw:
                                     choices.append(actions[pos])
@@ -84,7 +86,8 @@ def find_options_in_recipes(recipes, choice_search, action_kw, condition_positio
         if choices:
             final_choices.append(tuple(set(sorted(choices))))
 
-    # Because there will be redundent sets of choices, we perform a set to clean up
+    # Because there will be redundent sets of choices, we perform a set to
+    # clean up
     return list(set(final_choices))
 
 
@@ -93,10 +96,10 @@ def ask_user(question, choices=None):
     Asks the user which choice to make and handles incorrect choices.
     """
     valid = False
-    if choices == None:
+    if choices is None:
         choices = ["yes", "no"]
 
-    if choices != None:
+    if choices is not None:
         choice_str = "(" + ", ".join(choices) + ")\n"
 
     while not valid:
@@ -111,22 +114,22 @@ def ask_user(question, choices=None):
 
 
 def ask_config_setup(choices_series, section=None, item=None,
-                                                   num_questions=None):
+                     num_questions=None):
     """
     Ask repeating questions for setting up a config
     """
-    if section == None and item == None:
-        msg =  "Which of these sections do you want to use? "
+    if section is None and item is None:
+        msg = "Which of these sections do you want to use? "
 
-    elif section != None and item == None:
-        msg =  ("In section {}, Which of these items do you want to use? "
+    elif section is not None and item is None:
+        msg = ("In section {}, Which of these items do you want to use? "
                "".format(section))
 
     else:
-        msg =  ("In section {} item {},  Which of these values do you want to "
+        msg = ("In section {} item {},  Which of these values do you want to "
                "use? ".format(section, item))
 
-    if num_questions == None:
+    if num_questions is None:
         num_questions = len(choices_series)
 
     # Add sections that we choose
@@ -163,13 +166,13 @@ def mk_lst(values, unlst=False):
     convenient to be able to return the original type after were done with it.
     """
     # Not a list, were not looking to unlist it. make it a list
-    if type(values) != list and not unlst:
-            values = [values]
+    if not isinstance(values, list) and not unlst:
+        values = [values]
 
     # We want to unlist a list we get
     if unlst:
         # single item provided so we don't want it a list
-        if type(values) == list:
+        if isinstance(values, list):
             if len(values) == 1:
                 values = values[0]
 
@@ -188,7 +191,7 @@ def remove_chars(orig_str, char_str, replace_str=None):
     Returns:
         string: orig_str with out any characters in char_str
     """
-    if replace_str == None:
+    if replace_str is None:
         clean_str = [c for c in orig_str if c not in char_str]
     else:
         clean_str = [c if c not in char_str else replace_str for c in orig_str]
@@ -272,12 +275,12 @@ def pcfg(cfg):
                 print('\t' + item)
                 values = cfg[sec][item]
 
-                if type(cfg[sec][item]) == list:
+                if isinstance(cfg[sec][item], list):
                     out = ", ".join(cfg[sec][item])
                 else:
                     out = cfg[sec][item]
                 print('\t\t' + repr(out))
-        except:
+        except BaseException:
             print('\t recipe')
 
 
@@ -299,11 +302,12 @@ def pmcfg(cfg):
                 value = getattr(obj, att)
                 print('\t\t' + att)
 
-                if type(value) == list:
+                if isinstance(value, list):
                     out = ", ".join(value)
                 else:
                     out = value
                 print('\t\t\t' + repr(out))
+
 
 def is_valid(value, cast_fn, expected_data_type, allow_none=False):
     """
@@ -345,6 +349,7 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
                                                   type(value).__name__)
     return valid, msg
 
+
 def get_inicheck_cmd(config_file, modules=None, master_files=None):
     """
     Strings together an inicheck cli command based on modules and files
@@ -353,11 +358,11 @@ def get_inicheck_cmd(config_file, modules=None, master_files=None):
 
     cmd = "inicheck -f {}".format(config_file)
 
-    if master_files != None:
+    if master_files is not None:
         master_files = mk_lst(master_files)
         cmd += " -mf {}".format(" ".join(master_files))
 
-    if modules != None:
+    if modules is not None:
         modules = mk_lst(modules)
         cmd += " -m {}".format(" ".join(modules))
 

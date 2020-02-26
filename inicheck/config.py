@@ -1,17 +1,17 @@
-from .iniparse import read_config
-from .utilities import mk_lst, get_relative_to_cfg
-from .entries import ConfigEntry, RecipeSection
-from . import __recipe_keywords__
+import copy
+import importlib
 from collections import OrderedDict
 from os.path import abspath
 from os.path import join as pjoin
 
-import copy
-import importlib
-import copy
+from . import __recipe_keywords__
+from .entries import ConfigEntry, RecipeSection
+from .iniparse import read_config
+from .utilities import get_relative_to_cfg, mk_lst
 
 DEBUG = False
 FULL_DEBUG = False
+
 
 class UserConfig():
     """
@@ -47,16 +47,16 @@ class UserConfig():
         self.raw_cfg = OrderedDict()
 
         # Hang on to the original
-        if self.filename != None:
+        if self.filename is not None:
             self.raw_cfg = read_config(filename)
 
             # The version  of the config that inicheck will mess with
             self.cfg = copy.deepcopy(self.raw_cfg)
 
             self.sections, self.items, self.values = \
-            self.get_unique_entries(self.cfg)
+                self.get_unique_entries(self.cfg)
 
-        if mcfg != None:
+        if mcfg is not None:
             self.mcfg = mcfg
 
     def apply_recipes(self):
@@ -101,7 +101,7 @@ class UserConfig():
                                     vals = mk_lst(self.cfg[section][item])
 
                                 # Watch for empties
-                                elif item == None:
+                                elif item is None:
                                     vals = [None]
                                 else:
                                     vals = []
@@ -110,32 +110,33 @@ class UserConfig():
                                     # Sections
 
                                     if (condition[0] == 'any' or
-                                        condition[0] == section):
+                                            condition[0] == section):
 
-                                       if FULL_DEBUG:
-                                           print("Section Gate {0} == {1}"
-                                                 "".format(condition[0],
-                                                 section))
-                                       # Items
-                                       if (condition[1] == 'any' or
-                                           condition[1] == item):
-                                          if FULL_DEBUG:
-                                              print("\t\tItem Gate {0} == {1}"
-                                                    "".format(condition[1],
-                                                              item))
-                                          # Values
-                                          if (condition[2] == 'any' or
-                                              condition[2] == v):
-                                              if FULL_DEBUG:
-                                                 print("\t\t\t\tValue Gate {0}"
-                                                       " == {1}"
-                                                       "".format(condition[2],
-                                                                 v))
+                                        if FULL_DEBUG:
+                                            print("Section Gate {0} == {1}"
+                                                  "".format(condition[0],
+                                                            section))
+                                        # Items
+                                        if (condition[1] == 'any' or
+                                                condition[1] == item):
+                                            if FULL_DEBUG:
+                                                print("\t\tItem Gate {0} == {1}"
+                                                      "".format(condition[1],
+                                                                item))
+                                            # Values
+                                            if (condition[2] == 'any' or
+                                                    condition[2] == v):
+                                                if FULL_DEBUG:
+                                                    print("\t\t\t\tValue Gate {0}"
+                                                          " == {1}"
+                                                          "".format(condition[2],
+                                                                    v))
 
-                                              # No conditions == [any any any]
-                                              conditions_triggered.append(
-                                                            (section, item, v))
-                                              triggered = True
+                                                # No conditions == [any any
+                                                # any]
+                                                conditions_triggered.append(
+                                                    (section, item, v))
+                                                triggered = True
 
                     # Determine if the condition was met.
                     if triggered:
@@ -143,23 +144,23 @@ class UserConfig():
                         triggered = False
 
                 if (conditions_met == len(recipe_entry.conditions) and
-                    len(recipe_entry.conditions) != 0):
+                        len(recipe_entry.conditions) != 0):
                     conditions_met = 0
                     self.recipes.append(r)
 
                     # Check recipes for sections not in the master
                     invalid_r_sections = [s for s in r.adj_config.keys()
                                           if (s not in self.mcfg.cfg.keys()
-                                             and s != 'any')]
+                                              and s != 'any')]
 
                     if len(invalid_r_sections) > 0:
                         raise ValueError("The recipe {} attempts to modify"
-                        " section(s) {} not recognized by Master Config."
-                        "".format(r.name,",".join(invalid_r_sections)))
+                                         " section(s) {} not recognized by Master Config."
+                                         "".format(r.name, ",".join(invalid_r_sections)))
 
                     if DEBUG:
                         print("\nDEBUG: Trigger: {0} {1} was met!"
-                        "".format(trigger, condition))
+                              "".format(trigger, condition))
 
                     # Iterate through the conditions found and apply
                     for situation in conditions_triggered:
@@ -174,7 +175,6 @@ class UserConfig():
                               "".format(trigger, condition,
                                         conditions_met))
                         print('\n\n')
-
 
     def interpret_recipes(self, partial_cfg, situation):
         """
@@ -231,7 +231,7 @@ class UserConfig():
                             i = situation[1]
 
                         # Enable removing and defaulting
-                        elif item in ['remove_item','default_item']:
+                        elif item in ['remove_item', 'default_item']:
                             i = value
 
                             if item == "default_item":
@@ -256,11 +256,11 @@ class UserConfig():
 
                             else:
                                 raise Exception('{0} is not a valid item for '
-                                'the master config section {1}, check your '
-                                'recipes for a situation triggering on {2}, '
-                                '{3}, {4}'.format(i, s, situation[0],
-                                                        situation[1],
-                                                        situation[2]))
+                                                'the master config section {1}, check your '
+                                                'recipes for a situation triggering on {2}, '
+                                                '{3}, {4}'.format(i, s, situation[0],
+                                                                  situation[1],
+                                                                  situation[2]))
                         # default items were sepcified.
                         else:
 
@@ -303,7 +303,6 @@ class UserConfig():
 
         return result
 
-
     def get_unique_entries(self, cfg):
         """
         Appends all the values in the user config to respectives lists of
@@ -322,7 +321,7 @@ class UserConfig():
 
         for section in cfg.keys():
             for item, value in cfg[section].items():
-                if type(value) != list:
+                if not isinstance(value, list):
                     vals = [value]
                 else:
                     vals = value
@@ -334,8 +333,7 @@ class UserConfig():
 
         return set(unique_sections), set(unique_items), set(unique_values)
 
-
-    def add_defaults(self, cfg, sections=None,items=None):
+    def add_defaults(self, cfg, sections=None, items=None):
         """
         Look through the users config file and section by section add in
         missing parameters to add defaults
@@ -350,11 +348,12 @@ class UserConfig():
         """
         master = self.mcfg.cfg
         result = copy.deepcopy(cfg)
-        #Either go through specified sections or all sections provided by user.
-        if sections == None:
+        # Either go through specified sections or all sections provided by
+        # user.
+        if sections is None:
             sections = result.keys()
         else:
-            #Accounts for single items not entered as a list
+            # Accounts for single items not entered as a list
             sections = mk_lst(sections)
 
         for section in sections:
@@ -365,30 +364,30 @@ class UserConfig():
         return result
 
     def update_config_paths(self, user_cfg_path=None):
-            """
-            Sets all paths so that they are always relative to the config
-            file or absolute.
-            """
-            if user_cfg_path == None:
-                user_cfg_path = self.filename
+        """
+        Sets all paths so that they are always relative to the config
+        file or absolute.
+        """
+        if user_cfg_path is None:
+            user_cfg_path = self.filename
 
-            mcfg = self.mcfg.cfg
-            cfg = self.cfg
+        mcfg = self.mcfg.cfg
+        cfg = self.cfg
 
-            # Cycle thru users config
-            for section in cfg.keys():
-                for item in cfg[section].keys():
-                    d = cfg[section][item]
+        # Cycle thru users config
+        for section in cfg.keys():
+            for item in cfg[section].keys():
+                d = cfg[section][item]
 
-                    # Does master have this and is it not none
-                    if item in mcfg[section].keys() and d != None:
-                        m = mcfg[section][item]
-                        # Any paths
-                        if m.type == 'filename' or  m.type == 'directory':
-                            cfg[section][item] = \
+                # Does master have this and is it not none
+                if item in mcfg[section].keys() and d is not None:
+                    m = mcfg[section][item]
+                    # Any paths
+                    if m.type == 'filename' or m.type == 'directory':
+                        cfg[section][item] = \
                             get_relative_to_cfg(cfg[section][item],
                                                 self.filename)
-            return cfg
+        return cfg
 
 
 class MasterConfig():
@@ -403,17 +402,17 @@ class MasterConfig():
         self.changelogs = []
 
         # Paths were manually provided
-        if path != None and modules == None:
+        if path is not None and modules is None:
             for p in mk_lst(path):
                 self.paths.append(abspath(p))
 
         # If a module was passed
-        if modules != None and self.paths == []:
+        if modules is not None and self.paths == []:
 
             for m in mk_lst(modules):
                 i = importlib.import_module(m)
                 self.paths.append(abspath(pjoin(i.__file__,
-                                                         i.__core_config__)))
+                                                i.__core_config__)))
 
                 # Search for possible recipes provided in the module
                 if hasattr(i, '__recipes__'):
@@ -430,28 +429,28 @@ class MasterConfig():
                 # Search for custom checkers
                 if hasattr(i, '__config_checkers__'):
                     self.checker_modules.append(m + '.' +
-                                              getattr(i,
-                                                     '__config_checkers__'))
+                                                getattr(i,
+                                                        '__config_checkers__'))
                 # Grab ayny change logs
-                if hasattr(i,"__config_changelog__"):
+                if hasattr(i, "__config_changelog__"):
                     self.changelogs.append(abspath(pjoin(i.__file__,
-                                                     i.__config_changelog__)))
+                                                         i.__config_changelog__)))
 
         # Add any extra ones provided
-        if checkers != None:
+        if checkers is not None:
             for c in mk_lst(checkers):
                 self.checker_modules.append(c)
 
-        if titles != None:
+        if titles is not None:
             self.titles.update(titles)
 
-        if header != None:
+        if header is not None:
             self.header = header
 
-        if changelogs != None:
+        if changelogs is not None:
             self.changelogs.append(changelogs)
 
-        if len(self.paths) == 0 and modules == None:
+        if len(self.paths) == 0 and modules is None:
             raise ValueError("No file was either provided or found when"
                              " initiating a master config file.")
 
@@ -473,7 +472,7 @@ class MasterConfig():
         result = OrderedDict()
 
         for f in paths:
-            if f != None:
+            if f is not None:
                 extra_cfg = self._read(f)
                 result.update(extra_cfg)
 
@@ -485,7 +484,7 @@ class MasterConfig():
         in place
         """
 
-        self.recipes+=mcfg.recipes
+        self.recipes += mcfg.recipes
         self.checker_modules += mcfg.checker_modules
         self.titles.update(mcfg.titles)
         self.cfg.update(mcfg.cfg)
@@ -522,7 +521,7 @@ class MasterConfig():
                 else:
                     for item in raw_config[section].keys():
                         sec[item] = ConfigEntry(name=item,
-                                  parseable_line=raw_config[section][item])
+                                                parseable_line=raw_config[section][item])
 
                     cfg[section] = sec
 

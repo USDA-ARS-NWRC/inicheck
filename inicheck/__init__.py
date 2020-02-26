@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from os.path import abspath, join, dirname
+from os.path import abspath, dirname, join
+
 __author__ = """Micah Johnson"""
 __email__ = 'micah.johnson150@gmail.com'
 __version__ = '0.7.9'
@@ -11,7 +12,7 @@ __trigger_keywords__ = ['trigger']
 __recipe_keywords__ = ['recipe']
 
 # Add in core configs for test purposes
-test_dir = abspath(join(dirname(__file__),'../','tests','test_configs'))
-__core_config__ = join(test_dir,'CoreConfig.ini')
+test_dir = abspath(join(dirname(__file__), '../', 'tests', 'test_configs'))
+__core_config__ = join(test_dir, 'CoreConfig.ini')
 __recipes__ = join(test_dir, 'recipes.ini')
 __config_changelog__ = join(test_dir, 'changelog.ini')

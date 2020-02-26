@@ -8,9 +8,10 @@ Tests for `inicheck.utilities` module.
 """
 
 import unittest
-from datetime import datetime, date
-from inicheck.utilities import *
+from datetime import date, datetime
+
 from inicheck.tools import get_user_config
+from inicheck.utilities import *
 
 
 class TestUtilities(unittest.TestCase):
@@ -18,21 +19,21 @@ class TestUtilities(unittest.TestCase):
     def setUpClass(self):
         base = os.path.dirname(__file__)
         self.ucfg = get_user_config(os.path.join(base,
-                                    "test_configs/full_config.ini"),
+                                                 "test_configs/full_config.ini"),
                                     modules="inicheck")
 
     def test_remove_comments(self):
         """
         Test our remove comments code
         """
-        values = {"test":"test#comment",
-                  "test1":"test1;comment",
-                  "":";full in line comment",
+        values = {"test": "test#comment",
+                  "test1": "test1;comment",
+                  "": ";full in line comment",
                   "testboth": "testboth; test a comment with both types of # comments "}
-        for k,v in values.items():
+        for k, v in values.items():
             out = remove_comment(v)
 
-            assert k==out
+            assert k == out
 
     def test_mk_lst(self):
         """
@@ -45,25 +46,25 @@ class TestUtilities(unittest.TestCase):
         """
 
         # Case A
-        for v in ['test',['test']]:
-            out = mk_lst(v,unlst=False)
-            assert type(out) == list
+        for v in ['test', ['test']]:
+            out = mk_lst(v, unlst=False)
+            assert isinstance(out, list)
 
         # Case B
-        for v in ['test',['test']]:
-            out = mk_lst(v,unlst=True)
-            assert type(out) != list
+        for v in ['test', ['test']]:
+            out = mk_lst(v, unlst=True)
+            assert not isinstance(out, list)
 
         # Case C
-        for v in [['test','test2']]:
-            out = mk_lst(v,unlst=True)
-            assert type(out) == list
+        for v in [['test', 'test2']]:
+            out = mk_lst(v, unlst=True)
+            assert isinstance(out, list)
 
     def test_remove_chars(self):
         """
         Test if we can remove the problematic chars
         """
-        out = remove_chars("\t\n my_test\t","\t\n ")
+        out = remove_chars("\t\n my_test\t", "\t\n ")
         assert '\n' not in out
         assert '\t' not in out
         assert ' ' not in out
@@ -76,10 +77,10 @@ class TestUtilities(unittest.TestCase):
         """
         mcfg = self.ucfg.mcfg
         choices = find_options_in_recipes(mcfg.recipes, mcfg.cfg.keys(),
-                                                    "remove_section")
+                                          "remove_section")
 
         # Currently there is 3 sections that are set as optional in the recipes
-        for opt in ['gridded','mysql','csv']:
+        for opt in ['gridded', 'mysql', 'csv']:
             self.assertTrue(opt in choices[0])
 
     def test_get_relative_to_cfg(self):
@@ -99,13 +100,13 @@ class TestUtilities(unittest.TestCase):
         assert is_kw_matched("tests_my_kw", ['tests'])
 
         # Finds all three in the string
-        assert is_kw_matched("tests_my_kw", ['tests','my','kw'], kw_count=3)
+        assert is_kw_matched("tests_my_kw", ['tests', 'my', 'kw'], kw_count=3)
 
         # Finds all three in the string
-        assert is_kw_matched("te_my_kw", ['tests','my','kw'], kw_count=1)
+        assert is_kw_matched("te_my_kw", ['tests', 'my', 'kw'], kw_count=1)
 
         # No match at all
-        assert not is_kw_matched("te_ym_k", ['tests','my','kw'])
+        assert not is_kw_matched("te_ym_k", ['tests', 'my', 'kw'])
 
     def test_get_kw_match(self):
         """
@@ -113,13 +114,13 @@ class TestUtilities(unittest.TestCase):
         potential matches of the keywords
         """
 
-        test_lst = ['test_my_str','test_my_float','test_my_flowt']
+        test_lst = ['test_my_str', 'test_my_float', 'test_my_flowt']
 
         # should find the first one only
         t = get_kw_match(test_lst, ['test'], kw_count=1)
         assert t == 'test_my_str'
 
-        t = get_kw_match(test_lst, ['test','float'], kw_count=2)
+        t = get_kw_match(test_lst, ['test', 'float'], kw_count=2)
         assert t == 'test_my_float'
 
     def test_is_valid(self):
@@ -153,7 +154,10 @@ class TestUtilities(unittest.TestCase):
         Test if the cmd used to generate the str command is working
 
         """
-        cmd = get_inicheck_cmd(self.ucfg.filename, modules='inicheck', master_files=None)
+        cmd = get_inicheck_cmd(
+            self.ucfg.filename,
+            modules='inicheck',
+            master_files=None)
         assert cmd == 'inicheck -f {} -m inicheck'.format(self.ucfg.filename)
 
     def test_parse_date_str(self):
@@ -182,6 +186,7 @@ class TestUtilities(unittest.TestCase):
         expected = datetime(2019, 10, 1)
         value = parse_date(to_convert)
         self.assertEqual(value, expected)
+
 
 if __name__ == '__main__':
     import sys

@@ -8,18 +8,20 @@ Tests for `inicheck.entries` module.
 """
 
 import unittest
-from inicheck.entries import RecipeSection, TriggerEntry, ConfigEntry
 from collections import OrderedDict
+
+from inicheck.entries import ConfigEntry, RecipeSection, TriggerEntry
+
 
 class TestEntries(unittest.TestCase):
     def test_trigger_entry(self):
         """
         Tests to see if we correctly gather a trigger for a recipe
         """
-        entries = [ 'has_section = test',
-                    'has_item = test',
-                    'has_value = [test test test]',
-                    ['has_section = test',
+        entries = ['has_section = test',
+                   'has_item = test',
+                   'has_value = [test test test]',
+                   ['has_section = test',
                     'has_item = test2']]
 
         # section trigger
@@ -38,7 +40,6 @@ class TestEntries(unittest.TestCase):
         assert(t.conditions[0] == ['test', 'any', 'any'])
         assert(t.conditions[1] == ['any', 'test2', 'any'])
 
-
     def test_config_tigger_entry(self):
         """
         Tests to see if we correctly gather a trigger for a recipe
@@ -47,7 +48,6 @@ class TestEntries(unittest.TestCase):
 
         t = TriggerEntry(entries[0])
         assert(t.conditions[0] == ['topo', 'type', 'ipw'])
-
 
     def test_config(self):
         """

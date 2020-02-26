@@ -1,14 +1,16 @@
+import inspect
 import os
 import sys
-import inspect
-from . config import UserConfig, MasterConfig, check_types
-from . utilities import mk_lst, get_inicheck_cmd
+
 import inicheck.checkers
-from . changes import ChangeLog
+
+from .changes import ChangeLog
+from .config import MasterConfig, UserConfig, check_types
+from .utilities import get_inicheck_cmd, mk_lst
 
 
 def get_checkers(module='inicheck.checkers', keywords="check",
-                                             ignore=["type","generic","path"]):
+                 ignore=["type", "generic", "path"]):
     """
     Args:
         module: The module to search for the classes
@@ -43,6 +45,7 @@ def get_checkers(module='inicheck.checkers', keywords="check",
 
     return func_dict
 
+
 def get_merged_checkers(ucfg):
     """
     Retrieve the dictionary of checker classes by grabbing all in inicheck and
@@ -65,6 +68,7 @@ def get_merged_checkers(ucfg):
             all_checks.update(new_checks)
 
     return all_checks
+
 
 def check_config(config_obj):
     """
@@ -119,10 +123,10 @@ def check_config(config_obj):
                     issues = b.check()
 
                     # Examine the issues
-                    num_issues = len([True for p in issues if p != None])
+                    num_issues = len([True for p in issues if p is not None])
 
                     for ii, issue in enumerate(issues):
-                        if issue != None:
+                        if issue is not None:
                             pi = i
 
                             # If we had a list, provide position
@@ -210,17 +214,17 @@ def get_user_config(config_file, master_files=None, modules=None,
         ucfg: Users config as an object
     """
 
-    if modules == None and master_files == None and mcfg == None:
+    if modules is None and master_files is None and mcfg is None:
         raise IOError("ERROR: Please provide either a module or a path to a"
                       " master config, or a master config object")
         sys.exit()
 
     if os.path.isfile(config_file):
 
-        if master_files != None or modules != None:
-            if master_files != None:
+        if master_files is not None or modules is not None:
+            if master_files is not None:
                 master_files = mk_lst(master_files)
-            if modules != None:
+            if modules is not None:
                 modules = mk_lst(modules)
 
             mcfg = MasterConfig(path=master_files, modules=modules,
@@ -235,25 +239,26 @@ def get_user_config(config_file, master_files=None, modules=None,
 
     # If were not running the CLI, raise exceptions for issues
     # Check out any change logs for issues
-    chlog = ChangeLog(paths = ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
+    chlog = ChangeLog(paths=ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
     potentials, required = chlog.get_active_changes(ucfg)
 
     # Required Changes that broke things
     if len(required) != 0 and not cli:
         cmd = get_inicheck_cmd(config_file, modules=modules,
-                                            master_files=master_files)
+                               master_files=master_files)
 
         raise ValueError("\n\nUser's Config has deprecated information and"
-                        " needs adjustment. To see what needs to change:"
-                        "\n\n>> {}".format(cmd))
+                         " needs adjustment. To see what needs to change:"
+                         "\n\n>> {}".format(cmd))
 
     # Fill in the gaps and make sure they're the right types
     ucfg.apply_recipes()
     ucfg = cast_all_variables(ucfg, mcfg)
     return ucfg
 
+
 def config_documentation(out_f, paths=None, modules=None,
-                        section_link_dict={}):
+                         section_link_dict={}):
     """
     Auto documents the core config file. Outputs to a file which is can then be
     used for documentation. Specifically formulated for sphinx
@@ -267,10 +272,9 @@ def config_documentation(out_f, paths=None, modules=None,
 
     """
 
-    if paths == None and modules == None:
+    if paths is None and modules is None:
         raise ValueError("inicheck function config_documentation args paths or"
-                        " module must be specified!")
-
+                         " module must be specified!")
 
     master = MasterConfig(path=paths, modules=modules)
     mcfg = master.cfg
@@ -296,11 +300,11 @@ def config_documentation(out_f, paths=None, modules=None,
         config_doc += "\n"
 
         # Auto document config file according to master config contents
-        for item,v in sorted(mcfg[section].items()):
+        for item, v in sorted(mcfg[section].items()):
             # Check for attributes that are lists
             for att in ['default', 'options']:
-                z = getattr(v,att)
-                if type(z) == list:
+                z = getattr(v, att)
+                if isinstance(z, list):
                     combo = ' '
                     doc_s = combo.join([str(s) for s in z])
                     setattr(v, att, doc_s)
@@ -332,6 +336,6 @@ def config_documentation(out_f, paths=None, modules=None,
 
     print("Writing auto documentation for config file to:\n{0}".format(path))
 
-    with open(path,'w+') as f:
+    with open(path, 'w+') as f:
         f.writelines(config_doc)
     f.close()

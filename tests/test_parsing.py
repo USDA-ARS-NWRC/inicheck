@@ -8,6 +8,7 @@ Tests for `inicheck.iniparse` module.
 """
 
 import unittest
+
 from inicheck.iniparse import *
 
 
@@ -50,14 +51,14 @@ class TestIniparse(unittest.TestCase):
 
         # Confirm we can handle a section and an item in the same line
         assert(sections['single_line_test'][0] == "a:10")
-        assert(sections['single_line_test_recipe'] == ["options = [a:10]","b:5"])
+        assert(sections['single_line_test_recipe']
+               == ["options = [a:10]", "b:5"])
 
         # Catch non-comment chars before the first section
-        self.assertRaises(Exception, parse_sections,['a#','#','[test]'])
+        self.assertRaises(Exception, parse_sections, ['a#', '#', '[test]'])
 
         # Catch repeat sections in config
-        self.assertRaises(Exception, parse_sections,['[test]','#','[test]'])
-
+        self.assertRaises(Exception, parse_sections, ['[test]', '#', '[test]'])
 
     def test_parse_items(self):
         """
@@ -69,10 +70,10 @@ class TestIniparse(unittest.TestCase):
         * tests for properties being added in master files
         """
 
-        info = {"unit":["a:10"],
-                "test case":[" a :10,","15,20"],
-                'recipe':['a: default=10,',
-                          'options=[10 15 20]']} # Handle wrapped lines
+        info = {"unit": ["a:10"],
+                "test case": [" a :10,", "15,20"],
+                'recipe': ['a: default=10,',
+                           'options=[10 15 20]']}  # Handle wrapped lines
 
         items = parse_items(info)
 
@@ -83,7 +84,8 @@ class TestIniparse(unittest.TestCase):
         # Check for correct interpretation of a wrapped list
         assert(items['test case']['a'] == "10, 15, 20")
 
-        # Check for a correct interpretation of item properties for master files
+        # Check for a correct interpretation of item properties for master
+        # files
         assert(items['recipe']['a'] == "default=10, options=[10 15 20]")
 
     def test_parse_values(self):
@@ -94,8 +96,8 @@ class TestIniparse(unittest.TestCase):
         * we can clean up values with list entries
         * we can clean up properties we recieve including non-comma sep lists
         """
-        info = {'unit':{'a': 'test1,\ttest2, test3'},
-                'recipe':{'a':'\tdefault=10,\toptions=[10 15 20]'}
+        info = {'unit': {'a': 'test1,\ttest2, test3'},
+                'recipe': {'a': '\tdefault=10,\toptions=[10 15 20]'}
                 }
 
         values = parse_values(info)
@@ -104,7 +106,7 @@ class TestIniparse(unittest.TestCase):
         assert(values['unit']['a'][1] == 'test2')
 
         # Check we parse a properties list with no commas correctly
-        assert(values['recipe']['a'][1]=='options=[10 15 20]')
+        assert(values['recipe']['a'][1] == 'options=[10 15 20]')
 
     def test_parse_changes(self):
         """

@@ -1,10 +1,11 @@
-from . iniparse import parse_sections, parse_items, parse_changes
-from . entries import ConfigEntry
-from . utilities import mk_lst, parse_date
 import importlib
-from os.path import join as pjoin
-from os.path import abspath
 from collections import OrderedDict
+from os.path import abspath
+from os.path import join as pjoin
+
+from .entries import ConfigEntry
+from .iniparse import parse_changes, parse_items, parse_sections
+from .utilities import mk_lst, parse_date
 
 
 class ChangeLog(object):
@@ -15,7 +16,7 @@ class ChangeLog(object):
         self.paths = []
 
         # We got a direct path
-        if paths != None:
+        if paths is not None:
             paths = mk_lst(paths)
             self.paths += paths
 
@@ -70,11 +71,11 @@ class ChangeLog(object):
         Checks the current master config that the items we're moving to
         are valid. Also confirms that removals are aligned with the master.
         """
-        action_kw = ["any",'removed']
+        action_kw = ["any", 'removed']
         cfe = ConfigEntry()
         invalids = []
 
-        for zz,c in enumerate(self.changes):
+        for zz, c in enumerate(self.changes):
             # Check the new assignments match the names of current master items
             current = c[1]
             valids = []
@@ -102,8 +103,8 @@ class ChangeLog(object):
 
                 # Check for valid properties
                 if len(valids) >= 2:
-                        if current[2] in ["any", "default"]:
-                            valids.append(True)
+                    if current[2] in ["any", "default"]:
+                        valids.append(True)
 
                 # TODO Actually check values, ignoring for now.
                 if len(valids) == 3:
@@ -116,14 +117,14 @@ class ChangeLog(object):
         # Form a coherent message about incorrect changlog stuff
         if invalids:
             msg = ("Changelog states a change that doesn't match the core config."
-                  " For a change to be valid the new changes must be in the"
-                  " Master Config file. Mismatches are:")
+                   " For a change to be valid the new changes must be in the"
+                   " Master Config file. Mismatches are:")
 
             for n in invalids:
-                msg+="\n * "
-                msg+="/".join(n[0])
-                msg+=" -> "
-                msg+="/".join(n[1])
+                msg += "\n * "
+                msg += "/".join(n[0])
+                msg += " -> "
+                msg += "/".join(n[1])
 
             raise ValueError(msg)
 
@@ -175,12 +176,14 @@ class ChangeLog(object):
                         elif new[0] in ucfg.mcfg.cfg.keys():
                             if new[1] in ucfg.mcfg.cfg[new[0]].keys():
 
-                                # Check for an old default match and suggest a change
+                                # Check for an old default match and suggest a
+                                # change
                                 if assumed[2] == "default":
 
                                     value = str(mk_lst(cfg[s][i], unlst=True))
                                     if value == assumed[3]:
-                                        potential_changes.append([assumed, new])
+                                        potential_changes.append(
+                                            [assumed, new])
 
                                 else:
                                     required_changes.append([assumed, new])
@@ -246,7 +249,8 @@ class ChangeLog(object):
                     del cfg[s_o][i_o]
 
                 # look to remove a whole section
-                if len(cfg[s_o].keys()) == 0 and s_o not in ucfg.mcfg.cfg.keys():
+                if len(cfg[s_o].keys()
+                       ) == 0 and s_o not in ucfg.mcfg.cfg.keys():
                     del(cfg[s_o])
 
         return cfg

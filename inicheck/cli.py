@@ -1,16 +1,17 @@
 # !/usr/bin/env python
 
 import argparse
-from . output import *
-from . tools import get_user_config, check_config
-from . changes import ChangeLog
-from os.path import basename, abspath, join
 import sys
-from . config import MasterConfig, UserConfig
-from . import __version__
-from .utilities import *
 from collections import OrderedDict
+from os.path import abspath, basename, join
+
 from . import __version__
+from .changes import ChangeLog
+from .config import MasterConfig, UserConfig
+from .output import *
+from .tools import check_config, get_user_config
+from .utilities import *
+
 
 def main():
 
@@ -18,7 +19,7 @@ def main():
                                                  " ini files with a master"
                                                  " file comparison.")
 
-    parser.add_argument('--config_file','-f', dest='config_file', type=str,
+    parser.add_argument('--config_file', '-f', dest='config_file', type=str,
                         help='Path to a config file that needs checking')
 
     parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
@@ -26,18 +27,18 @@ def main():
                         ' against')
 
     parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                    help="Modules name with an attribute __CoreConfig__ that"
-                         " is a path to a master config file for checking"
-                         " against")
+                        help="Modules name with an attribute __CoreConfig__ that"
+                        " is a path to a master config file for checking"
+                        " against")
 
-    parser.add_argument('--write','-w', dest='write', action='store_true',
+    parser.add_argument('--write', '-w', dest='write', action='store_true',
                         help="Determines whether to write out the file with"
                         " all the defaults")
 
-    parser.add_argument('--recipes','-r', dest='recipes', action='store_true',
+    parser.add_argument('--recipes', '-r', dest='recipes', action='store_true',
                         help="Prints out the recipe summary")
 
-    parser.add_argument('--non-defaults','-nd', dest='defaults',
+    parser.add_argument('--non-defaults', '-nd', dest='defaults',
                         action='store_true',
                         help="Prints out a summary of the non-defaults")
 
@@ -50,12 +51,12 @@ def main():
                         " recommended default changes.")
 
     parser.add_argument('--chlog', '-ch', dest='changelog', type=str, nargs='+',
-                    help="Files indicating how the config file has deprecated "
-                         "information")
+                        help="Files indicating how the config file has deprecated "
+                        "information")
 
     parser.add_argument('--version', action='version',
-                                     version=('%(prog)s {version}'
-                                     '').format(version=__version__))
+                        version=('%(prog)s {version}'
+                                 '').format(version=__version__))
 
     args = parser.parse_args()
     inicheck_main(config_file=args.config_file, master=args.master,
@@ -76,18 +77,18 @@ def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
 
     """
     # Module not provided, or master config
-    if modules == None and master == None:
+    if modules is None and master is None:
         print("ERROR: Please provide either a module or a path to a master"
-             " config, or ask for details on config entries")
+              " config, or ask for details on config entries")
         sys.exit()
 
     # Normal operation
     else:
         # Requesting details for a section and item
-        if details != None:
+        if details is not None:
             if len(details) == 1:
                 print("Providing details for section {0}..."
-                "".format(details[0]))
+                      "".format(details[0]))
 
             elif len(details) == 2:
                 print("Providing details for section {0} and item {1}..."
@@ -104,8 +105,8 @@ def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
         else:
             f = abspath(config_file)
             ucfg = get_user_config(f, master_files=master,
-                                      changelog_file=changelog_file,
-                                      modules=modules, cli=True)
+                                   changelog_file=changelog_file,
+                                   modules=modules, cli=True)
 
             # Check out any change logs for issues
             print(changelog_file)
@@ -114,10 +115,10 @@ def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
 
             # Request to apply changes
             if apply_changelog:
-                    print("Applying {} changes due to deprecation..."
-                          "".format(len(required) + len(potentials)))
-                    ucfg.cfg = chlog.apply_changes(ucfg, potentials, required)
-                    required = []
+                print("Applying {} changes due to deprecation..."
+                      "".format(len(required) + len(potentials)))
+                ucfg.cfg = chlog.apply_changes(ucfg, potentials, required)
+                required = []
 
             # report issues if there are recommended changes
             if len(required) > 0:
@@ -145,13 +146,14 @@ def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
             # Output the config file as inicheck interprets it.
             if write_out:
                 out_f = './{0}_full.ini'.format(
-                                              basename(f).split('.')[0])
+                    basename(f).split('.')[0])
 
                 print("Writing complete config file with all recipes and"
                       " necessary defaults...")
                 print('{0}'.format(out_f))
 
                 generate_config(ucfg, out_f, cli=True)
+
 
 def inidiff():
     """
@@ -161,7 +163,7 @@ def inidiff():
                                                  " ini files with a master file"
                                                  "")
 
-    parser.add_argument('--config_files','-f', dest='config_files', type=str,
+    parser.add_argument('--config_files', '-f', dest='config_files', type=str,
                         nargs='+', required=True,
                         help='Path to two config file that needs comparing')
 
@@ -169,14 +171,15 @@ def inidiff():
                         help='Path to a config file that used to check against')
 
     parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                    help="Modules name with an attribute __CoreConfig__ that"
-                         " is a path to a master config file for checking"
-                         " against")
+                        help="Modules name with an attribute __CoreConfig__ that"
+                        " is a path to a master config file for checking"
+                        " against")
     parser.add_argument('--version', action='version',
-                                     version=('%(prog)s {version}'
-                                     '').format(version=__version__))
+                        version=('%(prog)s {version}'
+                                 '').format(version=__version__))
     args = parser.parse_args()
     inidiff_main(args.config_files, master=args.master, modules=args.modules)
+
 
 def inidiff_main(config_files, master=None, modules=None):
 
@@ -196,16 +199,16 @@ def inidiff_main(config_files, master=None, modules=None):
 
     # We need to start with Section, Item, and a Default
     tmsg = "{:<20}{:<30}{:<30}"
-    header = ["Section","Item"]
+    header = ["Section", "Item"]
 
     print("\nChecking the differences...\n")
 
     # Instatiates CFGs and prints out legend
-    for i,f in enumerate(config_files):
+    for i, f in enumerate(config_files):
 
         fname = abspath(f)
         cfgs.append(get_user_config(fname, master_files=master,
-                                           modules=modules))
+                                    modules=modules))
 
         cfg_rename = "CFG {}".format(i + 1)
 
@@ -214,7 +217,7 @@ def inidiff_main(config_files, master=None, modules=None):
 
         # Start building the table header
         header.append(cfg_rename)
-        tmsg+="{:<30}"
+        tmsg += "{:<30}"
 
     # Print out a nice table header
     header.append("Default")
@@ -234,7 +237,7 @@ def inidiff_main(config_files, master=None, modules=None):
         for i in mcfg[s].keys():
             showit = False
             values = ["Not Found" for c in cfgs]
-            total_count +=1
+            total_count += 1
             # Iterate through all the configs, find a value
             for zz, ucfg in enumerate(cfgs):
                 cfg = ucfg.cfg
@@ -249,7 +252,7 @@ def inidiff_main(config_files, master=None, modules=None):
             m = str(mcfg[s][i].default)
 
             # Check one value against all to see if theyre mistmatched
-            mismatched = [True for cv in values if values[0] != cv ]
+            mismatched = [True for cv in values if values[0] != cv]
 
             # Non Default check
             non_default = [True for v in values if v != m]
@@ -260,11 +263,11 @@ def inidiff_main(config_files, master=None, modules=None):
                 mismatch_count += len(mismatched)
 
             elif m.lower() != "none" and len(non_default) > 0:
-                    showit = True
-                    non_default_count += len(non_default)
+                showit = True
+                non_default_count += len(non_default)
 
             if showit:
-                table = [s,i]
+                table = [s, i]
                 table += values
                 table.append(m)
                 print(tmsg.format(*table))
@@ -300,20 +303,20 @@ def inimake():
                         'against')
 
     parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                    help="Modules name with an attribute __CoreConfig__ that"
-                         " is a path to a master config file for checking"
-                         " against")
+                        help="Modules name with an attribute __CoreConfig__ that"
+                        " is a path to a master config file for checking"
+                        " against")
 
     parser.add_argument('--version', action='version',
-                                     version=('%(prog)s {version}'
-                                     '').format(version=__version__))
+                        version=('%(prog)s {version}'
+                                 '').format(version=__version__))
 
     args = parser.parse_args()
 
     hdr = " Welcome to inimake V{}".format(__version__)
-    print("="*(len(hdr) + 1))
+    print("=" * (len(hdr) + 1))
     print(hdr)
-    print("="*(len(hdr) + 1))
+    print("=" * (len(hdr) + 1))
 
     mcfg = MasterConfig(path=args.master, modules=args.modules)
     ucfg = UserConfig(None, mcfg=mcfg)
@@ -330,7 +333,7 @@ def inimake():
 
     # Look at all the sections
     choices = find_options_in_recipes(mcfg.recipes, mcfg.cfg.keys(),
-                                                    "remove_section")
+                                      "remove_section")
 
     print("There are {} sectional choices to be made...\n"
           "".format(len(choices)))
@@ -344,10 +347,8 @@ def inimake():
         if not section_a_choice or s in selections:
             ucfg.raw_cfg[s] = {}
 
-
     # Apply recipes to clean up stuff that was added and populate ucfg.cfg
     ucfg.apply_recipes()
-
 
     ################################# ITEMS ###################################
     # # Look at all the items in all the sections
@@ -411,8 +412,8 @@ def inimake():
     generate_config(ucfg, out_f, cli=True)
 
     msg = ("Your config still need some populating, use the command below to "
-          "see:\n\n inicheck -f {}").format(out_f)
-    if args.modules != None:
+           "see:\n\n inicheck -f {}").format(out_f)
+    if args.modules is not None:
         msg += " -m {}".format(args.module)
     else:
         msg += " -mf {}".format(" ".join(mcfg.paths))
@@ -451,7 +452,7 @@ def check_for_changes(directory, modules=[], paths=[]):
     # Cycle through all the changes listed in changelogs
     for change in ch.changes:
         old = "/".join([c for c in change[0] if c != 'any'])
-        new = "/".join([c for c in change[1] if c not in ['removed','any']])
+        new = "/".join([c for c in change[1] if c not in ['removed', 'any']])
 
         if not new:
             new = 'Removed'
@@ -471,12 +472,12 @@ def check_for_changes(directory, modules=[], paths=[]):
 
         # Look at every file each time
         for r, directories, files in os.walk(directory):
-            pyfiles = [join(r,f) for f in files if f.split(".")[-1] == 'py']
+            pyfiles = [join(r, f) for f in files if f.split(".")[-1] == 'py']
 
             #  only at python files
             for f in pyfiles:
                 # Read in file contents
-                with open(f,'r') as fp:
+                with open(f, 'r') as fp:
                     lines = fp.readlines()
                     fp.close()
 
@@ -496,6 +497,7 @@ def check_for_changes(directory, modules=[], paths=[]):
 
     return change_instances
 
+
 def detect_file_changes():
     """
     CLI tool for examining a python repo and reporting any old python code that
@@ -508,12 +510,12 @@ def detect_file_changes():
     parser.add_argument('directory', help='Directory containing python code to '
                                           'search for old config items')
     parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                    help="Modules name with an attribute __CoreConfig__ that"
-                         " is a path to a master config file for checking"
-                         " against")
+                        help="Modules name with an attribute __CoreConfig__ that"
+                        " is a path to a master config file for checking"
+                        " against")
     parser.add_argument('--version', action='version',
-                                     version=('%(prog)s {version}'
-                                     '').format(version=__version__))
+                        version=('%(prog)s {version}'
+                                 '').format(version=__version__))
     args = parser.parse_args()
 
     print("\nSearching {} for any deprecated config file sections/items in "
@@ -531,11 +533,14 @@ def detect_file_changes():
         if affected:
             for file, line_numbers in affected:
                 found = True
-                print("{0:<50}{1:<50}{2:<50}".format(change, file, ', '.join([str(s) for s in set(line_numbers)])))
+                print("{0:<50}{1:<50}{2:<50}".format(change, file,
+                                                     ', '.join([str(s) for s in set(line_numbers)])))
 
     if not found:
         print("No instances from the changelog(s) were found in the code under "
               "{}".format(args.directory))
     print("")
+
+
 if __name__ == '__main__':
     main()

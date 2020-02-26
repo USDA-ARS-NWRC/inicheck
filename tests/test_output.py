@@ -7,14 +7,16 @@ test_output
 Tests for `inicheck.output` module.
 """
 
-import unittest
-from inicheck.output import *
-from collections import OrderedDict
-import shutil
-from inicheck.tools import get_user_config
-import os
 import io
+import os
+import shutil
+import unittest
+from collections import OrderedDict
 from contextlib import redirect_stdout
+
+from inicheck.output import *
+from inicheck.tools import get_user_config
+
 
 def capture_print(function_call, *args, **kwargs):
     """
@@ -35,13 +37,15 @@ def capture_print(function_call, *args, **kwargs):
     out = f.getvalue()
     return out
 
+
 class TestOutput(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
         base = os.path.dirname(__file__)
-        self.ucfg = get_user_config(os.path.join(base,"test_configs/full_config.ini"),
-                                                            modules="inicheck")
+        self.ucfg = get_user_config(os.path.join(base, "test_configs/full_config.ini"),
+                                    modules="inicheck")
+
     @classmethod
     def tearDownClass(self):
         """
@@ -68,7 +72,7 @@ class TestOutput(unittest.TestCase):
         for k in self.ucfg.cfg.keys():
             for l in lines:
                 if k in l:
-                    key_count+=1
+                    key_count += 1
                     break
 
         assert key_count == len(self.ucfg.cfg.keys())
@@ -78,7 +82,7 @@ class TestOutput(unittest.TestCase):
         Checks that the output produces 366 lines of recipe info
         """
         lst_recipes = self.ucfg.mcfg.recipes
-        out = capture_print(print_recipe_summary,lst_recipes)
+        out = capture_print(print_recipe_summary, lst_recipes)
         assert len(out.split('\n')) == 366
         assert out.count('recipe') == 34
 
@@ -93,7 +97,7 @@ class TestOutput(unittest.TestCase):
         assert out.count('air_temp') == len(self.ucfg.mcfg.cfg[details[0]])
 
         # test for a section and item
-        details = ['precip','distribution']
+        details = ['precip', 'distribution']
         out = capture_print(print_details, details, self.ucfg.mcfg.cfg)
         assert out.count('precip ') == 1
 
@@ -101,10 +105,11 @@ class TestOutput(unittest.TestCase):
         """
         Tests if printing the non-defaults is working
         """
-        out = capture_print(print_non_defaults,self.ucfg)
+        out = capture_print(print_non_defaults, self.ucfg)
 
         # Check that we have 27 lines of info for non-defaults
         assert len(out.split('\n')) == 27
+
 
 if __name__ == '__main__':
     import sys

@@ -1,6 +1,8 @@
 from collections import OrderedDict
-from . iniparse import parse_entry
+
 from . import __trigger_keywords__
+from .iniparse import parse_entry
+
 
 class RecipeSection:
     """
@@ -41,6 +43,7 @@ class RecipeSection:
                 item_dict = parse_entry(entry, item=item)
 
                 self.adj_config[item] = item_dict
+
 
 class TriggerEntry:
     """
@@ -90,16 +93,16 @@ class TriggerEntry:
                                   valid_names=self.valid_names)
 
         # There can be multiple conditions returned
-        for name,value in parsed_dict.items():
+        for name, value in parsed_dict.items():
             result = ['any', 'any', 'any']
-            if type(value) == list:
+            if isinstance(value, list):
                 # Easy assignment to result using [section  item value syntax]
-                for i,v in enumerate(value):
+                for i, v in enumerate(value):
                     result[i] = v
 
             # If single item provided
             else:
-                for i,keyword in enumerate(heirarcy):
+                for i, keyword in enumerate(heirarcy):
                     if keyword in name:
                         result[i] = value
 
@@ -156,17 +159,17 @@ class ConfigEntry:
         self.min = None
         self.allow_none = True
 
-        self.valid_names = ['default', 'type', 'options', 'description','max',
+        self.valid_names = ['default', 'type', 'options', 'description', 'max',
                             'min', 'allow_none']
 
-        if parseable_line != None:
+        if parseable_line is not None:
             parsed_dict = parse_entry(parseable_line, item=name,
-                                                  valid_names=self.valid_names)
+                                      valid_names=self.valid_names)
             for name, value in parsed_dict.items():
                 setattr(self, name, value)
 
         # Options should always be a list and lower case
-        if type(self.options) != list:
+        if not isinstance(self.options, list):
             self.options = [self.options]
         self.options = [l.lower() for l in self.options]
 
@@ -174,10 +177,10 @@ class ConfigEntry:
         self.type = self.type.lower()
 
         # Handle the list types
-        for kw in ['list','listed']:
+        for kw in ['list', 'listed']:
             if kw in self.type:
                 self.listed = True
-                self.type = self.type.replace(kw,'')
+                self.type = self.type.replace(kw, '')
                 self.type = self.type.strip()
                 break
 

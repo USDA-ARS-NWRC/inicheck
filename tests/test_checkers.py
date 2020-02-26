@@ -8,16 +8,17 @@ Tests for `inicheck.checkers` module.
 """
 
 import unittest
-from inicheck.checkers import *
-from inicheck.config import UserConfig, MasterConfig
+
 import inicheck
+from inicheck.checkers import *
+from inicheck.config import MasterConfig, UserConfig
 
 
 class TestCheckers(unittest.TestCase):
 
     def run_a_checker(self, valids, invalids, checker, section='basic',
-                                                       item='item',
-                                                       extra_config={}):
+                      item='item',
+                      extra_config={}):
         """
         Runs a loop over all the valids and applies the checker and asserts
         theyre true. Same thing is done for the invalids
@@ -34,7 +35,7 @@ class TestCheckers(unittest.TestCase):
         """
 
         cfg = self.ucfg.cfg
-        cfg.update({section:{item:" "}})
+        cfg.update({section: {item: " "}})
 
         # Added info for testing e.g. ordered datetime pair
         if extra_config:
@@ -63,13 +64,12 @@ class TestCheckers(unittest.TestCase):
         """
         Create some key structures for testing
         """
-        tests_p = os.path.join(os.path.dirname(inicheck.__file__),'../tests')
+        tests_p = os.path.join(os.path.dirname(inicheck.__file__), '../tests')
         self.mcfg = MasterConfig(path=os.path.join(tests_p,
-                                    'test_configs/master.ini'))
+                                                   'test_configs/master.ini'))
 
-        self.ucfg = UserConfig(os.path.join(tests_p,"test_configs/base_cfg.ini"),
+        self.ucfg = UserConfig(os.path.join(tests_p, "test_configs/base_cfg.ini"),
                                mcfg=self.mcfg)
-
 
     def test_string(self):
         """
@@ -78,7 +78,7 @@ class TestCheckers(unittest.TestCase):
 
         # Confirm we these values are valid
         valids = ['test']
-        self.run_a_checker(valids, [], CheckString,  item='username')
+        self.run_a_checker(valids, [], CheckString, item='username')
 
         # Confirm that casting a string with uppers will auto produce lowers
         self.ucfg.cfg['basic']['username'] = 'Test'
@@ -95,8 +95,7 @@ class TestCheckers(unittest.TestCase):
         # Check we capture the when alist is passed and were not expecting one
         b.is_list = False
         result = b.cast()
-        assert type(result) != list
-
+        assert not isinstance(result, list)
 
     def test_bool(self):
         """
@@ -108,16 +107,14 @@ class TestCheckers(unittest.TestCase):
         invalids = ['Fasle', 'treu']
         self.run_a_checker(valids, invalids, CheckBool, item='debug')
 
-
     def test_float(self):
         """
         Test we see floats as floats
         """
         valids = [-1.5, '2.5']
-        invalids =  ['tough']
+        invalids = ['tough']
 
         self.run_a_checker(valids, invalids, CheckFloat, item='time_out')
-
 
     def test_int(self):
         """
@@ -129,13 +126,12 @@ class TestCheckers(unittest.TestCase):
         invalids = ['tough', '1.5', '']
         self.run_a_checker(valids, invalids, CheckInt, item='num_users')
 
-
     def test_datetime(self):
         """
         Test we see datetime as datetime
         """
 
-        valids = ['2018-01-10 10:10','10-10-2018', "October 10 2018"]
+        valids = ['2018-01-10 10:10', '10-10-2018', "October 10 2018"]
         invalids = ['Not-a-date', 'Wednesday 5th']
         self.run_a_checker(valids, invalids, CheckDatetime, item='start_date')
 
@@ -144,7 +140,7 @@ class TestCheckers(unittest.TestCase):
         Test our listing methods using lists of dates.
         """
 
-        valids = ['10-10-2019',['10-10-2019'],['10-10-2019','11-10-2019']]
+        valids = ['10-10-2019', ['10-10-2019'], ['10-10-2019', '11-10-2019']]
         self.run_a_checker(valids, [], CheckDatetime, item='epochs')
 
         # # We have a list in the config when we don't want one
@@ -162,7 +158,7 @@ class TestCheckers(unittest.TestCase):
         self.run_a_checker(valids, invalids, CheckDirectory, item='tmp')
 
         # ISSUE #44 check for default when string is empty
-        self.ucfg.cfg.update({'basic':{'tmp':''}})
+        self.ucfg.cfg.update({'basic': {'tmp': ''}})
         b = CheckDirectory(config=self.ucfg, section='basic', item='tmp')
         value = b.cast()
         assert os.path.split(value)[-1] == 'temp'
@@ -177,14 +173,15 @@ class TestCheckers(unittest.TestCase):
         self.run_a_checker(valids, invalids, CheckFilename, item='log')
 
         # ISSUE #44 check for default when string is empty
-        self.ucfg.cfg.update({'basic':{'log':''}})
+        self.ucfg.cfg.update({'basic': {'log': ''}})
         self.ucfg.mcfg.cfg['basic']['log'].default = None
         b = CheckFilename(config=self.ucfg, section='basic', item='log')
         value = b.cast()
-        assert value == None
+        assert value is None
 
-        # ISSUE #44 check for default when string is empty but default is a path
-        self.ucfg.cfg.update({'basic':{'log':''}})
+        # ISSUE #44 check for default when string is empty but default is a
+        # path
+        self.ucfg.cfg.update({'basic': {'log': ''}})
         self.ucfg.mcfg.cfg['basic']['log'].default = 'log.txt'
         b = CheckFilename(config=self.ucfg, section='basic', item='log')
         value = b.cast()
@@ -197,7 +194,7 @@ class TestCheckers(unittest.TestCase):
         valids = ["https://google.com"]
         invalids = ["https://micah_subnaught_is_awesome.com"]
         self.run_a_checker(valids, invalids, CheckURL,
-                                                 item='favorite_web_site')
+                           item='favorite_web_site')
 
     def test_datetime_ordered_pairs(self):
         """
@@ -215,26 +212,26 @@ class TestCheckers(unittest.TestCase):
 
         # Check for starts being before the end date
         for start, end, error_start, error_end in zip(starts, ends,
-                                                                invalids_starts,
-                                                                invalids_ends):
+                                                      invalids_starts,
+                                                      invalids_ends):
             # Check start values are before end values
-            acfg = {'basic':{'end_date': end}}
+            acfg = {'basic': {'end_date': end}}
             self.run_a_checker([start], [error_start], CheckDatetimeOrderedPair,
-                                         item="start_date",
-                                         extra_config=acfg)
+                               item="start_date",
+                               extra_config=acfg)
 
             # Check start values are before end values
-            acfg = {'basic':{'start_date': start}}
+            acfg = {'basic': {'start_date': start}}
             self.run_a_checker([end], [error_end], CheckDatetimeOrderedPair,
-                                         item="end_date",
-                                         extra_config=acfg)
+                               item="end_date",
+                               extra_config=acfg)
 
         # Check start end values are equal error
-        acfg = {'basic':{'start_date': '2020-10-01'}}
+        acfg = {'basic': {'start_date': '2020-10-01'}}
         self.run_a_checker(["2020-10-02"], ["2020-10-01"],
-                                           CheckDatetimeOrderedPair,
-                                           item="end_date",
-                                           extra_config=acfg)
+                           CheckDatetimeOrderedPair,
+                           item="end_date",
+                           extra_config=acfg)
 
     def test_bounds(self):
         """
@@ -242,8 +239,9 @@ class TestCheckers(unittest.TestCase):
         types. This tests whether that works
         """
 
-        self.run_a_checker([1.0, 0.0, '0.5'], [1.1,-1.0, '10'], CheckFloat,
-                                                                item='fraction')
+        self.run_a_checker([1.0, 0.0, '0.5'], [1.1, -1.0, '10'], CheckFloat,
+                           item='fraction')
+
 
 if __name__ == '__main__':
     import sys

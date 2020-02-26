@@ -4,8 +4,11 @@ Functions for checking values in a config file and producing errors and warnings
 
 import os
 from functools import partial
+
 import requests
-from .utilities import mk_lst, is_valid, is_kw_matched, get_kw_match, parse_date
+
+from .utilities import (get_kw_match, is_kw_matched, is_valid, mk_lst,
+                        parse_date)
 
 
 class GenericCheck(object):
@@ -51,9 +54,9 @@ class GenericCheck(object):
         for req in required:
             if req not in kwargs.keys():
                 raise ValueError("Must provided at least keywords {} to "
-                                "Checkers.".format(", ".join(required)))
+                                 "Checkers.".format(", ".join(required)))
             else:
-                setattr(self,req,kwargs[req])
+                setattr(self, req, kwargs[req])
 
         # initial error messgae is nothing
         self.message = None
@@ -74,9 +77,9 @@ class GenericCheck(object):
         # Allow None as a value?
         self.allow_none = self.config.mcfg.cfg[self.section][self.item].allow_none
 
-        # Auto retrieve the type name from the class name which is always Check<type name>
-        self.type = type(self).__name__.lower().replace('check','')
-
+        # Auto retrieve the type name from the class name which is always
+        # Check<type name>
+        self.type = type(self).__name__.lower().replace('check', '')
 
     def is_it_a_lst(self, values):
         """
@@ -92,7 +95,7 @@ class GenericCheck(object):
             boolean: True if its a list false if it is not.
         """
         # Grab the original values and see if theyre in a list
-        if type(values) == list:
+        if isinstance(values, list):
             return True
 
         # not a list, its good
@@ -168,7 +171,6 @@ class CheckType(GenericCheck):
         # Default issue for type check is error
         self.msg_level = 'error'
 
-
     def check_bounds(self, value):
         """
         Checks the users values to see if its in the bounds specified by the
@@ -195,23 +197,23 @@ class CheckType(GenericCheck):
             msg = "Value must be"
 
             # Grab it from the config
-            if self.config != None:
+            if self.config is not None:
                 max_value = self.config.mcfg.cfg[self.section][self.item].max
                 min_value = self.config.mcfg.cfg[self.section][self.item].min
 
             # Check upper and lower bounds
-            if value != None:
+            if value is not None:
                 value = self.type_func(value)
 
-                if min_value != None:
+                if min_value is not None:
                     min_value = self.type_func(min_value)
                     msg += " greater than {}".format(min_value)
 
                     if value < min_value:
                         valid = False
 
-                if max_value != None:
-                    if min_value != None:
+                if max_value is not None:
+                    if min_value is not None:
                         msg += " and"
 
                     max_value = self.type_func(max_value)
@@ -221,7 +223,7 @@ class CheckType(GenericCheck):
                         valid = False
 
             # Throw error if max or min is set and value is none.
-            elif value == None and (max_value != None or min_value != None):
+            elif value is None and (max_value is not None or min_value is not None):
                 valid == False
                 msg = "Value cannot be None"
 
@@ -303,7 +305,7 @@ class CheckType(GenericCheck):
                 **msg** - string to print if value is not valid.
         """
         valid, msg = is_valid(value, self.type_func, self.type,
-                                             allow_none=self.allow_none)
+                              allow_none=self.allow_none)
         return valid, msg
 
     def check_none(self, value):
@@ -320,14 +322,13 @@ class CheckType(GenericCheck):
         """
         # You got nones and you can't have them
         if not self.allow_none and str(value).lower() == 'none':
-                valid = False
-                msg = "Value cannot be None"
+            valid = False
+            msg = "Value cannot be None"
         else:
             valid = True
             msg = None
 
         return valid, msg
-
 
     def check(self):
         """
@@ -353,14 +354,14 @@ class CheckType(GenericCheck):
         msgs = []
         valids = []
 
-
         # 1. Check for lists
         valid, msg = self.check_list()
         msgs.append(msg)
         valids.append(valid)
 
         if valid:
-            # We clear the nones since check_list is only checking the whole entry
+            # We clear the nones since check_list is only checking the whole
+            # entry
             msgs = []
             valids = []
 
@@ -411,10 +412,11 @@ class CheckType(GenericCheck):
                 result.append(self.type_func(v))
 
         # 3. Manage the list
-        if not self.is_list or (len(result) == 1 and result[0] == None):
+        if not self.is_list or (len(result) == 1 and result[0] is None):
             result = mk_lst(result, unlst=True)
 
         return result
+
 
 class CheckDatetime(CheckType):
     """
@@ -469,8 +471,8 @@ class CheckDatetimeOrderedPair(CheckDatetime):
             ValueError: raises an error if the name contains both sets or None
                         of keywords
         """
-        init_kw = ["start",'begin']
-        final_kw = ['stop','end']
+        init_kw = ["start", 'begin']
+        final_kw = ['stop', 'end']
 
         # First check whether our item has a kw
         is_start = is_kw_matched(self.item, init_kw)
@@ -518,7 +520,8 @@ class CheckDatetimeOrderedPair(CheckDatetime):
                 # Message context stating end value is before start value
                 incorrect_context = "before"
 
-            msg = "Date is {} {} value".format(incorrect_context, corresponding)
+            msg = "Date is {} {} value".format(
+                incorrect_context, corresponding)
 
         valid = valid and order_valid
 
@@ -557,6 +560,7 @@ class CheckFloat(CheckType):
         # Can be bounded but not required
         self.bounded = True
 
+
 class CheckInt(CheckType):
     """
     Integer checking whether a value of the right type.
@@ -582,14 +586,14 @@ class CheckInt(CheckType):
             value : the value converted
         """
 
-        value  = float(value)
+        value = float(value)
 
         if value.is_integer():
-            value  = int(value)
+            value = int(value)
 
         else:
             raise ValueError("Expecting integer and received float with "
-                            " non-zero decimal")
+                             " non-zero decimal")
         return value
 
 
@@ -642,8 +646,10 @@ class CheckString(CheckType):
 
         super(CheckString, self).__init__(**kwargs)
 
-        # Most strings types that are not paths or passowrds should be lower case
+        # Most strings types that are not paths or passowrds should be lower
+        # case
         self.type_func = lambda x: str(x).lower()
+
 
 class CheckPassword(CheckType):
     """
@@ -733,6 +739,7 @@ class CheckDirectory(CheckPath):
         self.message = "Directory does not exist."
         self.msg_level = "warning"
 
+
 class CheckFilename(CheckPath):
     """
     Checks whether a directory exists. These are files that the may be created
@@ -782,6 +789,7 @@ class CheckCriticalDirectory(CheckDirectory):
         self.msg_level = 'error'
         self.allow_none = True
 
+
 class CheckURL(CheckType):
     """
     Check URLs to see if it can be connected to.
@@ -813,11 +821,10 @@ class CheckURL(CheckType):
             msg = "Invalid connection or URL"
             r = None
 
-
         valid = False
         msg = "Webpage does not exist"
 
-        if r != None:
+        if r is not None:
             if r.status_code == 200:
                 valid = True
                 msg = None
