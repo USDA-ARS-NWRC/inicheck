@@ -62,6 +62,7 @@ History
 * Switch from pandas to_datetime to dateparser to reduce package size
 * Added inicheck to traviCI and Coveralls
 * Fixes for 35_ , 38_ , 39_, 40_, 41_, 42_ 43_, 44_, 45_
+* Added in linting with isort and autopep8
 
 .. _35: https://github.com/USDA-ARS-NWRC/inicheck/issues/25
 .. _38: https://github.com/USDA-ARS-NWRC/inicheck/issues/27
