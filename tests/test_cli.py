@@ -80,7 +80,6 @@ class TestCLI(unittest.TestCase):
                                          master=self.master,
                                          changelog_file=join(self.test_base,
                                                              'changelog.ini'))
-        print(s)
         assert str(s).count("topo") == 7
         assert str(s).count("wind") == 12
         assert str(s).count("stations") == 5
