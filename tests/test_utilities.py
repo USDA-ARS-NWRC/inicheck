@@ -175,7 +175,21 @@ class TestUtilities(unittest.TestCase):
 
     def test_parse_date_fails_int(self):
         with self.assertRaises(TypeError):
-            value = parse_date(10)
+            parse_date(10)
+
+    def test_parse_date_fails_with_unknown_string(self):
+        with self.assertRaises(TypeError):
+            parse_date("10 F")
+
+    def test_date_parse_in_utc(self):
+        value = parse_date("2019-10-1 10:00 MST")
+        value = parse_date(value)
+        self.assertEqual(datetime(2019, 10, 1, 17), value)
+
+    def test_date_parse_returns_tz_unaware(self):
+        value = parse_date("2019-10-1 10:00 MST")
+        value = parse_date(value)
+        self.assertIsNone(value.tzinfo)
 
     def test_parse_date_datetime(self):
         to_convert = datetime(2019, 10, 1)

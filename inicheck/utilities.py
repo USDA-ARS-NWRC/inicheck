@@ -1,5 +1,4 @@
 import os
-import sys
 from datetime import date, datetime
 
 import dateparser
@@ -7,13 +6,17 @@ import dateparser
 
 def parse_date(value):
     """
-    Function used to cast items to datetime from string. Meant to prevent the
-    importing of pandas just for the to_datetime function.
+    Function used to cast value to datetime from String or date objects.
+    Uses the `dateparser` library for String objects.
+
+    All strings will be parsed in UTC timezone, but returned value will be
+    timezone unaware. Hardcoded timezone enables parsing of dates independent
+    of the timezone set with the operating system.
 
     Args:
-        value: string of a datetime
+        value: string or date object
     Returns:
-        converted: Datetime object representing the value passed.
+        converted: Datetime object of given value
     """
 
     if isinstance(value, datetime):
@@ -23,7 +26,13 @@ def parse_date(value):
         return datetime(value.year, value.month, value.day)
 
     else:
-        converted = dateparser.parse(value, settings={'STRICT_PARSING': True})
+        converted = dateparser.parse(
+            value, settings={
+                'STRICT_PARSING': True,
+                'TIMEZONE': 'UTC',
+                'RETURN_AS_TIMEZONE_AWARE': False
+            }
+        )
         if converted is None:
             raise TypeError("{} is not a date".format(value))
 
