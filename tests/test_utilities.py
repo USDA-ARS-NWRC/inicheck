@@ -8,7 +8,6 @@ Tests for `inicheck.utilities` module.
 """
 
 import unittest
-from datetime import date, datetime
 
 from inicheck.tools import get_user_config
 from inicheck.utilities import *
@@ -18,9 +17,10 @@ class TestUtilities(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         base = os.path.dirname(__file__)
-        self.ucfg = get_user_config(os.path.join(base,
-                                                 "test_configs/full_config.ini"),
-                                    modules="inicheck")
+        self.ucfg = get_user_config(
+            os.path.join(base,"test_configs/full_config.ini"),
+            modules="inicheck"
+        )
 
     def test_remove_comments(self):
         """
@@ -29,7 +29,8 @@ class TestUtilities(unittest.TestCase):
         values = {"test": "test#comment",
                   "test1": "test1;comment",
                   "": ";full in line comment",
-                  "testboth": "testboth; test a comment with both types of # comments "}
+                  "testboth": "testboth; test a comment with both "
+                              "types of # comments "}
         for k, v in values.items():
             out = remove_comment(v)
 
@@ -71,8 +72,8 @@ class TestUtilities(unittest.TestCase):
 
     def test_find_options_in_recipes(self):
         """
-        Tests utilites.find_options_in_recipes which extracts choices being
-        nade by looking at the recipes and determining which work on each other
+        Tests utilities.find_options_in_recipes which extracts choices being
+        made by looking at the recipes and determining which work on each other
         such that they don't exist at the same time. Used in the inimake cli
         """
         mcfg = self.ucfg.mcfg
