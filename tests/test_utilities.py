@@ -161,7 +161,9 @@ class TestUtilities(unittest.TestCase):
             master_files=None)
         assert cmd == 'inicheck -f {} -m inicheck'.format(self.ucfg.filename)
 
-    def test_parse_date_str(self):
+
+class TestUtilitiesDateParse(TestUtilities):
+    def test_string_date_only(self):
         """
         Test the parse_date function which is used in the checks for datetime
         """
@@ -173,22 +175,16 @@ class TestUtilities(unittest.TestCase):
         value = parse_date(value)
         self.assertEqual(datetime(2019, 10, 1, 10), value)
 
-    def test_parse_date_fails_int(self):
-        with self.assertRaises(TypeError):
-            parse_date(10)
-
-    def test_parse_date_fails_with_unknown_string(self):
-        with self.assertRaises(TypeError):
-            parse_date("10 F")
-
-    def test_date_parse_in_utc(self):
+    def test_string_with_tz_info_in_utc(self):
         value = parse_date("2019-10-1 10:00 MST")
-        value = parse_date(value)
         self.assertEqual(datetime(2019, 10, 1, 17), value)
 
-    def test_date_parse_returns_tz_unaware(self):
+    def test_tz_unaware_return(self):
+        value = parse_date("2019-10-1 10:00")
+        self.assertIsNone(value.tzinfo)
+
+    def test_tz_unaware_return_with_tz_info_given(self):
         value = parse_date("2019-10-1 10:00 MST")
-        value = parse_date(value)
         self.assertIsNone(value.tzinfo)
 
     def test_parse_date_datetime(self):
@@ -201,6 +197,14 @@ class TestUtilities(unittest.TestCase):
         expected = datetime(2019, 10, 1)
         value = parse_date(to_convert)
         self.assertEqual(value, expected)
+
+    def test_parse_date_fails_int(self):
+        with self.assertRaises(TypeError):
+            parse_date(10)
+
+    def test_parse_date_fails_with_unknown_string(self):
+        with self.assertRaises(TypeError):
+            parse_date("10 F")
 
 
 if __name__ == '__main__':
