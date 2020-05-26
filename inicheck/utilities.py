@@ -10,8 +10,8 @@ def parse_date(value):
     Uses the `dateparser` library for String objects.
 
     All strings will be parsed in UTC timezone, but returned value will be
-    timezone unaware. Hardcoded timezone enables parsing of dates independent
-    of the timezone set with the operating system.
+    timezone unaware. Hardcoded timezone setting to UTC for dateparser enables
+    parsing of dates independent of the timezone set with the operating system.
 
     Args:
         value: string or date object
