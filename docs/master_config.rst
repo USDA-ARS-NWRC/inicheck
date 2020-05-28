@@ -83,7 +83,13 @@ nearest, linear, or cubic.
             options = [nearest linear cubic],
             description = interpolation method to use for this variable
 
-**NOTE on paths**: All paths (filenames and directories) in inicheck are
+Notes on Types
+^^^^^^^^^^^^^^
+
+Paths
++++++
+
+All paths (filenames and directories) in inicheck are
 assumed to be either relative to the config file or absolute. e.g.
 
 .. code-block:: ini
@@ -99,7 +105,10 @@ This will default to a path up one directory from the location of the config.
 Any path options with critical prepended just means that inicheck will throw
 an error instead of a warning.
 
-**NOTE on lists**: Listed input checking can be performed. To assign a type
+Lists
++++++
+
+Listed input checking can be performed. To assign a type
 as a list, simply add the keyword list to the type name. This will force the
 output to be a list and still check every entry in a provided list. To provide
 a list in inicheck master configs use bracketed space separated lists. An
@@ -112,6 +121,36 @@ example of adding the list keyword and a list default is below
           default = [01-01 04-01 07-01 10-01] ,
           type = datetimelist
           description = List of datetimes to plot up for earnings
+
+
+Dates
++++++
+
+All datetime types will be checked by the |dateparser_link| library, whether
+the given string can be converted into a valid datetime object. All dates
+given are assumed to be in UTC timezone. Dates can be given in any combination
+that the library supports.
+
+Care must be taken when there is a timezone given.
+For instance:
+
+.. code-block::
+
+  2020-01-01 00:00 MST
+
+will be parsed using the UTC timezone and results in
+
+.. code-block::
+
+  2020-01-01 07:00
+
+The returned datetime object will be timezone unaware.
+
+.. |dateparser_link| raw:: html
+
+  <a href="https://dateparser.readthedocs.io/en/latest/" target="_blank">
+    dateparser
+  </a>
 
 Recipes
 --------
