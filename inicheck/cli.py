@@ -1,11 +1,10 @@
 # !/usr/bin/env python
 
 import argparse
-import sys
-from collections import OrderedDict
 from os.path import abspath, basename, join
 
 from setuptools_scm import get_version
+
 from .changes import ChangeLog
 from .config import MasterConfig, UserConfig
 from .output import *
