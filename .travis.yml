@@ -21,7 +21,7 @@ after_success:
 
 stages:
   - name: deploy
-    if:  branch = master OR tag IS present AND repo = USDA-ARS-NWRC/topocalc
+    if:  branch = master AND tag IS present AND repo = USDA-ARS-NWRC/inicheck
 
 deploy:
   provider: pypi
