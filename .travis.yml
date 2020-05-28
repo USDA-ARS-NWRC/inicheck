@@ -6,7 +6,7 @@ python:
   - 3.5
   - 3.6
 
-install: 
+install:
   - pip install -U -r requirements_dev.txt
   - python setup.py install
 
@@ -16,3 +16,13 @@ script:
 after_success:
   - coverage run --source inicheck -m pytest
   - coveralls
+
+stages:
+  - name: deploy
+    if:  branch = master OR tag IS present AND repo = USDA-ARS-NWRC/topocalc
+
+deploy:
+  provider: pypi
+  username: "__token__"
+  on:
+    tags: true
