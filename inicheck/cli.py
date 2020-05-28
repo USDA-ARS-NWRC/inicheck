@@ -5,12 +5,16 @@ import sys
 from collections import OrderedDict
 from os.path import abspath, basename, join
 
-from . import __version__
+from setuptools_scm import get_version
 from .changes import ChangeLog
 from .config import MasterConfig, UserConfig
 from .output import *
 from .tools import check_config, get_user_config
 from .utilities import *
+
+
+def current_version():
+    return get_version(root='..', relative_to=__file__)
 
 
 def main():
@@ -56,7 +60,7 @@ def main():
 
     parser.add_argument('--version', action='version',
                         version=('%(prog)s {version}'
-                                 '').format(version=__version__))
+                                 '').format(version=current_version()))
 
     args = parser.parse_args()
     inicheck_main(config_file=args.config_file, master=args.master,
@@ -176,7 +180,7 @@ def inidiff():
                         " against")
     parser.add_argument('--version', action='version',
                         version=('%(prog)s {version}'
-                                 '').format(version=__version__))
+                                 '').format(version=current_version()))
     args = parser.parse_args()
     inidiff_main(args.config_files, master=args.master, modules=args.modules)
 
@@ -309,11 +313,11 @@ def inimake():
 
     parser.add_argument('--version', action='version',
                         version=('%(prog)s {version}'
-                                 '').format(version=__version__))
+                                 '').format(version=current_version()))
 
     args = parser.parse_args()
 
-    hdr = " Welcome to inimake V{}".format(__version__)
+    hdr = " Welcome to inimake V{}".format(current_version())
     print("=" * (len(hdr) + 1))
     print(hdr)
     print("=" * (len(hdr) + 1))
@@ -515,7 +519,7 @@ def detect_file_changes():
                         " against")
     parser.add_argument('--version', action='version',
                         version=('%(prog)s {version}'
-                                 '').format(version=__version__))
+                                 '').format(version=current_version()))
     args = parser.parse_args()
 
     print("\nSearching {} for any deprecated config file sections/items in "
