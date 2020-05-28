@@ -251,9 +251,9 @@ The following example shows a recipe:
 
 1. The section name here is identified as a recipe by having the recipe in the name.
 2. The trigger is identified by having a name with the word trigger in it and is
-triggered when the user's configuration file has a the section csv.
+   triggered when the user's configuration file has a the section csv.
 3. If the test_trigger condition is met then all the defaults will be applied to
-the csv section in the user's configuration file because of the keyword
-**apply_defaults**
+   the csv section in the user's configuration file because of the keyword
+   **apply_defaults**
 4. If the users config file contains the sections **mysql** and or **gridded** then
-they will be removed due to the keywords **remove_section**
+   they will be removed due to the keywords **remove_section**
