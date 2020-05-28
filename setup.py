@@ -23,6 +23,9 @@ setup(
     author="Micah Johnson",
     author_email='micah.johnson150@gmail.com',
     url='https://github.com/USDA-ARS-NWRC/inicheck',
+    project_urls={
+        'Documentation': 'https://inicheck.readthedocs.io',
+    },
     packages=find_packages(include=['inicheck']),
     entry_points={
         'console_scripts': [
