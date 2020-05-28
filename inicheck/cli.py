@@ -18,56 +18,84 @@ def current_version():
 
 
 def main():
-
-    parser = argparse.ArgumentParser(description="Examine and auto populate"
-                                                 " ini files with a master"
-                                                 " file comparison.")
-
-    parser.add_argument('--config_file', '-f', dest='config_file', type=str,
-                        help='Path to a config file that needs checking')
-
-    parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
-                        help='Path to a config file that used to check '
-                        ' against')
-
-    parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                        help="Modules name with an attribute __CoreConfig__ that"
-                        " is a path to a master config file for checking"
-                        " against")
-
-    parser.add_argument('--write', '-w', dest='write', action='store_true',
-                        help="Determines whether to write out the file with"
-                        " all the defaults")
-
-    parser.add_argument('--recipes', '-r', dest='recipes', action='store_true',
-                        help="Prints out the recipe summary")
-
-    parser.add_argument('--non-defaults', '-nd', dest='defaults',
-                        action='store_true',
-                        help="Prints out a summary of the non-defaults")
-
-    parser.add_argument('--details', '-d', type=str, nargs='+', help="Provide"
-                        " section item and value for details regarding them")
-
-    parser.add_argument('--change', '-c', action='store_true',
-                        help="Automatically apply changes to the config"
-                        " according to a packages changelog. Including"
-                        " recommended default changes.")
-
-    parser.add_argument('--chlog', '-ch', dest='changelog', type=str, nargs='+',
-                        help="Files indicating how the config file has deprecated "
-                        "information")
-
-    parser.add_argument('--version', action='version',
-                        version=('%(prog)s {version}'
-                                 '').format(version=current_version()))
-
-    args = parser.parse_args()
+    args = cli_arguments()
     inicheck_main(config_file=args.config_file, master=args.master,
                   modules=args.modules, write_out=args.write,
                   show_recipes=args.recipes, show_non_defaults=args.defaults,
                   details=args.details, apply_changelog=args.change,
                   changelog_file=args.changelog)
+
+
+def cli_arguments():
+    parser = argparse.ArgumentParser(
+        description="Examine and auto populate ini files with a master "
+                    "file comparison."
+    )
+    parser.add_argument(
+        '--config_file', '-f',
+        dest='config_file',
+        type=str,
+        help='Path to a config file that needs checking'
+    )
+    parser.add_argument(
+        '--master', '-mf',
+        metavar='MF',
+        type=str,
+        nargs='+',
+        help='Path to a config file that used to check against'
+    )
+    parser.add_argument(
+        '--modules', '-m',
+        metavar='M',
+        type=str,
+        nargs='+',
+        help="Modules name with an attribute __CoreConfig__ that is a path to "
+             "a master config file for checking against"
+    )
+    parser.add_argument(
+        '--write', '-w',
+        dest='write',
+        action='store_true',
+        help="Determines whether to write out the file with all the defaults"
+    )
+    parser.add_argument(
+        '--recipes', '-r',
+        dest='recipes',
+        action='store_true',
+        help="Prints out the recipe summary"
+    )
+    parser.add_argument(
+        '--non-defaults', '-nd',
+        dest='defaults',
+        action='store_true',
+        help="Prints out a summary of the non-defaults"
+    )
+    parser.add_argument(
+        '--details', '-d',
+        type=str,
+        nargs='+',
+        help="Provide section item and value for details regarding them"
+    )
+    parser.add_argument(
+        '--change', '-c',
+        action='store_true',
+        help="Automatically apply changes to the config according to a "
+             "packages changelog. Including recommended default changes."
+    )
+    parser.add_argument(
+        '--chlog', '-ch',
+        dest='changelog',
+        type=str,
+        nargs='+',
+        help="Files indicating how the config file has deprecated information"
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {version}'.format(version=current_version())
+    )
+
+    return parser.parse_args()
 
 
 def inicheck_main(config_file=None, master=None, modules=None, write_out=False,
