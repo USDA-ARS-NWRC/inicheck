@@ -8,7 +8,6 @@ Tests for `inicheck.utilities` module.
 """
 
 import unittest
-from datetime import date, datetime
 
 from inicheck.tools import get_user_config
 from inicheck.utilities import *
@@ -18,9 +17,10 @@ class TestUtilities(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         base = os.path.dirname(__file__)
-        self.ucfg = get_user_config(os.path.join(base,
-                                                 "test_configs/full_config.ini"),
-                                    modules="inicheck")
+        self.ucfg = get_user_config(
+            os.path.join(base,"test_configs/full_config.ini"),
+            modules="inicheck"
+        )
 
     def test_remove_comments(self):
         """
@@ -29,7 +29,8 @@ class TestUtilities(unittest.TestCase):
         values = {"test": "test#comment",
                   "test1": "test1;comment",
                   "": ";full in line comment",
-                  "testboth": "testboth; test a comment with both types of # comments "}
+                  "testboth": "testboth; test a comment with both "
+                              "types of # comments "}
         for k, v in values.items():
             out = remove_comment(v)
 
@@ -71,8 +72,8 @@ class TestUtilities(unittest.TestCase):
 
     def test_find_options_in_recipes(self):
         """
-        Tests utilites.find_options_in_recipes which extracts choices being
-        nade by looking at the recipes and determining which work on each other
+        Tests utilities.find_options_in_recipes which extracts choices being
+        made by looking at the recipes and determining which work on each other
         such that they don't exist at the same time. Used in the inimake cli
         """
         mcfg = self.ucfg.mcfg
@@ -160,7 +161,9 @@ class TestUtilities(unittest.TestCase):
             master_files=None)
         assert cmd == 'inicheck -f {} -m inicheck'.format(self.ucfg.filename)
 
-    def test_parse_date_str(self):
+
+class TestUtilitiesDateParse(TestUtilities):
+    def test_string_date_only(self):
         """
         Test the parse_date function which is used in the checks for datetime
         """
@@ -172,9 +175,17 @@ class TestUtilities(unittest.TestCase):
         value = parse_date(value)
         self.assertEqual(datetime(2019, 10, 1, 10), value)
 
-    def test_parse_date_fails_int(self):
-        with self.assertRaises(TypeError):
-            value = parse_date(10)
+    def test_string_with_tz_info_in_utc(self):
+        value = parse_date("2019-10-1 10:00 MST")
+        self.assertEqual(datetime(2019, 10, 1, 17), value)
+
+    def test_tz_unaware_return(self):
+        value = parse_date("2019-10-1 10:00")
+        self.assertIsNone(value.tzinfo)
+
+    def test_tz_unaware_return_with_tz_info_given(self):
+        value = parse_date("2019-10-1 10:00 MST")
+        self.assertIsNone(value.tzinfo)
 
     def test_parse_date_datetime(self):
         to_convert = datetime(2019, 10, 1)
@@ -186,6 +197,14 @@ class TestUtilities(unittest.TestCase):
         expected = datetime(2019, 10, 1)
         value = parse_date(to_convert)
         self.assertEqual(value, expected)
+
+    def test_parse_date_fails_int(self):
+        with self.assertRaises(TypeError):
+            parse_date(10)
+
+    def test_parse_date_fails_with_unknown_string(self):
+        with self.assertRaises(TypeError):
+            parse_date("10 F")
 
 
 if __name__ == '__main__':

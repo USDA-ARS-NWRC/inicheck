@@ -58,9 +58,6 @@ Available Types
 Each entry in the master config file can provide a type. If no type is provided,
 then the default is type string.
 
-**Note**: Any path options with critical prepended just means that inicheck will
-throw an error instead of a warning.
-
 Available types:
 
   * Bool - :class:`~inicheck.checkers.CheckBool`
@@ -86,7 +83,13 @@ nearest, linear, or cubic.
             options = [nearest linear cubic],
             description = interpolation method to use for this variable
 
-**NOTE ON PATHS**: All paths (filenames and directories) in inicheck are
+Notes on Types
+^^^^^^^^^^^^^^
+
+Paths
++++++
+
+All paths (filenames and directories) in inicheck are
 assumed to be either relative to the config file or absolute. e.g.
 
 .. code-block:: ini
@@ -99,8 +102,13 @@ assumed to be either relative to the config file or absolute. e.g.
 
 This will default to a path up one directory from the location of the config.
 
+Any path options with critical prepended just means that inicheck will throw
+an error instead of a warning.
 
-**Notes on lists**: Listed input checking can be performed. To assign a type
+Lists
++++++
+
+Listed input checking can be performed. To assign a type
 as a list, simply add the keyword list to the type name. This will force the
 output to be a list and still check every entry in a provided list. To provide
 a list in inicheck master configs use bracketed space separated lists. An
@@ -113,6 +121,36 @@ example of adding the list keyword and a list default is below
           default = [01-01 04-01 07-01 10-01] ,
           type = datetimelist
           description = List of datetimes to plot up for earnings
+
+
+Dates
++++++
+
+All datetime types will be checked by the |dateparser_link| library, whether
+the given string can be converted into a valid datetime object. All dates
+given are assumed to be in UTC timezone. Dates can be given in any combination
+that the library supports.
+
+Care must be taken when there is a timezone given.
+For instance:
+
+.. code-block::
+
+  2020-01-01 00:00 MST
+
+will be parsed using the UTC timezone and results in
+
+.. code-block::
+
+  2020-01-01 07:00
+
+The returned datetime object will be timezone unaware.
+
+.. |dateparser_link| raw:: html
+
+  <a href="https://dateparser.readthedocs.io/en/latest/" target="_blank">
+    dateparser
+  </a>
 
 Recipes
 --------
@@ -251,9 +289,9 @@ The following example shows a recipe:
 
 1. The section name here is identified as a recipe by having the recipe in the name.
 2. The trigger is identified by having a name with the word trigger in it and is
-triggered when the user's configuration file has a the section csv.
+   triggered when the user's configuration file has a the section csv.
 3. If the test_trigger condition is met then all the defaults will be applied to
-the csv section in the user's configuration file because of the keyword
-**apply_defaults**
+   the csv section in the user's configuration file because of the keyword
+   **apply_defaults**
 4. If the users config file contains the sections **mysql** and or **gridded** then
-they will be removed due to the keywords **remove_section**
+   they will be removed due to the keywords **remove_section**
