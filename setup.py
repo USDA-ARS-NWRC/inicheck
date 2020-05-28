@@ -14,11 +14,6 @@ with open('docs/history.rst') as history_file:
 with open('requirements.txt') as req_file:
     requirements = req_file.read()
 
-test_requirements = [
-    'pytest',
-    # TODO: put package test requirements here
-]
-
 setup(
     name='inicheck',
     description="inicheck is an high level configuration file checker "
@@ -57,5 +52,8 @@ setup(
         'setuptools_scm'
     ],
     test_suite='tests',
-    tests_require=test_requirements,
+    tests_require=[
+        'pytest',
+        'pytest-runner'
+    ],
 )
