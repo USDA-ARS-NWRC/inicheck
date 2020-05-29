@@ -43,7 +43,6 @@ clean-pyc: ## remove Python file artifacts
 	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
 
@@ -53,10 +52,6 @@ lint: ## check style with isort and pep8
 
 test: ## run tests quickly with the default Python
 	py.test
-
-
-test-all: ## run tests on every Python version with tox
-	tox
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source inicheck -m pytest

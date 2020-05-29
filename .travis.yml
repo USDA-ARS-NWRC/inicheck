@@ -5,8 +5,10 @@ language: python
 python:
   - 3.5
   - 3.6
+  - 3.7
+  - 3.8
 
-install: 
+install:
   - pip install -U -r requirements_dev.txt
   - python setup.py install
 
@@ -16,3 +18,13 @@ script:
 after_success:
   - coverage run --source inicheck -m pytest
   - coveralls
+
+stages:
+  - name: deploy
+    if:  branch = master AND tag IS present AND repo = USDA-ARS-NWRC/inicheck
+
+deploy:
+  provider: pypi
+  username: "__token__"
+  on:
+    tags: true

@@ -14,25 +14,18 @@ with open('docs/history.rst') as history_file:
 with open('requirements.txt') as req_file:
     requirements = req_file.read()
 
-
-setup_requirements = [
-    'pytest-runner',
-    # TODO(micahjohnson150): put setup requirements (distutils extensions, etc.) here
-]
-
-test_requirements = [
-    'pytest',
-    # TODO: put package test requirements here
-]
-
 setup(
     name='inicheck',
-    version='0.7.9',
-    description="inicheck is an high level configuration file checker enabling developers tight control over their users configuration files",
+    description="inicheck is an high level configuration file checker "
+                "enabling developers tight control over their users "
+                "configuration files",
     long_description=readme + '\n\n' + history,
     author="Micah Johnson",
     author_email='micah.johnson150@gmail.com',
     url='https://github.com/USDA-ARS-NWRC/inicheck',
+    project_urls={
+        'Documentation': 'https://inicheck.readthedocs.io',
+    },
     packages=find_packages(include=['inicheck']),
     entry_points={
         'console_scripts': [
@@ -55,7 +48,15 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
+    use_scm_version={
+        'local_scheme': 'node-and-date',
+    },
+    setup_requires=[
+        'setuptools_scm'
+    ],
     test_suite='tests',
-    tests_require=test_requirements,
-    setup_requires=setup_requirements,
+    tests_require=[
+        'pytest',
+        'pytest-runner'
+    ],
 )

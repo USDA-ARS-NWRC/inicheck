@@ -1,14 +1,10 @@
 -r requirements.txt
-bumpversion==0.5.3
-requests>=2.0.0
+autopep8==1.5
 coverage==4.5.4
-Sphinx==1.8.5
+coveralls==1.11.1
+isort==4.3.21
+pyyaml==5.3
 sphinx-rtd-theme==0.4.3
-pytest==3.0.0
-pytest-runner==2.11.1
+sphinx==1.8.5
 sphinxcontrib-apidoc==0.3.0
 twine==1.13.0
-coveralls==1.11.1
-pyyaml==5.3
-autopep8==1.5
-isort==4.3.21
