@@ -16,6 +16,8 @@ stages:
 - name: deploy
   if: repo = USDA-ARS-NWRC/inicheck
 deploy:
+deploy:
+  skip_cleanup: true
   provider: pypi
   username: __token__
   on:
