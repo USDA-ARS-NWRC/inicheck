@@ -1,30 +1,24 @@
-# Config file for automatic testing at travis-ci.org
-# This file will be regenerated if you run travis_pypi_setup.py
-
 language: python
 python:
-  - 3.5
-  - 3.6
-  - 3.7
-  - 3.8
-
+- 3.5
+- 3.6
+- 3.7
+- 3.8
 install:
-  - pip install -U -r requirements_dev.txt
-  - python setup.py install
-
+- pip install -U -r requirements_dev.txt
+- python setup.py install
 script:
-  - py.test
-
+- py.test
 after_success:
-  - coverage run --source inicheck -m pytest
-  - coveralls
-
+- coverage run --source inicheck -m pytest
+- coveralls
 stages:
-  - name: deploy
-    if:  branch = tag IS present AND repo = USDA-ARS-NWRC/inicheck
-
+- name: deploy
+  if: repo = USDA-ARS-NWRC/inicheck
 deploy:
   provider: pypi
-  username: "__token__"
+  username: __token__
   on:
     tags: true
+  password:
+    secure: JUpPaw+k6twC3dbgVuzkCCrwIl9ZAKVXOG5GpHWGsTapcYpJE1CvZD9puJ+ZKIvCASj/9XJwnVoYoG4XWxULhEN3hcQaH8gZMU6P0UdjiCmwm6RJGHAKEf6AGTsVbIWOeXxVl9R9kj0Jd6FYE+DYjn9UnCTXqDTSGoNcepmHwc56Qn2g6WgSGyKy3EgRe5jxJjQOS3SFJixysZHNwpaqRRNEVoh3nT6FGcY+O6iWF0GrplSiuiMDPgJDU+NU9DHqQmsOA6w7eL+TXhHYqr/ZDtHNspa1ZGMSzYXSYjk2gua6vUSEu895PBMkUp3CK6Jki7x/0hNcBhs+U+DZFrRPlX1vObKtjtoCuNhtXRoRLqUm5SAzVnLk9x4HvEnXFl3aHBz/aU0yWGXKUWH6jjxYyqFmIuHVDD9lIM0F8FoM1qDPH8pwABkg6xZLp3MaFbs9MAtLYe2MuFTa4Gvls/jvB2Ojaj5+7HqovxlD128YbZitcjqpD4sCt0L3nQDdhdNZbUjYKI7Mf9+vRrfi/Fpn4b091bezeXq4i7hA/b6FVDPqNODPa0N5yWdyjswboQV+ZBneVCGuoJguK3oAAqDctSu+LCnnsFpxHak5ByExAY+XUncop8tUqvN8Ixji643ice+jWQdzCSk1jNvA54RTzzVi7T9fGjI4g7zfvddZIE0=
