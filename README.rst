@@ -10,8 +10,8 @@ Welcome to inicheck
         :target: https://inicheck.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://travis-ci.org/USDA-ARS-NWRC/inicheck.svg?branch=master
-    :target: https://travis-ci.org/USDA-ARS-NWRC/inicheck
+.. image:: https://travis-ci.com/USDA-ARS-NWRC/inicheck.svg?branch=master
+        :target: https://travis-ci.com/USDA-ARS-NWRC/inicheck
 
 .. image:: https://coveralls.io/repos/github/USDA-ARS-NWRC/inicheck/badge.svg?branch=master
 	:target: https://coveralls.io/github/USDA-ARS-NWRC/inicheck?branch=master

@@ -55,7 +55,7 @@ History
 * Restructure the checkers some to better handle types
 * Fixed several broken tests.
 
-0.8.0 (TBD)
+0.8.0 (05-29-2020)
 -----------
 * Increased unittest coverage from ~57% to ~83%)
 * Added in a CLI tool to find changelog impacts in python files
@@ -64,6 +64,7 @@ History
 * Fixes for 35_ , 38_ , 39_, 40_, 41_, 42_ 43_, 44_, 45_
 * Added in linting with isort and autopep8
 * Hardcoded `parse_date` to always use UTC and return timezone unaware object. 51_
+* Updated release to use setuptools_scm. 52_ 
 
 .. _35: https://github.com/USDA-ARS-NWRC/inicheck/issues/25
 .. _38: https://github.com/USDA-ARS-NWRC/inicheck/issues/27
@@ -75,3 +76,4 @@ History
 .. _44: https://github.com/USDA-ARS-NWRC/inicheck/issues/44
 .. _45: https://github.com/USDA-ARS-NWRC/inicheck/issues/45
 .. _51: https://github.com/USDA-ARS-NWRC/inicheck/issues/51
+.. _52: https://github.com/USDA-ARS-NWRC/inicheck/pull/52
