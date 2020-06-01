@@ -1,35 +1,29 @@
+As a work of the United States government, this project is in the public domain
+within the United States.
 
-GNU GENERAL PUBLIC LICENSE
-                      Version 3, 29 June 2007
+Additionally, we waive copyright and related rights in the work worldwide
+through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 
-    inicheck is an advanced configuration file checker enabling developers high control over their users configuration files
-    Copyright (C) 2018  Micah Johnson
+### CC0 1.0 Universal Summary
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This is a human-readable summary of the
+[Legal Code (read the full text)](https://creativecommons.org/publicdomain/zero/1.0/legalcode).
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+#### No copyright
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+The person who associated a work with this deed has dedicated the work to
+the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law.
 
-Also add information on how to contact you by electronic and paper mail.
+You can copy, modify, distribute and perform the work, even for commercial
+purposes, all without asking permission.
 
-  You should also get your employer (if you work as a programmer) or school,
-if any, to sign a "copyright disclaimer" for the program, if necessary.
-For more information on this, and how to apply and follow the GNU GPL, see
-<http://www.gnu.org/licenses/>.
+#### Other information
 
-  The GNU General Public License does not permit incorporating your program
-into proprietary programs.  If your program is a subroutine library, you
-may consider it more useful to permit linking proprietary applications with
-the library.  If this is what you want to do, use the GNU Lesser General
-Public License instead of this License.  But first, please read
-<http://www.gnu.org/philosophy/why-not-lgpl.html>.
+In no way are the patent or trademark rights of any person affected by CC0,
+nor are the rights that other persons may have in the work or in how the work
+is used, such as publicity or privacy rights.
 
-
+Unless expressly stated otherwise, the person who associated a work with this
+deed makes no warranties about the work, and disclaims liability for all uses
+of the work, to the fullest extent permitted by applicable law. When using or
+citing the work, you should not imply endorsement by the author or the affirmer.

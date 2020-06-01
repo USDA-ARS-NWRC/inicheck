@@ -5,9 +5,11 @@ Credits
 Development Lead
 ----------------
 
-* Micah Johnson  <micah.johnson150@gmail.com>   `@micahjohnson150 <http://github.com/micahjohnson150>`_
+* Micah Johnson `@micahjohnson150 <http://github.com/micahjohnson150>`_
 
 Contributors
 ------------
 
-* Micah Sandusky <micah.sandusky@ars.usda.gov>  `@micah-prime <http://github.com/micah-prime>`_
+* Scott Havens `@scotthavens <http://github.com/scotthavens>`_
+* Joachim Meyer `@jomey <https://github.com/jomey>`_
+* Micah Sandusky `@micah-prime <http://github.com/micah-prime>`_
