@@ -15,15 +15,12 @@ script:
 after_success:
   - coverage run --source inicheck -m pytest
   - coveralls
-
-# stages:
-#   - name: deploy
-#     if: repo = USDA-ARS-NWRC/inicheck
   
 deploy:
   cleanup: true
   provider: pypi
   distributions: sdist bdist_wheel
+  skip_existing: true
   username: __token__
   on:
     tags: true
