@@ -61,3 +61,5 @@ target/
 .python-version
 *generated_config.ini
 .coveralls.yml
+
+.devcontainer

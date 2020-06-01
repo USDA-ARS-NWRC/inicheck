@@ -20,6 +20,7 @@ setup(
                 "enabling developers tight control over their users "
                 "configuration files",
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     author="Micah Johnson",
     author_email='micah.johnson150@gmail.com',
     url='https://github.com/USDA-ARS-NWRC/inicheck',

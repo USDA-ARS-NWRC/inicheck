@@ -56,7 +56,7 @@ History
 * Fixed several broken tests.
 
 0.8.0 (05-29-2020)
------------
+------------------
 * Increased unittest coverage from ~57% to ~83%)
 * Added in a CLI tool to find changelog impacts in python files
 * Switch from pandas to_datetime to dateparser to reduce package size
