@@ -3,7 +3,7 @@
 import argparse
 from os.path import abspath, basename, join
 
-from setuptools_scm import get_version
+from importlib.metadata import version, PackageNotFoundError
 
 from .changes import ChangeLog
 from .config import MasterConfig, UserConfig
@@ -13,7 +13,10 @@ from .utilities import *
 
 
 def current_version():
-    return get_version(root='..', relative_to=__file__)
+    try:
+        return version('inicheck')
+    except PackageNotFoundError:
+        'unknown'
 
 
 def main():
