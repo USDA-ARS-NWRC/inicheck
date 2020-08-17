@@ -1,9 +1,8 @@
 # !/usr/bin/env python
 
 import argparse
+import sys
 from os.path import abspath, basename, join
-
-from importlib.metadata import version, PackageNotFoundError
 
 from .changes import ChangeLog
 from .config import MasterConfig, UserConfig
@@ -13,10 +12,18 @@ from .utilities import *
 
 
 def current_version():
-    try:
-        return version('inicheck')
-    except PackageNotFoundError:
-        'unknown'
+    if sys.version_info >= (3, 8):
+        from importlib.metadata import version, PackageNotFoundError
+        try:
+            return version('inicheck')
+        except PackageNotFoundError:
+            'unknown'
+    else:
+        from pkg_resources import get_distribution, DistributionNotFound
+        try:
+            return get_distribution('inicheck').version
+        except DistributionNotFound:
+            'unknown'
 
 
 def main():
