@@ -3,9 +3,10 @@
 
 import unittest
 import sys
+import re
 from os.path import dirname, abspath, join
 
-from inicheck.cli import inicheck_main, inidiff_main
+from inicheck.cli import inicheck_main, inidiff_main, current_version
 
 from .test_output import capture_print
 
@@ -98,6 +99,12 @@ class TestCLI(unittest.TestCase):
 
         mismatches = s.split("config mismatches:")[-1].strip()
         assert '117' in mismatches
+
+    def test_version(self):
+        exception_message = re.search(
+            '(exception|error)', str(current_version()), re.IGNORECASE
+        )
+        assert exception_message  is None
 
 
 if __name__ == '__main__':
