@@ -7,15 +7,15 @@ test_recipe
 Tests for `inicheck.Tools` module.
 """
 
-import unittest
 from collections import OrderedDict
+import pytest
 
 from inicheck.tools import *
 
 
-class TestTools(unittest.TestCase):
+class TestTools():
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         base = os.path.dirname(__file__)
         self.ucfg = get_user_config(os.path.join(base,
                                                  "test_configs/full_config.ini"),
@@ -81,10 +81,10 @@ class TestTools(unittest.TestCase):
         path = os.path.join(base, "test_configs/full_config.ini")
 
         # check for the Exception
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             get_user_config(path)
 
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             get_user_config('not_a_file.ini')
 
         ucfg = get_user_config(path, modules='inicheck')
@@ -95,7 +95,7 @@ class TestTools(unittest.TestCase):
         Confirms that we still make config documentation
         """
         # Confirm exception when file doesnt exist
-        with self.assertRaises(IOError):
+        with pytest.raises(IOError):
             f = '/no/folder/exists/f.rst'
             config_documentation(f, modules='inicheck')
 
@@ -106,8 +106,3 @@ class TestTools(unittest.TestCase):
 
         # Clean up
         os.remove(f)
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())

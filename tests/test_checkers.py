@@ -7,14 +7,11 @@ test_checkers
 Tests for `inicheck.checkers` module.
 """
 
-import unittest
-
 import inicheck
 from inicheck.checkers import *
 from inicheck.config import MasterConfig, UserConfig
 
-
-class TestCheckers(unittest.TestCase):
+class TestCheckers():
 
     def run_a_checker(self, valids, invalids, checker, section='basic',
                       item='item',
@@ -60,7 +57,7 @@ class TestCheckers(unittest.TestCase):
                     assert not valid
 
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         """
         Create some key structures for testing
         """

@@ -6,13 +6,12 @@ test_iniparse
 
 Tests for `inicheck.iniparse` module.
 """
-
-import unittest
+import pytest
 
 from inicheck.iniparse import *
 
 
-class TestIniparse(unittest.TestCase):
+class TestIniparse():
 
     def test_parse_sections(self):
         """
@@ -55,10 +54,12 @@ class TestIniparse(unittest.TestCase):
                == ["options = [a:10]", "b:5"])
 
         # Catch non-comment chars before the first section
-        self.assertRaises(Exception, parse_sections, ['a#', '#', '[test]'])
+        with pytest.raises(Exception):
+            parse_sections(['a#', '#', '[test]'])
 
+        with pytest.raises(Exception):
         # Catch repeat sections in config
-        self.assertRaises(Exception, parse_sections, ['[test]', '#', '[test]'])
+         parse_sections(['[test]', '#', '[test]'])
 
     def test_parse_items(self):
         """
@@ -120,10 +121,5 @@ class TestIniparse(unittest.TestCase):
         assert changes[1][1][0] == "removed"
 
         # Test syntax errors
-        d = ["section/item > new_section/item"]
-        self.assertRaises(ValueError, parse_changes, d)
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())
+        with pytest.raises(ValueError):
+            parse_changes(["section/item > new_section/item"])

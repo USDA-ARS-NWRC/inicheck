@@ -6,16 +6,15 @@ test_utilities
 
 Tests for `inicheck.utilities` module.
 """
-
-import unittest
+import pytest
 
 from inicheck.tools import get_user_config
 from inicheck.utilities import *
 
 
-class TestUtilities(unittest.TestCase):
+class TestUtilities():
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         base = os.path.dirname(__file__)
         self.ucfg = get_user_config(
             os.path.join(base,"test_configs/full_config.ini"),
@@ -82,7 +81,7 @@ class TestUtilities(unittest.TestCase):
 
         # Currently there is 3 sections that are set as optional in the recipes
         for opt in ['gridded', 'mysql', 'csv']:
-            self.assertTrue(opt in choices[0])
+            assert opt in choices[0]
 
     def test_get_relative_to_cfg(self):
         """
@@ -168,45 +167,40 @@ class TestUtilitiesDateParse(TestUtilities):
         Test the parse_date function which is used in the checks for datetime
         """
         value = parse_date("2019-10-1")
-        self.assertEqual(datetime(2019, 10, 1), value)
+        assert datetime(2019, 10, 1) == value
 
         # Test for odd issue that came up with casting a value twice
         value = parse_date("2019-10-1 10:00")
         value = parse_date(value)
-        self.assertEqual(datetime(2019, 10, 1, 10), value)
+        assert datetime(2019, 10, 1, 10) == value
 
     def test_string_with_tz_info_in_utc(self):
         value = parse_date("2019-10-1 10:00 MST")
-        self.assertEqual(datetime(2019, 10, 1, 17), value)
+        assert datetime(2019, 10, 1, 17) == value
 
     def test_tz_unaware_return(self):
         value = parse_date("2019-10-1 10:00")
-        self.assertIsNone(value.tzinfo)
+        assert value.tzinfo is None
 
     def test_tz_unaware_return_with_tz_info_given(self):
         value = parse_date("2019-10-1 10:00 MST")
-        self.assertIsNone(value.tzinfo)
+        assert value.tzinfo is None
 
     def test_parse_date_datetime(self):
         to_convert = datetime(2019, 10, 1)
         value = parse_date(to_convert)
-        self.assertEqual(value, to_convert)
+        assert value == to_convert
 
     def test_parse_date_date(self):
         to_convert = date(2019, 10, 1)
         expected = datetime(2019, 10, 1)
         value = parse_date(to_convert)
-        self.assertEqual(value, expected)
+        assert value == expected
 
     def test_parse_date_fails_int(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             parse_date(10)
 
     def test_parse_date_fails_with_unknown_string(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             parse_date("10 F")
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())

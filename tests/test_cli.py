@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import unittest
 import sys
 import re
 from os.path import dirname, abspath, join
@@ -11,9 +10,10 @@ from inicheck.cli import inicheck_main, inidiff_main, current_version
 from .test_output import capture_print
 
 
-class TestCLI(unittest.TestCase):
+class TestCLI():
+
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.test_base = abspath(join(dirname(__file__), 'test_configs'))
         cls.master = [
             join(cls.test_base, 'recipes.ini'),
@@ -105,7 +105,3 @@ class TestCLI(unittest.TestCase):
             '(exception|error)', str(current_version()), re.IGNORECASE
         )
         assert exception_message  is None
-
-
-if __name__ == '__main__':
-    sys.exit(unittest.main())

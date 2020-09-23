@@ -7,13 +7,12 @@ test_recipe
 Tests for `inicheck.entries` module.
 """
 
-import unittest
 from collections import OrderedDict
 
 from inicheck.entries import ConfigEntry, RecipeSection, TriggerEntry
 
 
-class TestEntries(unittest.TestCase):
+class TestEntries():
     def test_trigger_entry(self):
         """
         Tests to see if we correctly gather a trigger for a recipe
@@ -71,8 +70,3 @@ class TestEntries(unittest.TestCase):
         assert e.default == ['swe_z']
         assert e.type == 'string'
         assert e.listed == True
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())

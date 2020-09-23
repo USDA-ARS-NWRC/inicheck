@@ -9,7 +9,7 @@ Tests for `inicheck.config` module.
 
 import datetime
 import os
-import unittest
+import pytest
 
 from inicheck.config import *
 from inicheck.tools import cast_all_variables, get_checkers
@@ -67,10 +67,10 @@ def compare_config(generated_config, truth_config,
     return True
 
 
-class TestUserConfig(unittest.TestCase):
+class TestUserConfig():
 
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         """
         """
         fname = os.path.abspath(
@@ -115,9 +115,9 @@ class TestUserConfig(unittest.TestCase):
             assert v in [r.name for r in self.ucfg.recipes]
 
 
-class TestRecipes(unittest.TestCase):
+class TestRecipes():
 
-    def setUp(self):
+    def setup_method(self):
         self.fname = os.path.abspath(os.path.dirname(__file__) +
                                      '/test_configs/full_config.ini')
 
@@ -233,8 +233,8 @@ class TestRecipes(unittest.TestCase):
         assert 'dk_ncores' not in self.ucfg.cfg['precip'].keys()
 
 
-class TestMasterConfig(unittest.TestCase):
-    def setUp(self):
+class TestMasterConfig():
+    def setup_method(self):
         """
         Stage our truthing data here
         """
@@ -306,13 +306,9 @@ class TestMasterConfig(unittest.TestCase):
                                                        parseable_line=line)}}
                 # invalids
                 if z == 0:
-                    self.assertRaises(ValueError, check_types, cfg, checkers)
+                    with pytest.raises(ValueError):
+                        check_types(cfg, checkers)
 
                 # valids
                 else:
                     assert check_types(cfg, checkers)
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())

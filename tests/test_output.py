@@ -10,7 +10,6 @@ Tests for `inicheck.output` module.
 import io
 import os
 import shutil
-import unittest
 from collections import OrderedDict
 from contextlib import redirect_stdout
 
@@ -38,16 +37,16 @@ def capture_print(function_call, *args, **kwargs):
     return out
 
 
-class TestOutput(unittest.TestCase):
+class TestOutput():
 
     @classmethod
-    def setUpClass(self):
+    def setup_class(self):
         base = os.path.dirname(__file__)
         self.ucfg = get_user_config(os.path.join(base, "test_configs/full_config.ini"),
                                     modules="inicheck")
 
     @classmethod
-    def tearDownClass(self):
+    def teardown_Class(self):
         """
         Delete any files
         """
@@ -109,8 +108,3 @@ class TestOutput(unittest.TestCase):
 
         # Check that we have 27 lines of info for non-defaults
         assert len(out.split('\n')) == 27
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())
