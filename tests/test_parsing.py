@@ -1,20 +1,58 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+'''
 test_iniparse
 ----------------------------------
 
 Tests for `inicheck.iniparse` module.
-"""
+'''
 import pytest
-
+from collections import OrderedDict
 from inicheck.iniparse import *
 
 
 class TestIniparse():
 
-    def test_parse_sections(self):
-        """
+    def run_parsing_test(self, fn, info, expected, exception):
+        '''
+        Manages testing exceptions and testing dict output
+        '''
+        if type(info) == OrderedDict:
+            expected = OrderedDict(expected)
+
+        if exception == None:
+            received = fn(info)
+
+            # Test the dictionaries recieved match the expected
+            assert received == expected
+
+        else:
+            with pytest.raises(exception):
+                received = fn(info)
+
+    @pytest.mark.parametrize('info, expected, exception', [
+    # Test a simple parsing
+    (['[s]','i:v'], {'s':['i:v']}, None),
+    # Test a section only without items
+    (['[s]'], {'s':[]}, None),
+    # Test every section is made lower case
+    (['[CASE]'], {'case':[]}, None),
+    # Test space remove before and after section
+    (['[ spaces ]'], {'spaces':[]}, None),
+    # Test a single line section/value is parsed
+    (['[single_line]i:v'], {'single_line':['i:v']}, None),
+    # Test some comment removal
+    (['#comment','[s]','i:v'], {'s':['i:v']}, None),
+    ([';[commented]'], {}, None),
+    (['[s]','i:v ;comment'], {'s':['i:v']}, None),
+    # Test exception with repeat sections
+    (['[test]', '#', '[test]'], {}, Exception),
+    # Test non-comment chars before the first section
+    (['a#', '#', '[test]'], {}, Exception),
+
+    ])
+    def test_parse_sections(self, info, expected, exception):
+        '''
         Tests our base function used to parse sections before we do any
         processing
 
@@ -23,103 +61,67 @@ class TestIniparse():
         * we can handle comments around sections.
         * caps issues
 
-        """
+        '''
+        self.run_parsing_test(parse_sections, info, expected, exception)
 
-        info = ["# Test our line comments",
-                "; Test our other line comments",
-                ";[old section I am not interested in] test line comments on sections",
-                "[unit]",
-                "a:10; in line comment",
-                "[test CASe] # another inline comment test",
-                "b:5",
-                "[ spaces ]",
-                "test:now",
-                "[single_line_test]a:10",
-                "[single_line_test_recipe]options = [a:10]",
-                "b:5"]
 
-        sections = parse_sections(info)
+    @pytest.mark.parametrize('info, expected, exception', [
+    # Test simple config item parsing
+    (['a:10'], {'a':'10'}, None),
+    # Test a value thats a list parse with a line return which should simply merge them
+    (['a:10,','15,20'], {'a':'10, 15, 20'}, None),
+    # Test interpreting master file properties that span multiple lines
+    (['a: default=10','options=[10 15 20]'], {'a':'default=10 options=[10 15 20]'}, None),
+    ])
 
-        # Confirm we see a normal section
-        assert(sections['unit'][0] == "a:10")
-
-        # Confirm we see a section with space caps issues
-        assert(sections['test case'][0] == "b:5")
-
-        assert(sections['spaces'][0] == "test:now")
-
-        # Confirm we can handle a section and an item in the same line
-        assert(sections['single_line_test'][0] == "a:10")
-        assert(sections['single_line_test_recipe']
-               == ["options = [a:10]", "b:5"])
-
-        # Catch non-comment chars before the first section
-        with pytest.raises(Exception):
-            parse_sections(['a#', '#', '[test]'])
-
-        with pytest.raises(Exception):
-        # Catch repeat sections in config
-         parse_sections(['[test]', '#', '[test]'])
-
-    def test_parse_items(self):
-        """
-        Tests our base function used to parse items after we read sections but
+    def test_parse_items(self, info, expected, exception):
+        '''
+        Tests our base function used to parse items after reading sections but
         before processing values.
 
         * tests for wrapped lists
         * tests to remove bracketed lists with comments
         * tests for properties being added in master files
-        """
+        '''
+        # Assign a section to the info which are always OrderedDict
+        info = OrderedDict({'s': info})
+        expected = {'s': OrderedDict(expected)}
+        self.run_parsing_test(parse_items, info, expected, exception)
 
-        info = {"unit": ["a:10"],
-                "test case": [" a :10,", "15,20"],
-                'recipe': ['a: default=10,',
-                           'options=[10 15 20]']}  # Handle wrapped lines
 
-        items = parse_items(info)
-
-        # Check for a normal single entry parse
-        #print(items['test case']['a'])
-        assert(items['unit']['a'] == '10')
-
-        # Check for correct interpretation of a wrapped list
-        assert(items['test case']['a'] == "10, 15, 20")
-
-        # Check for a correct interpretation of item properties for master
-        # files
-        assert(items['recipe']['a'] == "default=10, options=[10 15 20]")
-
-    def test_parse_values(self):
-        """
+    @pytest.mark.parametrize('info, expected, exception',[
+    # Test parse values that might have excess chars
+    ('test1,\ttest2, test3', ['test1','test2', 'test3'], None ),
+    # Test parsing master properties parsing
+    ( '\tdefault=10,\toptions=[10 15 20]', ['default=10','options=[10 15 20]'], None),
+    ])
+    def test_parse_values(self, info, expected, exception):
+        '''
         test parse values
 
         Ensures:
-        * we can clean up values with list entries
-        * we can clean up properties we recieve including non-comma sep lists
-        """
-        info = {'unit': {'a': 'test1,\ttest2, test3'},
-                'recipe': {'a': '\tdefault=10,\toptions=[10 15 20]'}
-                }
+        * Cleans up values with list entries
+        * Cleans up properties we recieve including non-comma sep lists
+        '''
+        # Assign info to a place in a dict of dict which are all ordered
+        info = OrderedDict({'s': OrderedDict({'i': info})})
+        expected = OrderedDict({'s': OrderedDict({'i': expected})})
+        self.run_parsing_test(parse_values, info, expected, exception)
 
-        values = parse_values(info)
 
-        # Check we parse a comma list correctly
-        assert(values['unit']['a'][1] == 'test2')
+    @pytest.mark.parametrize('info, expected, exception',[
+    # Test interpreting renaming a section
+    (['section/item -> new_section/item'], [['section','item','any', 'any'], ['new_section','item','any','any']], None),
+    # Test interpreting renaming an item
+    (['section/item -> section/new_item'], [['section','item','any', 'any'], ['section','new_item','any','any']], None),
+    # Tet syntax error
+    ([ 'section/item > REMOVED'], [], ValueError),
 
-        # Check we parse a properties list with no commas correctly
-        assert(values['recipe']['a'][1] == 'options=[10 15 20]')
-
-    def test_parse_changes(self):
-        """
+    ])
+    def test_parse_changes(self, info, expected, exception):
+        '''
         Tests tha change lof parsing. Ensures we raise a value error for invalid
         syntax and that valid syntax is parsed correctly
-        """
-        d = ["section/item -> new_section/item", "section/item -> REMOVED"]
-
-        changes = parse_changes(d)
-        assert changes[0][1][0] == "new_section"
-        assert changes[1][1][0] == "removed"
-
-        # Test syntax errors
-        with pytest.raises(ValueError):
-            parse_changes(["section/item > new_section/item"])
+        '''
+        # d = ['section/item -> new_section/item', 'section/item -> REMOVED']
+        self.run_parsing_test(parse_changes, info, [expected], exception)
