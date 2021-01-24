@@ -9,8 +9,8 @@ Tests for `inicheck.config` module.
 
 import datetime
 import os
-import pytest
 
+import pytest
 from inicheck.config import *
 from inicheck.tools import cast_all_variables, get_checkers
 

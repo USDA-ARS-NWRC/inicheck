@@ -8,9 +8,10 @@ Tests for `inicheck.checkers` module.
 """
 
 import inicheck
+import pytest
 from inicheck.checkers import *
 from inicheck.config import MasterConfig, UserConfig
-import pytest
+
 
 class TestCheckers():
 
@@ -57,6 +58,7 @@ class TestCheckers():
                 else:
                     assert not valid
 
+
 @pytest.fixture
 def check_tester():
     """
@@ -65,11 +67,12 @@ def check_tester():
     cls = TestCheckers()
     tests_p = os.path.join(os.path.dirname(inicheck.__file__), '../tests')
     cls.mcfg = MasterConfig(path=os.path.join(tests_p,
-                                               'test_configs/master.ini'))
+                                              'test_configs/master.ini'))
 
     cls.ucfg = UserConfig(os.path.join(tests_p, "test_configs/base_cfg.ini"),
-                           mcfg=cls.mcfg)
+                          mcfg=cls.mcfg)
     return cls
+
 
 def test_string(check_tester):
     """
@@ -97,6 +100,7 @@ def test_string(check_tester):
     result = b.cast()
     assert not isinstance(result, list)
 
+
 def test_bool(check_tester):
     """
     Test we see booleans as booleans
@@ -107,6 +111,7 @@ def test_bool(check_tester):
     invalids = ['Fasle', 'treu']
     check_tester.run_a_checker(valids, invalids, CheckBool, item='debug')
 
+
 def test_float(check_tester):
     """
     Test we see floats as floats
@@ -115,6 +120,7 @@ def test_float(check_tester):
     invalids = ['tough']
 
     check_tester.run_a_checker(valids, invalids, CheckFloat, item='time_out')
+
 
 def test_int(check_tester):
     """
@@ -126,6 +132,7 @@ def test_int(check_tester):
     invalids = ['tough', '1.5', '']
     check_tester.run_a_checker(valids, invalids, CheckInt, item='num_users')
 
+
 def test_datetime(check_tester):
     """
     Test we see datetime as datetime
@@ -133,7 +140,12 @@ def test_datetime(check_tester):
 
     valids = ['2018-01-10 10:10', '10-10-2018', "October 10 2018"]
     invalids = ['Not-a-date', 'Wednesday 5th']
-    check_tester.run_a_checker(valids, invalids, CheckDatetime, item='start_date')
+    check_tester.run_a_checker(
+        valids,
+        invalids,
+        CheckDatetime,
+        item='start_date')
+
 
 def test_list(check_tester):
     """
@@ -142,6 +154,7 @@ def test_list(check_tester):
 
     valids = ['10-10-2019', ['10-10-2019'], ['10-10-2019', '11-10-2019']]
     check_tester.run_a_checker(valids, [], CheckDatetime, item='epochs')
+
 
 def test_directory(check_tester):
     """
@@ -157,6 +170,7 @@ def test_directory(check_tester):
     b = CheckDirectory(config=check_tester.ucfg, section='basic', item='tmp')
     value = b.cast()
     assert os.path.split(value)[-1] == 'temp'
+
 
 def test_filename(check_tester):
     """
@@ -182,6 +196,7 @@ def test_filename(check_tester):
     value = b.cast()
     assert os.path.split(value)[-1] == 'log.txt'
 
+
 def test_url(check_tester):
     """
     Test our url checking.
@@ -189,7 +204,8 @@ def test_url(check_tester):
     valids = ["https://google.com"]
     invalids = ["https://micah_subnaught_is_awesome.com"]
     check_tester.run_a_checker(valids, invalids, CheckURL,
-                       item='favorite_web_site')
+                               item='favorite_web_site')
+
 
 def test_datetime_ordered_pairs(check_tester):
     """
@@ -212,21 +228,22 @@ def test_datetime_ordered_pairs(check_tester):
         # Check start values are before end values
         acfg = {'basic': {'end_date': end}}
         check_tester.run_a_checker([start], [error_start], CheckDatetimeOrderedPair,
-                           item="start_date",
-                           extra_config=acfg)
+                                   item="start_date",
+                                   extra_config=acfg)
 
         # Check start values are before end values
         acfg = {'basic': {'start_date': start}}
         check_tester.run_a_checker([end], [error_end], CheckDatetimeOrderedPair,
-                           item="end_date",
-                           extra_config=acfg)
+                                   item="end_date",
+                                   extra_config=acfg)
 
     # Check start end values are equal error
     acfg = {'basic': {'start_date': '2020-10-01'}}
     check_tester.run_a_checker(["2020-10-02"], ["2020-10-01"],
-                       CheckDatetimeOrderedPair,
-                       item="end_date",
-                       extra_config=acfg)
+                               CheckDatetimeOrderedPair,
+                               item="end_date",
+                               extra_config=acfg)
+
 
 def test_bounds(check_tester):
     """
@@ -235,7 +252,7 @@ def test_bounds(check_tester):
     """
 
     check_tester.run_a_checker([1.0, 0.0, '0.5'], [1.1, -1.0, '10'], CheckFloat,
-                       item='fraction')
+                               item='fraction')
 
 
 if __name__ == '__main__':

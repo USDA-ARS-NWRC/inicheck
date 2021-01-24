@@ -6,16 +6,18 @@ test_utilities
 
 Tests for `inicheck.utilities` module.
 """
+from os.path import dirname, join
+
 import pytest
-from os.path import join, dirname
 from inicheck.tools import get_user_config
 from inicheck.utilities import *
 
+
 @pytest.mark.parametrize("value, expected", [
-('test#comment', 'test'),
-("test1;comment", 'test1'),
-(";full in line comment", ''),
-("testboth; test a comment with both types of # comments ", 'testboth'),
+    ('test#comment', 'test'),
+    ("test1;comment", 'test1'),
+    (";full in line comment", ''),
+    ("testboth; test a comment with both types of # comments ", 'testboth'),
 ])
 def test_remove_comments(value, expected):
     """
@@ -25,16 +27,16 @@ def test_remove_comments(value, expected):
     assert out == expected
 
 
-@pytest.mark.parametrize("value, unlist, expected",[
-# Test we make things into lists
-('test', False, True),
-(['test'], False, True),
-# Test we can take things out of a list
-('test', True, False),
-(['test'], True, False),
-(['test'], True, False),
-# Test we don't take lists of len > 1 out of a list
-(['test', 'test2'], True, True)
+@pytest.mark.parametrize("value, unlist, expected", [
+    # Test we make things into lists
+    ('test', False, True),
+    (['test'], False, True),
+    # Test we can take things out of a list
+    ('test', True, False),
+    (['test'], True, False),
+    (['test'], True, False),
+    # Test we don't take lists of len > 1 out of a list
+    (['test', 'test2'], True, True)
 ])
 def test_mk_lst(value, unlist, expected):
     """
@@ -61,7 +63,7 @@ def test_find_options_in_recipes():
     such that they don't exist at the same time. Used in the inimake cli
     """
     base = dirname(__file__)
-    ucfg = get_user_config(join(base,"test_configs","full_config.ini"),
+    ucfg = get_user_config(join(base, "test_configs", "full_config.ini"),
                            modules='inicheck')
     mcfg = ucfg.mcfg
     choices = find_options_in_recipes(mcfg.recipes, mcfg.cfg.keys(),
@@ -77,8 +79,8 @@ def test_get_relative_to_cfg():
     Tests that all paths in a config can be made relative to the config
     """
     base = dirname(__file__)
-    ucfg = get_user_config(join(base,"test_configs","full_config.ini"),
-                            modules='inicheck')
+    ucfg = get_user_config(join(base, "test_configs", "full_config.ini"),
+                           modules='inicheck')
     mcfg = ucfg.mcfg
     choices = find_options_in_recipes(mcfg.recipes, mcfg.cfg.keys(),
                                       "remove_section")
@@ -86,15 +88,15 @@ def test_get_relative_to_cfg():
     assert p == '../test_utilities.py'
 
 
-@pytest.mark.parametrize('value, kw, count, expected',[
-# Finds test in string
-("tests_my_kw", ['tests'], 1, True),
-# Finds all three in the string
-("tests_my_kw", ['tests', 'my', 'kw'], 3, True),
-# Finds all 2 in the string
-("te_my_kw", ['tests', 'my', 'kw'], 2, True),
-# No match
-("te_ym_k", ['tests', 'my', 'kw'], 1, False),
+@pytest.mark.parametrize('value, kw, count, expected', [
+    # Finds test in string
+    ("tests_my_kw", ['tests'], 1, True),
+    # Finds all three in the string
+    ("tests_my_kw", ['tests', 'my', 'kw'], 3, True),
+    # Finds all 2 in the string
+    ("te_my_kw", ['tests', 'my', 'kw'], 2, True),
+    # No match
+    ("te_ym_k", ['tests', 'my', 'kw'], 1, False),
 ])
 def test_is_kw_matched(value, kw, count, expected):
     """
@@ -104,9 +106,10 @@ def test_is_kw_matched(value, kw, count, expected):
     # Finds test in string
     assert is_kw_matched(value, kw, kw_count=count) == expected
 
-@pytest.mark.parametrize('kw, count, expected',[
-(['test'], 1, 'test_my_str'),
-(['test', 'float'], 2, 'test_my_float')])
+
+@pytest.mark.parametrize('kw, count, expected', [
+    (['test'], 1, 'test_my_str'),
+    (['test', 'float'], 2, 'test_my_float')])
 def test_get_kw_match(kw, count, expected):
     """
     Tests utilities.get_kw_match which looks through a list of strings with
@@ -119,14 +122,15 @@ def test_get_kw_match(kw, count, expected):
     t = get_kw_match(test_lst, kw, kw_count=count)
     assert t == expected
 
+
 @pytest.mark.parametrize('value, dtype, allow_none, expected', [
-# Test this is a convertible string
-('10.0', float, False, [True, None]),
-# Test the allow None kwarg
-(None, float, False, [False, "Value cannot be None"]),
-(None, float, True, [True, None]),
-# Test we report an error
-('abc', float, False, [False, 'Expecting float received str']),
+    # Test this is a convertible string
+    ('10.0', float, False, [True, None]),
+    # Test the allow None kwarg
+    (None, float, False, [False, "Value cannot be None"]),
+    (None, float, True, [True, None]),
+    # Test we report an error
+    ('abc', float, False, [False, 'Expecting float received str']),
 ])
 def test_is_valid(value, dtype, allow_none, expected):
     """
@@ -144,7 +148,7 @@ def test_get_inicheck_cmd():
 
     """
     base = dirname(__file__)
-    fname = join(base,"test_configs","full_config.ini")
+    fname = join(base, "test_configs", "full_config.ini")
     cmd = get_inicheck_cmd(
         fname,
         modules='inicheck',

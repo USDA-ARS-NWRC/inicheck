@@ -6,8 +6,9 @@ test_iniparse
 
 Tests for `inicheck.iniparse` module.
 '''
-import pytest
 from collections import OrderedDict
+
+import pytest
 from inicheck.iniparse import *
 
 
@@ -17,10 +18,10 @@ class TestIniparse():
         '''
         Manages testing exceptions and testing dict output
         '''
-        if type(info) == OrderedDict:
+        if isinstance(info, OrderedDict):
             expected = OrderedDict(expected)
 
-        if exception == None:
+        if exception is None:
             received = fn(info)
 
             # Test the dictionaries recieved match the expected
@@ -31,24 +32,24 @@ class TestIniparse():
                 received = fn(info)
 
     @pytest.mark.parametrize('info, expected, exception', [
-    # Test a simple parsing
-    (['[s]','i:v'], {'s':['i:v']}, None),
-    # Test a section only without items
-    (['[s]'], {'s':[]}, None),
-    # Test every section is made lower case
-    (['[CASE]'], {'case':[]}, None),
-    # Test space remove before and after section
-    (['[ spaces ]'], {'spaces':[]}, None),
-    # Test a single line section/value is parsed
-    (['[single_line]i:v'], {'single_line':['i:v']}, None),
-    # Test some comment removal
-    (['#comment','[s]','i:v'], {'s':['i:v']}, None),
-    ([';[commented]'], {}, None),
-    (['[s]','i:v ;comment'], {'s':['i:v']}, None),
-    # Test exception with repeat sections
-    (['[test]', '#', '[test]'], {}, Exception),
-    # Test non-comment chars before the first section
-    (['a#', '#', '[test]'], {}, Exception),
+        # Test a simple parsing
+        (['[s]', 'i:v'], {'s': ['i:v']}, None),
+        # Test a section only without items
+        (['[s]'], {'s': []}, None),
+        # Test every section is made lower case
+        (['[CASE]'], {'case': []}, None),
+        # Test space remove before and after section
+        (['[ spaces ]'], {'spaces': []}, None),
+        # Test a single line section/value is parsed
+        (['[single_line]i:v'], {'single_line': ['i:v']}, None),
+        # Test some comment removal
+        (['#comment', '[s]', 'i:v'], {'s': ['i:v']}, None),
+        ([';[commented]'], {}, None),
+        (['[s]', 'i:v ;comment'], {'s': ['i:v']}, None),
+        # Test exception with repeat sections
+        (['[test]', '#', '[test]'], {}, Exception),
+        # Test non-comment chars before the first section
+        (['a#', '#', '[test]'], {}, Exception),
 
     ])
     def test_parse_sections(self, info, expected, exception):
@@ -64,16 +65,16 @@ class TestIniparse():
         '''
         self.run_parsing_test(parse_sections, info, expected, exception)
 
-
     @pytest.mark.parametrize('info, expected, exception', [
-    # Test simple config item parsing
-    (['a:10'], {'a':'10'}, None),
-    # Test a value thats a list parse with a line return which should simply merge them
-    (['a:10,','15,20'], {'a':'10, 15, 20'}, None),
-    # Test interpreting master file properties that span multiple lines
-    (['a: default=10','options=[10 15 20]'], {'a':'default=10 options=[10 15 20]'}, None),
+        # Test simple config item parsing
+        (['a:10'], {'a': '10'}, None),
+        # Test a value thats a list parse with a line return which should
+        # simply merge them
+        (['a:10,', '15,20'], {'a': '10, 15, 20'}, None),
+        # Test interpreting master file properties that span multiple lines
+        (['a: default=10', 'options=[10 15 20]'], {
+         'a': 'default=10 options=[10 15 20]'}, None),
     ])
-
     def test_parse_items(self, info, expected, exception):
         '''
         Tests our base function used to parse items after reading sections but
@@ -88,12 +89,12 @@ class TestIniparse():
         expected = {'s': OrderedDict(expected)}
         self.run_parsing_test(parse_items, info, expected, exception)
 
-
-    @pytest.mark.parametrize('info, expected, exception',[
-    # Test parse values that might have excess chars
-    ('test1,\ttest2, test3', ['test1','test2', 'test3'], None ),
-    # Test parsing master properties parsing
-    ( '\tdefault=10,\toptions=[10 15 20]', ['default=10','options=[10 15 20]'], None),
+    @pytest.mark.parametrize('info, expected, exception', [
+        # Test parse values that might have excess chars
+        ('test1,\ttest2, test3', ['test1', 'test2', 'test3'], None),
+        # Test parsing master properties parsing
+        ('\tdefault=10,\toptions=[10 15 20]', [
+         'default=10', 'options=[10 15 20]'], None),
     ])
     def test_parse_values(self, info, expected, exception):
         '''
@@ -108,14 +109,15 @@ class TestIniparse():
         expected = OrderedDict({'s': OrderedDict({'i': expected})})
         self.run_parsing_test(parse_values, info, expected, exception)
 
-
-    @pytest.mark.parametrize('info, expected, exception',[
-    # Test interpreting renaming a section
-    (['section/item -> new_section/item'], [['section','item','any', 'any'], ['new_section','item','any','any']], None),
-    # Test interpreting renaming an item
-    (['section/item -> section/new_item'], [['section','item','any', 'any'], ['section','new_item','any','any']], None),
-    # Tet syntax error
-    ([ 'section/item > REMOVED'], [], ValueError),
+    @pytest.mark.parametrize('info, expected, exception', [
+        # Test interpreting renaming a section
+        (['section/item -> new_section/item'], [['section', 'item',
+                                                 'any', 'any'], ['new_section', 'item', 'any', 'any']], None),
+        # Test interpreting renaming an item
+        (['section/item -> section/new_item'], [['section', 'item',
+                                                 'any', 'any'], ['section', 'new_item', 'any', 'any']], None),
+        # Tet syntax error
+        (['section/item > REMOVED'], [], ValueError),
 
     ])
     def test_parse_changes(self, info, expected, exception):

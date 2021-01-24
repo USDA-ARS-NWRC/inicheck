@@ -8,8 +8,8 @@ Tests for `inicheck.Tools` module.
 """
 
 from collections import OrderedDict
-import pytest
 
+import pytest
 from inicheck.tools import *
 
 
