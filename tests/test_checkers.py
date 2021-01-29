@@ -13,7 +13,14 @@ from inicheck.checkers import *
 from inicheck.config import MasterConfig, UserConfig
 
 
-class TestCheckers():
+class CheckerTester():
+    def __init__(self):
+        tests_p = os.path.join(os.path.dirname(inicheck.__file__), '../tests')
+        self.mcfg = MasterConfig(path=os.path.join(tests_p,
+                                                   'test_configs/master.ini'))
+
+        self.ucfg = UserConfig(os.path.join(tests_p, "test_configs/base_cfg.ini"),
+                               mcfg=self.mcfg)
 
     def run_a_checker(self, valids, invalids, checker, section='basic',
                       item='item',
@@ -64,13 +71,7 @@ def check_tester():
     """
     Create some key structures for testing
     """
-    cls = TestCheckers()
-    tests_p = os.path.join(os.path.dirname(inicheck.__file__), '../tests')
-    cls.mcfg = MasterConfig(path=os.path.join(tests_p,
-                                              'test_configs/master.ini'))
-
-    cls.ucfg = UserConfig(os.path.join(tests_p, "test_configs/base_cfg.ini"),
-                          mcfg=cls.mcfg)
+    cls = CheckerTester()
     return cls
 
 

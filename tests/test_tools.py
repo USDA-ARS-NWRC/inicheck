@@ -13,96 +13,105 @@ import pytest
 from inicheck.tools import *
 
 
-class TestTools():
-    @classmethod
-    def setup_class(self):
+class ToolTester():
+    def __init__(self):
         base = os.path.dirname(__file__)
         self.ucfg = get_user_config(os.path.join(base,
                                                  "test_configs/full_config.ini"),
                                     modules="inicheck")
 
-    def test_get_checkers(self):
-        """
-        Tests the get_checkers func in tools
-        """
-        checkers = get_checkers().keys()
 
-        valids = ['bool', 'criticaldirectory', 'criticalfilename', 'datetime',
-                  'datetimeorderedpair', 'directory', 'filename', 'float',
-                  'int', 'string', 'url']
+@pytest.fixture
+def tool_tester():
+    return ToolTester()
 
-        for v in valids:
-            assert v in checkers
 
-        valids = ["type", "generic", "path"]
-        checkers = get_checkers(ignore=[]).keys()
-        for v in valids:
-            assert v in checkers
+def test_get_checkers(tool_tester):
+    """
+    Tests the get_checkers func in tools
+    """
+    checkers = get_checkers().keys()
 
-    def test_check_config(self):
-        """
-        Tests the check_config func in tools
-        """
-        ucfg = self.ucfg
+    valids = ['bool', 'criticaldirectory', 'criticalfilename', 'datetime',
+              'datetimeorderedpair', 'directory', 'filename', 'float',
+              'int', 'string', 'url']
 
-        warnings, errors = check_config(ucfg)
+    for v in valids:
+        assert v in checkers
 
-        assert len(errors) == 11
+    valids = ["type", "generic", "path"]
+    checkers = get_checkers(ignore=[]).keys()
+    for v in valids:
+        assert v in checkers
 
-    def test_cast_all_variables(self):
-        """
-        Tests the cast_all_variables func in tools
-        """
-        ucfg = self.ucfg
 
-        ucfg.cfg['topo']['test_start'] = "10-1-2019"
-        ucfg.cfg['air_temp']['dk_ncores'] = "1.0"
-        ucfg.cfg['air_temp']['detrend'] = "true"
+def test_check_config(tool_tester):
+    """
+    Tests the check_config func in tools
+    """
+    ucfg = tool_tester.ucfg
 
-        ucfg = cast_all_variables(ucfg, ucfg.mcfg)
-        results = ['datetime', 'int', 'bool', 'float', 'list', 'str']
+    warnings, errors = check_config(ucfg)
 
-        tests = [ucfg.cfg['time']['start_date'],
-                 ucfg.cfg['air_temp']['dk_ncores'],
-                 ucfg.cfg['air_temp']['detrend'],
-                 ucfg.cfg['wind']['reduction_factor'],
-                 ucfg.cfg['output']['variables'],
-                 ucfg.cfg['air_temp']['distribution']]
+    assert len(errors) == 11
 
-        for i, v in enumerate(tests):
-            assert results[i] in type(v).__name__.lower()
 
-    def test_get_user_config(self):
-        """
-        Tests getting the user config
-        """
+def test_cast_all_variables(tool_tester):
+    """
+    Tests the cast_all_variables func in tools
+    """
+    ucfg = tool_tester.ucfg
 
-        base = os.path.dirname(__file__)
-        path = os.path.join(base, "test_configs/full_config.ini")
+    ucfg.cfg['topo']['test_start'] = "10-1-2019"
+    ucfg.cfg['air_temp']['dk_ncores'] = "1.0"
+    ucfg.cfg['air_temp']['detrend'] = "true"
 
-        # check for the Exception
-        with pytest.raises(IOError):
-            get_user_config(path)
+    ucfg = cast_all_variables(ucfg, ucfg.mcfg)
+    results = ['datetime', 'int', 'bool', 'float', 'list', 'str']
 
-        with pytest.raises(IOError):
-            get_user_config('not_a_file.ini')
+    tests = [ucfg.cfg['time']['start_date'],
+             ucfg.cfg['air_temp']['dk_ncores'],
+             ucfg.cfg['air_temp']['detrend'],
+             ucfg.cfg['wind']['reduction_factor'],
+             ucfg.cfg['output']['variables'],
+             ucfg.cfg['air_temp']['distribution']]
 
-        ucfg = get_user_config(path, modules='inicheck')
-        assert ucfg
+    for i, v in enumerate(tests):
+        assert results[i] in type(v).__name__.lower()
 
-    def test_config_documentation(self):
-        """
-        Confirms that we still make config documentation
-        """
-        # Confirm exception when file doesnt exist
-        with pytest.raises(IOError):
-            f = '/no/folder/exists/f.rst'
-            config_documentation(f, modules='inicheck')
 
-        # Try it hope it runs
-        f = 'test.rst'
+def test_get_user_config(tool_tester):
+    """
+    Tests getting the user config
+    """
+
+    base = os.path.dirname(__file__)
+    path = os.path.join(base, "test_configs/full_config.ini")
+
+    # check for the Exception
+    with pytest.raises(IOError):
+        get_user_config(path)
+
+    with pytest.raises(IOError):
+        get_user_config('not_a_file.ini')
+
+    ucfg = get_user_config(path, modules='inicheck')
+    assert ucfg
+
+
+def test_config_documentation(tool_tester):
+    """
+    Confirms that we still make config documentation
+    """
+    # Confirm exception when file doesnt exist
+    with pytest.raises(IOError):
+        f = '/no/folder/exists/f.rst'
         config_documentation(f, modules='inicheck')
-        assert True
 
-        # Clean up
-        os.remove(f)
+    # Try it hope it runs
+    f = 'test.rst'
+    config_documentation(f, modules='inicheck')
+    assert True
+
+    # Clean up
+    os.remove(f)
