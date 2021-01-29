@@ -55,6 +55,14 @@ def run_a_checker(
                 assert not valid
 
 
+def define_checker(user_config, checker, value, item='item', section='basic'):
+    config = user_config.cfg
+    config.update({section: {item: " "}})
+    config[section][item] = value
+
+    return checker(config=user_config, section=section, item=item)
+
+
 class TestCheckers:
     @pytest.fixture(scope='class')
     def master_config(self, test_config_dir):
@@ -105,20 +113,37 @@ class TestCheckers:
         result = b.cast()
         assert not isinstance(result, list)
 
-    def test_bool(self, user_config):
+    @pytest.mark.parametrize(
+        'value', [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
+    )
+    def test_valid_booleans(self, user_config, value):
         """
-        Test we see booleans as booleans
+        Test accepted boolean values
         """
-        valid_entries = [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
-        invalid_entries = ['Fasle', 'treu']
-
-        run_a_checker(
+        checker = define_checker(
             user_config,
-            valid_entries,
-            invalid_entries,
             checkers.CheckBool,
+            value,
             item='debug'
         )
+
+        assert checker.check()[0] is None
+
+    @pytest.mark.parametrize(
+        'value', ['Fasle', 'treu', 'F', 'T']
+    )
+    def test_invalid_booleans(self, user_config, value):
+        """
+        Test rejected boolean values
+        """
+        checker = define_checker(
+            user_config,
+            checkers.CheckBool,
+            value,
+            item='debug'
+        )
+
+        assert checker.check()[0] is not None
 
     def test_float(self, user_config):
         """
