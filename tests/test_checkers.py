@@ -1,89 +1,105 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-test_checkers
-----------------------------------
+import os
 
-Tests for `inicheck.checkers` module.
-"""
+import pytest
 
-import unittest
-
-import inicheck
-from inicheck.checkers import *
+from inicheck import checkers as checkers
 from inicheck.config import MasterConfig, UserConfig
 
 
-class TestCheckers(unittest.TestCase):
+def run_a_checker(
+    user_config,
+    valid_entries,
+    invalid_entries,
+    checker,
+    section='basic',
+    item='item',
+    extra_config=None
+):
+    """
+    Runs a loop over all the valid entries and applies the checker and asserts
+    they are true. Same thing is done for the invalid entries.
+    Args:
+        user_config:     inicheck.config.UserConfig instance
+        valid_entries:   List of valid entries to check
+        invalid_entries: List of invalid entries to check
+        checker:         Any class in inicheck.checkers
+        section:         Section name the item being checked is occurring
+        item:            Item name in the config
+        extra_config:    Pass in contextual config info to test more
+                         complicated checkers. E.g. ordered datetime pair.
+    """
 
-    def run_a_checker(self, valids, invalids, checker, section='basic',
-                      item='item',
-                      extra_config={}):
+    config = user_config.cfg
+    config.update({section: {item: " "}})
+
+    # Added info for testing e.g. ordered datetime pair
+    if extra_config:
+        config.update(extra_config)
+
+    for z, values in enumerate([valid_entries, invalid_entries]):
+        for v in values:
+
+            config[section][item] = v
+            b = checker(config=user_config, section=section, item=item)
+            msgs = b.check()
+
+            if len([True for m in msgs if m is None]) == len(msgs):
+                valid = True
+            else:
+                valid = False
+
+            # Expected valid
+            if z == 0:
+                assert valid
+            else:
+                assert not valid
+
+
+def define_checker(user_config, checker, value, item='item', section='basic'):
+    config = user_config.cfg
+    config.update({section: {item: " "}})
+    config[section][item] = value
+
+    return checker(config=user_config, section=section, item=item)
+
+
+class TestCheckers:
+    @pytest.fixture(scope='class')
+    def master_config(self, test_config_dir):
         """
-        Runs a loop over all the valids and applies the checker and asserts
-        theyre true. Same thing is done for the invalids
-        Args:
-            valids: List of valid entries to check
-            invalids: List of invalid entries to check
-            checker: any class in inicheck.checkers
-            ucfg: inicheck.config.UserConfig instance (optional)
-            is_list: is it expected to be a list?
-            section: section name the item being checked is occurring
-            item: Item name in the config
-            extra_config: Pass in contextual config info to test more
-                          complicated checkers. E.g. ordered datetime pair.
+        Master config from test data
         """
+        return MasterConfig(
+            path=test_config_dir.joinpath('master.ini').as_posix()
+        )
 
-        cfg = self.ucfg.cfg
-        cfg.update({section: {item: " "}})
+    @pytest.fixture
+    def user_config(self, test_config_dir, master_config):
+        return UserConfig(
+            test_config_dir.joinpath('base_cfg.ini').as_posix(),
+            mcfg=master_config
+        )
 
-        # Added info for testing e.g. ordered datetime pair
-        if extra_config:
-            cfg.update(extra_config)
-
-        for z, values in enumerate([valids, invalids]):
-            for v in values:
-
-                cfg[section][item] = v
-                b = checker(config=self.ucfg, section=section, item=item)
-                msgs = b.check()
-
-                if len([True for m in msgs if m is None]) == len(msgs):
-                    valid = True
-                else:
-                    valid = False
-
-                # Expected valid
-                if z == 0:
-                    assert valid
-                else:
-                    assert not valid
-
-    @classmethod
-    def setUpClass(self):
-        """
-        Create some key structures for testing
-        """
-        tests_p = os.path.join(os.path.dirname(inicheck.__file__), '../tests')
-        self.mcfg = MasterConfig(path=os.path.join(tests_p,
-                                                   'test_configs/master.ini'))
-
-        self.ucfg = UserConfig(os.path.join(tests_p, "test_configs/base_cfg.ini"),
-                               mcfg=self.mcfg)
-
-    def test_string(self):
+    def test_string(self, user_config):
         """
         Test we see strings as strings
         """
+        valid_entries = ['test']
 
-        # Confirm we these values are valid
-        valids = ['test']
-        self.run_a_checker(valids, [], CheckString, item='username')
+        run_a_checker(
+            user_config,
+            valid_entries,
+            [],
+            checkers.CheckString,
+            item='username'
+        )
 
         # Confirm that casting a string with uppers will auto produce lowers
-        self.ucfg.cfg['basic']['username'] = 'Test'
+        user_config.cfg['basic']['username'] = 'Test'
 
-        b = CheckString(config=self.ucfg, section='basic', item='username')
+        b = checkers.CheckString(
+            config=user_config, section='basic', item='username'
+        )
         result = b.cast()
         assert result == 'test'
 
@@ -92,157 +108,250 @@ class TestCheckers(unittest.TestCase):
         result = b.cast()
         assert result == ['test']
 
-        # Check we capture the when alist is passed and were not expecting one
+        # Check we capture the when a list is passed and were not expecting one
         b.is_list = False
         result = b.cast()
         assert not isinstance(result, list)
 
-    def test_bool(self):
+    @pytest.mark.parametrize(
+        'value', [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
+    )
+    def test_valid_booleans(self, user_config, value):
         """
-        Test we see booleans as booleans
+        Test accepted boolean values
         """
+        checker = define_checker(
+            user_config,
+            checkers.CheckBool,
+            value,
+            item='debug'
+        )
 
-        # Confirm we these values are valid
-        valids = [True, False, 'true', 'FALSE', 'yes', 'y', 'no', 'n']
-        invalids = ['Fasle', 'treu']
-        self.run_a_checker(valids, invalids, CheckBool, item='debug')
+        assert checker.check()[0] is None
 
-    def test_float(self):
+    @pytest.mark.parametrize(
+        'value', ['Fasle', 'treu', 'F', 'T']
+    )
+    def test_invalid_booleans(self, user_config, value):
+        """
+        Test rejected boolean values
+        """
+        checker = define_checker(
+            user_config,
+            checkers.CheckBool,
+            value,
+            item='debug'
+        )
+
+        assert checker.check()[0] is not None
+
+    def test_float(self, user_config):
         """
         Test we see floats as floats
         """
-        valids = [-1.5, '2.5']
-        invalids = ['tough']
+        valid_entries = [-1.5, '2.5']
+        invalid_entries = ['tough']
 
-        self.run_a_checker(valids, invalids, CheckFloat, item='time_out')
+        run_a_checker(
+            user_config,
+            valid_entries,
+            invalid_entries,
+            checkers.CheckFloat,
+            item='time_out'
+        )
 
-    def test_int(self):
+    def test_int(self, user_config):
         """
         Test we see int as ints and not floats
         """
+        valid_entries = [10, '2', 1.0]
+        invalid_entries = ['tough', '1.5', '']
 
-        # Confirm we these values are valid
-        valids = [10, '2', 1.0]
-        invalids = ['tough', '1.5', '']
-        self.run_a_checker(valids, invalids, CheckInt, item='num_users')
+        run_a_checker(
+            user_config,
+            valid_entries,
+            invalid_entries,
+            checkers.CheckInt,
+            item='num_users'
+        )
 
-    def test_datetime(self):
+    def test_datetime(self, user_config):
         """
         Test we see datetime as datetime
         """
+        valid_entries = ['2018-01-10 10:10', '10-10-2018', "October 10 2018"]
+        invalid_entries = ['Not-a-date', 'Wednesday 5th']
 
-        valids = ['2018-01-10 10:10', '10-10-2018', "October 10 2018"]
-        invalids = ['Not-a-date', 'Wednesday 5th']
-        self.run_a_checker(valids, invalids, CheckDatetime, item='start_date')
+        run_a_checker(
+            user_config,
+            valid_entries,
+            invalid_entries,
+            checkers.CheckDatetime,
+            item='start_date'
+        )
 
-    def test_list(self):
+    def test_list(self, user_config):
         """
         Test our listing methods using lists of dates.
         """
+        valid_entries = [
+            '10-10-2019', ['10-10-2019'], ['10-10-2019', '11-10-2019']
+        ]
 
-        valids = ['10-10-2019', ['10-10-2019'], ['10-10-2019', '11-10-2019']]
-        self.run_a_checker(valids, [], CheckDatetime, item='epochs')
+        run_a_checker(
+            user_config,
+            valid_entries,
+            [],
+            checkers.CheckDatetime,
+            item='epochs'
+        )
 
-        # # We have a list in the config when we don't want one
-        # self.ucfg.cfg['section']['item'] = ["test", "test2"]
-        # invalids = ['test']
-        # self.run_a_checker([], invalids, CheckFilename,  is_list=False)
-
-    def test_directory(self):
+    def test_directory(self, user_config):
         """
         Tests the base class for path based checkers
         """
+        valid_entries = ["./"]
+        invalid_entries = ['./somecrazy_location!/']
 
-        valids = ["./"]
-        invalids = ['./somecrazy_location!/']
-        self.run_a_checker(valids, invalids, CheckDirectory, item='tmp')
+        run_a_checker(
+            user_config,
+            valid_entries,
+            invalid_entries,
+            checkers.CheckDirectory,
+            item='tmp'
+        )
 
         # ISSUE #44 check for default when string is empty
-        self.ucfg.cfg.update({'basic': {'tmp': ''}})
-        b = CheckDirectory(config=self.ucfg, section='basic', item='tmp')
-        value = b.cast()
+        user_config.cfg.update({'basic': {'tmp': ''}})
+
+        value = checkers.CheckDirectory(
+            config=user_config, section='basic', item='tmp'
+        ).cast()
+
         assert os.path.split(value)[-1] == 'temp'
 
-    def test_filename(self):
+    def test_filename(self, user_config):
         """
         Tests the base class for path based checkers
         """
         # Remember paths are relative to the config
-        valids = ["../test_checkers.py"]
-        invalids = ['dumbfilename']
-        self.run_a_checker(valids, invalids, CheckFilename, item='log')
+        valid_entries = ["../test_checkers.py"]
+        invalid_entries = ['dumbfilename']
 
-        # ISSUE #44 check for default when string is empty
-        self.ucfg.cfg.update({'basic': {'log': ''}})
-        self.ucfg.mcfg.cfg['basic']['log'].default = None
-        b = CheckFilename(config=self.ucfg, section='basic', item='log')
-        value = b.cast()
+        run_a_checker(
+            user_config,
+            valid_entries,
+            invalid_entries,
+            checkers.CheckFilename,
+            item='log'
+        )
+
+    def test_filename_empty_string(self, user_config):
+        """
+        ISSUE #44 check for default when string is empty
+        """
+        user_config.cfg.update({'basic': {'log': ''}})
+        user_config.mcfg.cfg['basic']['log'].default = None
+
+        value = checkers.CheckFilename(
+            config=user_config, section='basic', item='log'
+        ).cast()
+
         assert value is None
 
-        # ISSUE #44 check for default when string is empty but default is a
-        # path
-        self.ucfg.cfg.update({'basic': {'log': ''}})
-        self.ucfg.mcfg.cfg['basic']['log'].default = 'log.txt'
-        b = CheckFilename(config=self.ucfg, section='basic', item='log')
-        value = b.cast()
+    def test_filename_empty_string_default_path(self, user_config):
+        """
+        ISSUE #44 check for default when string is empty but default is a path
+        """
+        user_config.cfg.update({'basic': {'log': ''}})
+        user_config.mcfg.cfg['basic']['log'].default = 'log.txt'
+
+        value = checkers.CheckFilename(
+            config=user_config, section='basic', item='log'
+        ).cast()
+
         assert os.path.split(value)[-1] == 'log.txt'
 
-    def test_url(self):
+    def test_url(self, user_config):
         """
         Test our url checking.
         """
-        valids = ["https://google.com"]
-        invalids = ["https://micah_subnaught_is_awesome.com"]
-        self.run_a_checker(valids, invalids, CheckURL,
-                           item='favorite_web_site')
+        valid_entries = ["https://google.com"]
+        invalid_entries = ["https://micah_subnaught_is_awesome.com"]
 
-    def test_datetime_ordered_pairs(self):
+        run_a_checker(
+            user_config,
+            valid_entries,
+            invalid_entries,
+            checkers.CheckURL,
+            item='favorite_web_site'
+        )
+
+    def test_datetime_ordered_pairs(self, user_config):
         """
         Tests the ordered datetime pair checker which looks for <keyword>_start
         <keyword>_end pairs and confirms they occurs in the correct order.
-
         """
-
         # Test end dates com after start dates
         starts = ["1-01-2019", "2019-10-01", "1998-01-14 15:00:00"]
         ends = ["1-02-2019", "2019-10-02", "1998-01-14 19:00:00"]
 
-        invalids_starts = ["01-01-2020", "2020-06-01", "1998-01-14 20:00:00"]
-        invalids_ends = ["01-01-2018", "2018-10-01", "1998-01-14 10:00:00", ]
+        invalid_entries_starts = [
+            "01-01-2020", "2020-06-01", "1998-01-14 20:00:00"
+        ]
+        invalid_entries_ends = [
+            "01-01-2018", "2018-10-01", "1998-01-14 10:00:00"
+        ]
 
         # Check for starts being before the end date
         for start, end, error_start, error_end in zip(starts, ends,
-                                                      invalids_starts,
-                                                      invalids_ends):
+                                                      invalid_entries_starts,
+                                                      invalid_entries_ends):
             # Check start values are before end values
             acfg = {'basic': {'end_date': end}}
-            self.run_a_checker([start], [error_start], CheckDatetimeOrderedPair,
-                               item="start_date",
-                               extra_config=acfg)
+
+            run_a_checker(
+                user_config,
+                [start],
+                [error_start],
+                checkers.CheckDatetimeOrderedPair,
+                item="start_date",
+                extra_config=acfg
+            )
 
             # Check start values are before end values
             acfg = {'basic': {'start_date': start}}
-            self.run_a_checker([end], [error_end], CheckDatetimeOrderedPair,
-                               item="end_date",
-                               extra_config=acfg)
+
+            run_a_checker(
+                user_config,
+                [end],
+                [error_end],
+                checkers.CheckDatetimeOrderedPair,
+                item="end_date",
+                extra_config=acfg
+            )
 
         # Check start end values are equal error
         acfg = {'basic': {'start_date': '2020-10-01'}}
-        self.run_a_checker(["2020-10-02"], ["2020-10-01"],
-                           CheckDatetimeOrderedPair,
-                           item="end_date",
-                           extra_config=acfg)
 
-    def test_bounds(self):
+        run_a_checker(
+            user_config,
+            ["2020-10-02"],
+            ["2020-10-01"],
+            checkers.CheckDatetimeOrderedPair,
+            item="end_date",
+            extra_config=acfg
+        )
+
+    def test_bounds(self, user_config):
         """
-        MasterConfig options now have max and min values to constrain continuous
-        types. This tests whether that works
+        MasterConfig options now have max and min values to constrain
+        continuous types. This tests whether that works
         """
-
-        self.run_a_checker([1.0, 0.0, '0.5'], [1.1, -1.0, '10'], CheckFloat,
-                           item='fraction')
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())
+        run_a_checker(
+            user_config,
+            [1.0, 0.0, '0.5'],
+            [1.1, -1.0, '10'],
+            checkers.CheckFloat,
+            item='fraction'
+        )

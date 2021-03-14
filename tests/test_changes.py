@@ -8,13 +8,12 @@ Tests for `inicheck.changes` module.
 """
 
 import os
-import unittest
 
 from inicheck.changes import *
 from inicheck.config import MasterConfig, UserConfig
 
 
-class TestChanges(unittest.TestCase):
+class TestChanges():
 
     def test_valid_syntax(self):
         """
@@ -30,8 +29,3 @@ class TestChanges(unittest.TestCase):
             assert True
         except Exception as e:
             assert False
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())
