@@ -3,7 +3,7 @@ autopep8==1.5
 coverage==4.5.4
 coveralls==1.11.1
 isort==4.3.21
-pyyaml==5.3
+pyyaml==5.4
 sphinx-rtd-theme==0.4.3
 sphinx==1.8.5
 sphinxcontrib-apidoc==0.3.0
