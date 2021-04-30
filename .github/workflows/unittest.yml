@@ -7,27 +7,27 @@ on:
   # branches: [main]
 
 jobs:
-  # flake8:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: "3.7"
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
 
-  #     - name: Install dependencies
-  #       run: |
-  #         python3 -m pip install --upgrade pip
-  #         python3 -m pip install flake8
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install flake8
 
-  #     - name: Lint with flake8
-  #       run: |
-  #         flake8 inicheck tests
+      - name: Lint with flake8
+        run: |
+          flake8 inicheck
 
   unittest:
-    # needs: flake8
+    needs: flake8
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]

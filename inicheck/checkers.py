@@ -1,9 +1,9 @@
 '''
-Functions for checking values in a config file and producing errors and warnings
+Functions for checking values in a config file and producing
+errors and warnings
 '''
 
 import os
-from functools import partial
 
 import requests
 
@@ -13,18 +13,19 @@ from .utilities import (get_kw_match, is_kw_matched, is_valid, mk_lst,
 
 class GenericCheck(object):
     """
-    Generic Checking class. Every class thats a checker should inherit from this
-    class. This class is used like:
+    Generic Checking class. Every class thats a checker should inherit from
+    this class. This class is used like:
 
     Every check will run the check().
 
     Attributes:
         message: String message to report if the value passed is not valid
-        msg_level: Urgency of the message which can be either a warning or error
+        msg_level: Urgency of the message which can be either a warning
+            or error
         values: value to be checked, casted, and reported on
         config: UserConfig object that the item/value being check resides
-        type: string name representing the datatype which is based off the class
-              name
+        type: string name representing the datatype which is based off the
+              class name
         is_list: Boolean specifying the resulting values as a list or not
         allow_none: Boolean specifying the values can contain a value
 
@@ -75,7 +76,7 @@ class GenericCheck(object):
         self.is_list = self.config.mcfg.cfg[self.section][self.item].listed
 
         # Allow None as a value?
-        self.allow_none = self.config.mcfg.cfg[self.section][self.item].allow_none
+        self.allow_none = self.config.mcfg.cfg[self.section][self.item].allow_none  # noqa
 
         # Auto retrieve the type name from the class name which is always
         # Check<type name>
@@ -106,8 +107,8 @@ class GenericCheck(object):
         """
         Abstract function for defining how a value is checked for validity.
         It should always be used in check(). Is valid should always return
-        a boolean whether the result is valid, and the issue as a string stating
-        the problem. If no issue it should still return None.
+        a boolean whether the result is valid, and the issue as a string
+        stating the problem. If no issue it should still return None.
 
         Args:
             value: Single value to be evaluated
@@ -127,11 +128,11 @@ class GenericCheck(object):
         Returns:
             msgs: None if the entry is valid, else returns self.message
         """
-        valids = []
+
         issues = []
 
         for v in mk_lst(self.values):
-            valid, issue = self.is_valid(v)
+            valid, issue = self.is_valid(v)  # noqa
             issues.append(issue)
 
         return issues
@@ -147,7 +148,8 @@ class CheckType(GenericCheck):
             maximum: Maximum value for bounded entries.
             type_func: Function used to cast the data to the desired type.
                       Default - str()
-            bounded: Boolean indicating if a value can be limited by a min or max.
+            bounded: Boolean indicating if a value can be limited by a
+                min or max.
     """
 
     def __init__(self, **kwargs):
@@ -223,8 +225,9 @@ class CheckType(GenericCheck):
                         valid = False
 
             # Throw error if max or min is set and value is none.
-            elif value is None and (max_value is not None or min_value is not None):
-                valid == False
+            elif value is None and \
+                    (max_value is not None or min_value is not None):
+                valid = False
                 msg = "Value cannot be None"
 
             if valid:
@@ -234,11 +237,13 @@ class CheckType(GenericCheck):
 
     def check_list(self):
         """
-        Checks to see if self.values provided are in a list and if they should be.
+        Checks to see if self.values provided are in a list and if they
+        should be.
 
         Returns:
             tuple:
-                **valid** - Boolean whether the value was acceptable in terms of being a list
+                **valid** - Boolean whether the value was acceptable in terms
+                    of being a list
                 **msg** - string to print if value is not valid.
         """
 
@@ -248,7 +253,8 @@ class CheckType(GenericCheck):
         valid = True
         msg = None
 
-        # NOTE This is for checking single items but we can cast these no matter what so its viable.
+        # NOTE This is for checking single items but we can cast these no
+        # matter what so its viable.
         # # Is it supposed to be a list and isn't?
         # if self.is_list and not currently_a_list:
         #     valid = False
@@ -263,8 +269,8 @@ class CheckType(GenericCheck):
 
     def check_options(self, value):
         """
-        Check to see if the current value being evaluated is also in the list of
-        provided options in the master config. Only runs if options were
+        Check to see if the current value being evaluated is also in the list
+        of provided options in the master config. Only runs if options were
         provided.
 
         Args:
@@ -340,7 +346,8 @@ class CheckType(GenericCheck):
 
         2. Check if a value in self.values should be None or not.
 
-        3. Check for options and if a single value from self.values is among them.
+        3. Check for options and if a single value from self.values is
+            among them.
 
         4. Check is a single value is valid according to self.valid.
 
@@ -420,7 +427,8 @@ class CheckType(GenericCheck):
 
 class CheckDatetime(CheckType):
     """
-    Check values that are declared as type datetime. Parses anything that dateparser can parse.
+    Check values that are declared as type datetime. Parses anything that
+    dateparser can parse.
     """
 
     def __init__(self, **kwargs):
@@ -435,8 +443,8 @@ class CheckDatetimeOrderedPair(CheckDatetime):
     in the same section.
 
     Requires keywords section and item to ba passed as keyword args.
-    Looks for keywords start/begin or stop/end in an item name. Then looks for a
-    corresponding match with the opposite name.
+    Looks for keywords start/begin or stop/end in an item name. Then looks
+    for a corresponding match with the opposite name.
 
     .. code-block:: ini
 
@@ -817,7 +825,7 @@ class CheckURL(CheckType):
         try:
             r = requests.get(value, timeout=5)
 
-        except Exception as e:
+        except Exception:
             msg = "Invalid connection or URL"
             r = None
 

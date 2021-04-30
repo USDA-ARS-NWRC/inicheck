@@ -120,17 +120,20 @@ class UserConfig():
                                         if (condition[1] == 'any' or
                                                 condition[1] == item):
                                             if FULL_DEBUG:
-                                                print("\t\tItem Gate {0} == {1}"
-                                                      "".format(condition[1],
-                                                                item))
+                                                print(
+                                                    "\t\tItem Gate {0} == {1}"
+                                                    "".format(condition[1],
+                                                              item))
                                             # Values
                                             if (condition[2] == 'any' or
                                                     condition[2] == v):
                                                 if FULL_DEBUG:
-                                                    print("\t\t\t\tValue Gate {0}"
-                                                          " == {1}"
-                                                          "".format(condition[2],
-                                                                    v))
+                                                    print(
+                                                        "\t\t\t\tValue Gate "
+                                                        "{0} == {1}"
+                                                        "".format(
+                                                            condition[2],
+                                                            v))
 
                                                 # No conditions == [any any
                                                 # any]
@@ -154,9 +157,10 @@ class UserConfig():
                                               and s != 'any')]
 
                     if len(invalid_r_sections) > 0:
-                        raise ValueError("The recipe {} attempts to modify"
-                                         " section(s) {} not recognized by Master Config."
-                                         "".format(r.name, ",".join(invalid_r_sections)))
+                        raise ValueError(
+                            "The recipe {} attempts to modify"
+                            " section(s) {} not recognized by Master Config."
+                            "".format(r.name, ",".join(invalid_r_sections)))
 
                     if DEBUG:
                         print("\nDEBUG: Trigger: {0} {1} was met!"
@@ -194,7 +198,7 @@ class UserConfig():
 
         for section in partial_cfg.keys():
             for item in partial_cfg[section].keys():
-                remove = False
+
                 value = partial_cfg[section][item]
                 values = mk_lst(value)
 
@@ -237,7 +241,6 @@ class UserConfig():
                             if item == "default_item":
                                 value = "default"
 
-                            #value = "default"
                         # Nothing special asusme its a valid item name
                         else:
                             i = item
@@ -255,12 +258,15 @@ class UserConfig():
                                     v = self.mcfg.cfg[s][i].default
 
                             else:
-                                raise Exception('{0} is not a valid item for '
-                                                'the master config section {1}, check your '
-                                                'recipes for a situation triggering on {2}, '
-                                                '{3}, {4}'.format(i, s, situation[0],
-                                                                  situation[1],
-                                                                  situation[2]))
+                                raise Exception(
+                                    '{0} is not a valid item for the '
+                                    'master config section {1}, check your '
+                                    'recipes for a situation triggering '
+                                    'on {2}, {3}, {4}'.format(
+                                        i, s,
+                                        situation[0],
+                                        situation[1],
+                                        situation[2]))
                         # default items were sepcified.
                         else:
 
@@ -433,8 +439,8 @@ class MasterConfig():
                                                         '__config_checkers__'))
                 # Grab ayny change logs
                 if hasattr(i, "__config_changelog__"):
-                    self.changelogs.append(abspath(pjoin(i.__file__,
-                                                         i.__config_changelog__)))
+                    self.changelogs.append(
+                        abspath(pjoin(i.__file__, i.__config_changelog__)))
 
         # Add any extra ones provided
         if checkers is not None:
@@ -520,8 +526,9 @@ class MasterConfig():
                 # Look for master properties
                 else:
                     for item in raw_config[section].keys():
-                        sec[item] = ConfigEntry(name=item,
-                                                parseable_line=raw_config[section][item])
+                        sec[item] = ConfigEntry(
+                            name=item,
+                            parseable_line=raw_config[section][item])
 
                     cfg[section] = sec
 
