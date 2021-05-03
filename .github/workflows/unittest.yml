@@ -44,7 +44,8 @@ jobs:
 
       - name: Run coverage
         run: |
-          make coveralls
+          make coverage
+          coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
