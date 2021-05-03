@@ -46,7 +46,7 @@ jobs:
         run: |
           make coveralls
         env:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   unittest:
     needs: [flake8, coverage]
