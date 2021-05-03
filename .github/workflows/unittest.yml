@@ -44,15 +44,12 @@ jobs:
 
       - name: Run coverage
         run: |
-          make coverage
-
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
+          make coveralls
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   unittest:
-    needs: flake8
+    needs: [flake8, coverage]
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
