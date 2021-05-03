@@ -2,9 +2,8 @@ name: Unittest, flake8
 
 # Run action on pull requests
 on:
-  [push]
-  # pull_request:
-  # branches: [main]
+  pull_request:
+    branches: [master]
 
 jobs:
   flake8:
