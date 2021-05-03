@@ -287,7 +287,9 @@ def print_non_defaults(ucfg):
                     # Grab the default, make it a string list
                     default_lst = mk_lst(mcfg[s][i].default)
                     str_default_lst = [
-                        str(kk).lower() for kk in default_lst if str(kk).lower() != 'none']  # noqa
+                        str(kk).lower() for kk in default_lst
+                        if str(kk).lower() != 'none'
+                    ]
 
                     # Grab the default, make it a string list
                     user_lst = mk_lst(cfg[s][i])

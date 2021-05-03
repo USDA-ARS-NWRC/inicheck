@@ -118,7 +118,8 @@ class GenericCheck(object):
                 **valid** - Boolean whether the value was acceptable
                 **msg** - string to print if value is not valid.
         """
-        pass
+
+        return False, 'is_valid() not implemented'
 
     def check(self):
         """
@@ -132,7 +133,7 @@ class GenericCheck(object):
         issues = []
 
         for v in mk_lst(self.values):
-            valid, issue = self.is_valid(v)  # noqa
+            _valid, issue = self.is_valid(v)
             issues.append(issue)
 
         return issues

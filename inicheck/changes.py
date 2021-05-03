@@ -221,8 +221,6 @@ class ChangeLog(object):
                 s_n = c[1][0]
                 i_n = c[1][1]
 
-            # print(s_o, i_o, s_n, i_n)
-
             # Confirm new section in the config
             if not removal:
                 if s_n not in ucfg.cfg.keys():
