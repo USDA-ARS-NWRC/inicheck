@@ -171,7 +171,7 @@ class ConfigEntry:
         # Options should always be a list and lower case
         if not isinstance(self.options, list):
             self.options = [self.options]
-        self.options = [l.lower() for l in self.options]
+        self.options = [option.lower() for option in self.options]
 
         # types should always be lower case
         self.type = self.type.lower()

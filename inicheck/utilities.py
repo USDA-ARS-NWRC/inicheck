@@ -64,8 +64,7 @@ def find_options_in_recipes(recipes, choice_search,
         final_choices:
 
     """
-    decisions = {}
-    conditional = ["any" for i in range(3)]
+
     final_choices = []
     pos = condition_position
 
@@ -73,7 +72,7 @@ def find_options_in_recipes(recipes, choice_search,
     for r in recipes:
         choices = []
 
-        for t_name, trigger in r.triggers.items():
+        for trigger in r.triggers.values():
 
             for condition in trigger.conditions:
                 # if the position of interest is not a generic place holder
@@ -171,8 +170,9 @@ def remove_comment(string_entry):
 def mk_lst(values, unlst=False):
     """
     while iterating through several type of lists and items it is convenient to
-    assume that we recieve a list, use this function to accomplish this. It also
-    convenient to be able to return the original type after were done with it.
+    assume that we recieve a list, use this function to accomplish this. It
+    also convenient to be able to return the original type after were done
+    with it.
     """
     # Not a list, were not looking to unlist it. make it a list
     if not isinstance(values, list) and not unlst:
@@ -282,7 +282,6 @@ def pcfg(cfg):
         try:
             for item in cfg[sec].keys():
                 print('\t' + item)
-                values = cfg[sec][item]
 
                 if isinstance(cfg[sec][item], list):
                     out = ", ".join(cfg[sec][item])
@@ -352,7 +351,7 @@ def is_valid(value, cast_fn, expected_data_type, allow_none=False):
             msg = None
 
     # Report an exception when the casting goes bad.
-    except Exception as e:
+    except Exception:
         valid = False
         msg = "Expecting {0} received {1}".format(expected_data_type,
                                                   type(value).__name__)

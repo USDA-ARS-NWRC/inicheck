@@ -53,11 +53,12 @@ lint: ## check style with isort and pep8
 test: ## run tests quickly with the default Python
 	py.test
 
-coverage: ## check code coverage quickly with the default Python
-	coverage run --source inicheck -m pytest
-	coverage report -m
-	coverage html
-	$(BROWSER) htmlcov/index.html
+coverage: ## run coverage and submit
+	coverage run --source inicheck setup.py test
+	coverage report --fail-under=80
+
+coveralls: coverage ## run coveralls
+	coveralls
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/inicheck.rst

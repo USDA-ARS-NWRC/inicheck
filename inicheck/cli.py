@@ -1,14 +1,17 @@
 # !/usr/bin/env python
 
 import argparse
+import os
 import sys
 from os.path import abspath, basename, join
 
 from .changes import ChangeLog
 from .config import MasterConfig, UserConfig
-from .output import *
+from .output import (generate_config, print_change_report, print_config_report,
+                     print_details, print_non_defaults, print_recipe_summary)
 from .tools import check_config, get_user_config
-from .utilities import *
+from .utilities import (ask_config_setup, find_options_in_recipes,
+                        get_inicheck_cmd)
 
 
 def current_version():
@@ -200,24 +203,43 @@ def inidiff():
     """
     Creates a report showing the difference in files
     """
-    parser = argparse.ArgumentParser(description="Examine and compare"
-                                                 " ini files with a master file"
-                                                 "")
+    parser = argparse.ArgumentParser(
+        description="Examine and compare"
+        " ini files with a master file"
+        "")
 
-    parser.add_argument('--config_files', '-f', dest='config_files', type=str,
-                        nargs='+', required=True,
-                        help='Path to two config file that needs comparing')
+    parser.add_argument(
+        '--config_files',
+        '-f',
+        dest='config_files',
+        type=str,
+        nargs='+',
+        required=True,
+        help='Path to two config file that needs comparing')
 
-    parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
-                        help='Path to a config file that used to check against')
+    parser.add_argument(
+        '--master',
+        '-mf',
+        metavar='MF',
+        type=str,
+        nargs='+',
+        help='Path to a config file that used to check against')
 
-    parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                        help="Modules name with an attribute __CoreConfig__ that"
-                        " is a path to a master config file for checking"
-                        " against")
-    parser.add_argument('--version', action='version',
-                        version=('%(prog)s {version}'
-                                 '').format(version=current_version()))
+    parser.add_argument(
+        '--modules',
+        '-m',
+        metavar='M',
+        type=str,
+        nargs='+',
+        help="Modules name with an attribute __CoreConfig__ that"
+        " is a path to a master config file for checking"
+        " against")
+
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {version}'.format(version=current_version()))
+
     args = parser.parse_args()
     inidiff_main(args.config_files, master=args.master, modules=args.modules)
 
@@ -334,23 +356,35 @@ def inimake():
 
     """
 
-    parser = argparse.ArgumentParser(description=" Walk through creating a "
-                                                 " brand new config file "
-                                                 " guided by the master "
-                                                 " config and recipes!")
+    parser = argparse.ArgumentParser(
+        description=" Walk through creating a "
+        " brand new config file "
+        " guided by the master "
+        " config and recipes!")
 
-    parser.add_argument('--master', '-mf', metavar='MF', type=str, nargs='+',
-                        help='Path to a config file that used to check '
-                        'against')
+    parser.add_argument(
+        '--master',
+        '-mf',
+        metavar='MF',
+        type=str,
+        nargs='+',
+        help='Path to a config file that used to check '
+        'against')
 
-    parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                        help="Modules name with an attribute __CoreConfig__ that"
-                        " is a path to a master config file for checking"
-                        " against")
+    parser.add_argument(
+        '--modules',
+        '-m',
+        metavar='M',
+        type=str,
+        nargs='+',
+        help="Modules name with an attribute __CoreConfig__ that"
+        " is a path to a master config file for checking"
+        " against")
 
-    parser.add_argument('--version', action='version',
-                        version=('%(prog)s {version}'
-                                 '').format(version=current_version()))
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {version}'.format(version=current_version()))
 
     args = parser.parse_args()
 
@@ -368,7 +402,7 @@ def inimake():
     print("Building a new config file from scratch, if I have any questions"
           " I will ask!")
 
-    ################################# SECTIONS ################################
+    # SECTIONS ################################
     print("Looking through {:0.0f} config recipes that could be potential "
           " decisions...".format(len(mcfg.recipes)))
 
@@ -391,61 +425,6 @@ def inimake():
     # Apply recipes to clean up stuff that was added and populate ucfg.cfg
     ucfg.apply_recipes()
 
-    ################################# ITEMS ###################################
-    # # Look at all the items in all the sections
-    # print("Great! Let's go through items inside each section...")
-    # decisions = {}
-    # questions = 0
-    # for s in ucfg.cfg.keys():
-    #     decisions[s] = find_options_in_recipes(mcfg.recipes,
-    #                                            mcfg.cfg.keys(),
-    #                                            "remove_items",
-    #                                            condition_position=1)
-    #     if decisions[s]:
-    #         questions += len(decisions[s])
-    #
-    # print("There are {} items related choices to be made...\n"
-    #       "".format(questions))
-    #
-    # for s, choices in decisions.items():
-    #     selections = ask_config_setup(choices, section=s,
-    #                                            num_questions=questions)
-    #     for i in selections:
-    #         ucfg.raw_cfg[s][i] = mcfg.cfg[s][i].default
-    #
-    # # Apply recipes to clean up stuff that was added and populate ucfg.cfg
-    # ucfg.apply_recipes()
-    #
-    # ################################ Values #################################
-    # # Look at all the values in all the items
-    # print("Great! Let's go through the values that might need choosing...")
-    # decisions = {}
-    # questions = 0
-    # for s in ucfg.cfg.keys():
-    #     decisions[s] = {}
-    #
-    #     for i in mcfg.cfg[s].keys():
-    #         opts = mcfg.cfg[s][i].options
-    #         default = mcfg.cfg[s][i].default
-    #         if opts != None and type(default) != list :
-    #
-    #             decisions[s][i] = find_options_in_recipes(mcfg.recipes,
-    #                                                   opts,
-    #                                                   default,
-    #                                                   condition_position=2)
-    #             if decisions[s][i]:
-    #                 questions += len(decisions[s])
-    #
-    # print("There are {} value related choices to be made...\n"
-    #       "".format(questions))
-    #
-    # for s, choices in decisions.items():
-    #     selections = ask_config_setup(choices, section=s,
-    #                                            num_questions=questions)
-    #     for i in selections:
-    #         ucfg.raw_cfg[s][i] = mcfg.cfg[s][i].default
-
-    ################################# END ####################################
     # Clean up and report to the user
     print("Excellent! All finished with questions...")
     out_f = "generated_config.ini"
@@ -476,7 +455,8 @@ def check_for_changes(directory, modules=[], paths=[]):
         paths: list of paths to an inicheck changelog
         modules: list of python modules with an __config_changelog__ attribute
     Returns:
-        change_instances: dictionary with filenames as keys and line numbers in a list as the value.
+        change_instances: dictionary with filenames as keys and line numbers
+            in a list as the value.
     """
     changelogs = []
     change_instances = {}
@@ -530,7 +510,8 @@ def check_for_changes(directory, modules=[], paths=[]):
                     # replace all quotes to single
                     simple = line.replace('"', "'")
 
-                    if perfect_match in simple or secondary_match in simple.lower():
+                    if perfect_match in simple or \
+                            secondary_match in simple.lower():
                         line_numbers.append(i)
 
                 if line_numbers:
@@ -545,18 +526,30 @@ def detect_file_changes():
     references a deprecated config file entry as reported in a changelog
     """
 
-    parser = argparse.ArgumentParser(description='Search for python code '
-                                                 'referencing old config items '
-                                                 'and reports them')
-    parser.add_argument('directory', help='Directory containing python code to '
-                                          'search for old config items')
-    parser.add_argument('--modules', '-m', metavar='M', type=str, nargs='+',
-                        help="Modules name with an attribute __CoreConfig__ that"
-                        " is a path to a master config file for checking"
-                        " against")
-    parser.add_argument('--version', action='version',
-                        version=('%(prog)s {version}'
-                                 '').format(version=current_version()))
+    parser = argparse.ArgumentParser(
+        description='Search for python code '
+        'referencing old config items '
+        'and reports them')
+
+    parser.add_argument(
+        'directory',
+        help='Directory containing python code '
+        'to search for old config items')
+
+    parser.add_argument(
+        '--modules',
+        '-m',
+        metavar='M',
+        type=str,
+        nargs='+',
+        help="Modules name with an attribute __CoreConfig__ "
+        " that is a path to a master config file for checking"
+        " against")
+
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {version}'.format(version=current_version()))
     args = parser.parse_args()
 
     print("\nSearching {} for any deprecated config file sections/items in "
@@ -574,12 +567,13 @@ def detect_file_changes():
         if affected:
             for file, line_numbers in affected:
                 found = True
-                print("{0:<50}{1:<50}{2:<50}".format(change, file,
-                                                     ', '.join([str(s) for s in set(line_numbers)])))
+                print("{0:<50}{1:<50}{2:<50}".format(
+                    change, file,
+                    ', '.join([str(s) for s in set(line_numbers)])))
 
     if not found:
-        print("No instances from the changelog(s) were found in the code under "
-              "{}".format(args.directory))
+        print("No instances from the changelog(s) were found in the "
+              "code under {}".format(args.directory))
     print("")
 
 

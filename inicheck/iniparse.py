@@ -47,42 +47,41 @@ def parse_entry(info, item=None, valid_names=None):
     if not isinstance(info, list):
         info = [info]
 
-    last_three = []
-
     for s in info:
 
         if '=' in s:
             a = s.split('=')
 
         else:
-            raise ValueError('\n\nMaster Config file missing an equals sign in'
-                             ' entry or missing a comma right before the item '
-                             '"{0}" in the entry:\n"{1}"\nIssue generated from:'
-                             ' \n>> "{2}"'.format(item, info, s))
+            raise ValueError(
+                '\n\nMaster Config file missing an equals sign in'
+                ' entry or missing a comma right before the item '
+                '"{0}" in the entry:\n"{1}"\nIssue generated from:'
+                ' \n>> "{2}"'.format(item, info, s))
 
         name = (a[0].lower()).strip()
 
         # Check for constraints on potential names of entries
         if valid_names is not None and name not in valid_names or len(a) > 2:
-            raise ValueError("\nInvalid property set in the master config file,"
-                             " available options are: \n * {0}\n"
-                             "\nIf this is supposed to be a recipe, you may have"
-                             " forgotten to add keyword 'recipe' to the section"
-                             " name.\nIssue generated from: \n>> '{1}'"
-                             "".format("\n * ".join(valid_names), s))
+            raise ValueError(
+                "\nInvalid property set in the master config file,"
+                " available options are: \n * {0}\n"
+                "\nIf this is supposed to be a recipe, you may have"
+                " forgotten to add keyword 'recipe' to the section"
+                " name.\nIssue generated from: \n>> '{1}'"
+                "".format("\n * ".join(valid_names), s))
 
         value = a[1].strip()
-
-        result = []
         value = value.replace('\n', " ")
         value = value.replace('\t', "")
 
         # Is there a list of values provided?
         if '[' in value:
             if ']' not in value:
-                raise ValueError('Missing bracket or commas used in a list'
-                                 ' instead of spaces in config file under'
-                                 ' {0} in the entry:\n"{1}"'.format(name, info))
+                raise ValueError(
+                    'Missing bracket or commas used in a list'
+                    ' instead of spaces in config file under'
+                    ' {0} in the entry:\n"{1}"'.format(name, info))
             else:
                 value = (''.join(c for c in value if c not in '[]'))
                 value = value.split(' ')
@@ -149,11 +148,12 @@ def parse_sections(lines):
                 # This protects from funky syntax in a config file and alerts
                 # the user
                 if section is None:
-                    raise Exception("Non-section like syntax before any "
-                                    "sections were identified at line {0} in "
-                                    "config file. Please use bracketed sections"
-                                    " or use # or ; to write comments."
-                                    "".format(i))
+                    raise Exception(
+                        "Non-section like syntax before any "
+                        "sections were identified at line {0} in "
+                        "config file. Please use bracketed sections"
+                        " or use # or ; to write comments."
+                        "".format(i))
                 else:
                     result[section].append(line)
 
@@ -177,7 +177,7 @@ def parse_items(parsed_sections_dict, mcfg=None):
     for k, v in parsed_sections_dict.items():
         item = None
         result[k] = OrderedDict()
-        for i, val in enumerate(v):
+        for val in v:
             val = val.lstrip()
             # Look for item notation
 
@@ -289,7 +289,7 @@ def parse_changes(change_list):
         # build out an any list and populate it
         final_changes = []
 
-        for ii, c in enumerate(changes):
+        for c in changes:
             mods = ["any" for i in range(4)]
             mod_lst = []
             if "/" in c:

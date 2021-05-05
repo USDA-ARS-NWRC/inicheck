@@ -225,10 +225,12 @@ def print_details(details, mcfg):
             # A section and item was provided
             if nopts == 2:
                 if details[1] in mcfg[details[0]].keys():
-                    print(msg.format(details[0], details[1],
-                                     str(mcfg[details[0]][details[1]].default),
-                                     str(mcfg[details[0]][details[1]].options),
-                                     str(mcfg[details[0]][details[1]].description)))
+                    print(msg.format(
+                        details[0], details[1],
+                        str(mcfg[details[0]][details[1]].default),
+                        str(mcfg[details[0]][details[1]].options),
+                        str(mcfg[details[0]][details[1]].description)
+                    ))
                 else:
                     print("Item {0} in not a registered item."
                           "".format(details[1]))
@@ -269,7 +271,7 @@ def print_non_defaults(ucfg):
     hdr = '\n' + msg.format("Section", "Item", "Value", "Default")
 
     print("\n\nConfiguration File Non-Defaults Report:")
-    print("The following are all the items that had non-defaults values specified.")
+    print("Items with non-default values specified:")
     print("=" * len(hdr))
     print(hdr)
     print('-' * len(hdr))
@@ -285,7 +287,9 @@ def print_non_defaults(ucfg):
                     # Grab the default, make it a string list
                     default_lst = mk_lst(mcfg[s][i].default)
                     str_default_lst = [
-                        str(kk).lower() for kk in default_lst if str(kk).lower() != 'none']
+                        str(kk).lower() for kk in default_lst
+                        if str(kk).lower() != 'none'
+                    ]
 
                     # Grab the default, make it a string list
                     user_lst = mk_lst(cfg[s][i])
@@ -293,12 +297,13 @@ def print_non_defaults(ucfg):
 
                     for uv in str_lst:
                         # Single entries
-                        for vi, v in enumerate(str_default_lst):
+                        for v in str_default_lst:
                             if v != 'none':
                                 if uv not in str_default_lst:
                                     print(
                                         msg.format(
-                                            s, i, uv, ", ".join(str_default_lst)))
+                                            s, i, uv,
+                                            ", ".join(str_default_lst)))
                                     break
 
     print("")
@@ -337,8 +342,8 @@ def print_change_report(
     # Output warnings
     if len(potential_changes) > 0:
 
-        out("Default changes - Warnings issued only when old default values are "
-            "detected in file.\n")
+        out("Default changes - Warnings issued only when old default "
+            "values are detected in file.\n")
 
         out("Default Changes:")
         out("No. of default changes: {:0.0f}".format(len(potential_changes)))

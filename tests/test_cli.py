@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import unittest
-import sys
 import re
-from os.path import dirname, abspath, join
+import sys
+import unittest
+from os.path import abspath, dirname, join
 
-from inicheck.cli import inicheck_main, inidiff_main, current_version
+from inicheck.cli import current_version, inicheck_main, inidiff_main
 
 from .test_output import capture_print
 
@@ -104,7 +104,7 @@ class TestCLI(unittest.TestCase):
         exception_message = re.search(
             '(exception|error)', str(current_version()), re.IGNORECASE
         )
-        assert exception_message  is None
+        assert exception_message is None
 
 
 if __name__ == '__main__':
