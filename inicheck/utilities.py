@@ -65,9 +65,6 @@ def find_options_in_recipes(recipes, choice_search,
 
     """
 
-    # TODO ensure these can be removed
-    # decisions = {}
-    # conditional = ["any" for i in range(3)]
     final_choices = []
     pos = condition_position
 
@@ -285,8 +282,6 @@ def pcfg(cfg):
         try:
             for item in cfg[sec].keys():
                 print('\t' + item)
-                # TODO unused variable, ensure deletion is okay
-                # values = cfg[sec][item]
 
                 if isinstance(cfg[sec][item], list):
                     out = ", ".join(cfg[sec][item])
