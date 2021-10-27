@@ -70,4 +70,4 @@ jobs:
           python3 -m pip install -r requirements.txt
 
       - name: Run unittests
-        run: python3 -m unittest -v
+        run: python3 -m pytest -v
