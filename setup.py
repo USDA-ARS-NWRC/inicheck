@@ -21,8 +21,8 @@ setup(
                 "configuration files",
     long_description=readme + '\n\n' + history,
     long_description_content_type='text/x-rst',
-    author="Micah Johnson",
-    author_email='micah.johnson150@gmail.com',
+    author="USDA ARS NWRC",
+    author_email='snow@ars.usda.gov',
     url='https://github.com/USDA-ARS-NWRC/inicheck',
     project_urls={
         'Documentation': 'https://inicheck.readthedocs.io',
@@ -38,18 +38,18 @@ setup(
     },
     include_package_data=True,
     install_requires=requirements,
-    license="GNU General Public License v3",
+    license="CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     zip_safe=False,
     keywords='inicheck',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8'
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ],
     use_scm_version={
         'local_scheme': 'node-and-date',
@@ -58,8 +58,4 @@ setup(
         'setuptools_scm'
     ],
     test_suite='tests',
-    tests_require=[
-        'pytest',
-        'pytest-runner'
-    ],
 )

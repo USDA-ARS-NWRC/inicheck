@@ -1,9 +1,5 @@
-import importlib
 from collections import OrderedDict
-from os.path import abspath
-from os.path import join as pjoin
 
-from .entries import ConfigEntry
 from .iniparse import parse_changes, parse_items, parse_sections
 from .utilities import mk_lst, parse_date
 
@@ -72,10 +68,9 @@ class ChangeLog(object):
         are valid. Also confirms that removals are aligned with the master.
         """
         action_kw = ["any", 'removed']
-        cfe = ConfigEntry()
         invalids = []
 
-        for zz, c in enumerate(self.changes):
+        for c in self.changes:
             # Check the new assignments match the names of current master items
             current = c[1]
             valids = []
@@ -116,9 +111,9 @@ class ChangeLog(object):
 
         # Form a coherent message about incorrect changlog stuff
         if invalids:
-            msg = ("Changelog states a change that doesn't match the core config."
-                   " For a change to be valid the new changes must be in the"
-                   " Master Config file. Mismatches are:")
+            msg = ("Changelog states a change that doesn't match the core "
+                   "config. For a change to be valid the new changes must "
+                   "be in the Master Config file. Mismatches are:")
 
             for n in invalids:
                 msg += "\n * "
@@ -138,8 +133,6 @@ class ChangeLog(object):
         """
         required_changes = []
         potential_changes = []
-
-        cfe = ConfigEntry()
 
         cfg = ucfg.cfg
 
@@ -227,8 +220,6 @@ class ChangeLog(object):
             else:
                 s_n = c[1][0]
                 i_n = c[1][1]
-
-            #print(s_o, i_o, s_n, i_n)
 
             # Confirm new section in the config
             if not removal:

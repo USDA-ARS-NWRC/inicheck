@@ -3,6 +3,7 @@
 
 import re
 import sys
+
 from os.path import abspath, dirname, join
 
 from inicheck.cli import current_version, inicheck_main, inidiff_main
@@ -75,6 +76,7 @@ def test_inicheck_details_use(cli_tester):
 
     assert s.count("topo") >= 1
 
+<<<<<<< HEAD
 
 def test_inicheck_changelog_use(cli_tester):
     """ Test changelog detection output """
@@ -110,7 +112,6 @@ def test_inidiff(cli_tester):
 
     mismatches = s.split("config mismatches:")[-1].strip()
     assert '117' in mismatches
-
 
 def test_version(cli_tester):
     exception_message = re.search(

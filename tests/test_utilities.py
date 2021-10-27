@@ -10,8 +10,10 @@ from os.path import dirname, join
 
 import pytest
 from inicheck.tools import get_user_config
-from inicheck.utilities import *
-
+from inicheck.tools import get_user_config, get_inicheck_cmd
+from inicheck.utilities import parse_date, remove_comment, \
+    remove_chars, mk_lst, is_valid, is_kw_matched, get_kw_match,\
+    get_relative_to_cfg, find_options_in_recipes
 
 @pytest.mark.parametrize("value, expected", [
     ('test#comment', 'test'),

@@ -1,11 +1,9 @@
 -r requirements.txt
-autopep8==1.5
+autopep8
 coverage==4.5.4
 coveralls==1.11.1
 isort==4.3.21
-pyyaml==5.3
 sphinx-rtd-theme==0.4.3
 sphinx==1.8.5
 sphinxcontrib-apidoc==0.3.0
-twine==1.13.0
 pytest==6.0.2

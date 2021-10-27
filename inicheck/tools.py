@@ -2,8 +2,6 @@ import inspect
 import os
 import sys
 
-import inicheck.checkers
-
 from .changes import ChangeLog
 from .config import MasterConfig, UserConfig, check_types
 from .utilities import get_inicheck_cmd, mk_lst
@@ -217,7 +215,6 @@ def get_user_config(config_file, master_files=None, modules=None,
     if modules is None and master_files is None and mcfg is None:
         raise IOError("ERROR: Please provide either a module or a path to a"
                       " master config, or a master config object")
-        sys.exit()
 
     if os.path.isfile(config_file):
 
@@ -240,7 +237,7 @@ def get_user_config(config_file, master_files=None, modules=None,
     # If were not running the CLI, raise exceptions for issues
     # Check out any change logs for issues
     chlog = ChangeLog(paths=ucfg.mcfg.changelogs, mcfg=ucfg.mcfg)
-    potentials, required = chlog.get_active_changes(ucfg)
+    potentials, required = chlog.get_active_changes(ucfg)  # noqa
 
     # Required Changes that broke things
     if len(required) != 0 and not cli:

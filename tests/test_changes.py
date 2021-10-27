@@ -9,7 +9,7 @@ Tests for `inicheck.changes` module.
 
 import os
 
-from inicheck.changes import *
+from inicheck.changes import ChangeLog
 from inicheck.config import MasterConfig, UserConfig
 
 
@@ -27,5 +27,5 @@ class TestChanges():
         try:
             c = ChangeLog(paths=cf, mcfg=mcfg)
             assert True
-        except Exception as e:
+        except Exception:
             assert False
