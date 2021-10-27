@@ -95,8 +95,12 @@ def test_get_relative_to_cfg():
     ("tests_my_kw", ['tests', 'my', 'kw'], 3, True),
     # Finds all 2 in the string
     ("te_my_kw", ['tests', 'my', 'kw'], 2, True),
-    # No match
+    # Test our actual use case in ordered datetime check
+    ("start_date", ['start'], 1, True),
+    # No match at all
     ("te_ym_k", ['tests', 'my', 'kw'], 1, False),
+    # Test invalid search for 3 kw when only 2 are present
+    ("te_my_kw", ['tests', 'my', 'kw'], 3, False),
 ])
 def test_is_kw_matched(value, kw, count, expected):
     """
@@ -199,3 +203,4 @@ class TestUtilitiesDateParse():
     def test_parse_date_fails_with_unknown_string(self):
         with pytest.raises(TypeError):
             parse_date("10 F")
+
