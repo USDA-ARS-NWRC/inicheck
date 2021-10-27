@@ -7,9 +7,8 @@ test_utilities
 Tests for `inicheck.utilities` module.
 """
 from os.path import dirname, join
-
+from datetime import datetime, date
 import pytest
-from inicheck.tools import get_user_config
 from inicheck.tools import get_user_config, get_inicheck_cmd
 from inicheck.utilities import parse_date, remove_comment, \
     remove_chars, mk_lst, is_valid, is_kw_matched, get_kw_match,\

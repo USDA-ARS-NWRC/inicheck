@@ -76,8 +76,6 @@ def test_inicheck_details_use(cli_tester):
 
     assert s.count("topo") >= 1
 
-<<<<<<< HEAD
-
 def test_inicheck_changelog_use(cli_tester):
     """ Test changelog detection output """
 
