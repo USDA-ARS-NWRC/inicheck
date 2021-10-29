@@ -15,17 +15,13 @@ from inicheck.config import MasterConfig, UserConfig
 
 class TestChanges():
 
-    def test_valid_syntax(self):
+    def test_valid_syntax(self, master_ini, changelog_ini):
         """
         Test we can detect valid syntax
         """
-        base = os.path.dirname(__file__)
-        master = os.path.join(base, 'test_configs/CoreConfig.ini')
-        recipes = os.path.join(base, 'test_configs/recipes.ini')
-        mcfg = MasterConfig(path=[master, recipes])
-        cf = os.path.join(base, 'test_configs/changelog.ini')
+        mcfg = MasterConfig(path=master_ini)
         try:
-            c = ChangeLog(paths=cf, mcfg=mcfg)
+            c = ChangeLog(paths=changelog_ini, mcfg=mcfg)
             assert True
         except Exception:
             assert False

@@ -13,329 +13,201 @@ import os
 import pytest
 from inicheck.config import *
 from inicheck.tools import cast_all_variables, get_checkers
+from tests.conftest import TEST_ROOT, test_config_dir
+from os.path import join
 
-
-def compare_config(generated_config, truth_config,
-                   master=False, mcfg_attr='default'):
-    """
-    Compares config objects for quick tests:
-
-    Args:
-        generated_config: the config file the inicheck system produced automatically
-        truth_config: a dictionary made up for checking against
-        master: boolean for identifying if were checking master config
-        mcfg_attr: attribute we want to check when using a master config
-    Returns:
-        result: boolean describing if cfg are the same.
-    """
-
-    # First confirm all keys are available
-    for s in truth_config.keys():
-        if s not in generated_config:
-            print("\nERROR: test data contains section: {} that was not"
-                  " contained by the generated config.".format(s))
-            return False
-
-        for i, v in truth_config[s].items():
-
-            # Then confirm the item is in the section in the generated config
-            if i not in generated_config[s].keys():
-                print("\nERROR: test data contains item: {} in section: {} that was not"
-                      " contained by the generated config.".format(i, s))
-                return False
-
-            # Check the value
-            else:
-                # if it is a master config object then use it differently.
-                if master:
-                    gv = getattr(generated_config[s][i], mcfg_attr)
-                    emsg = "\nERROR: config.{} = {} not {}.".format(
-                        mcfg_attr,
-                        gv,
-                        v)
-
-                # Normal config
-                else:
-                    gv = generated_config[s][i]
-                    emsg = "\nERROR: config[{}][{}] = {} not {}.".format(s, i, gv,
-                                                                         v)
-                # Confirm values are the same
-                if gv != v:
-                    # print(emsg)
-                    return False
-
-    return True
-
-
-class UserConfigTester():
-    def __init__(self):
-        """
-        """
-        fname = os.path.abspath(
-            os.path.dirname(__file__) +
-            '/test_configs/full_config.ini')
+class TestUserConfig:
+    @pytest.fixture(scope='class')
+    def ucfg(self, full_config_ini):
         mcfg = MasterConfig(modules='inicheck')
-        self.ucfg = UserConfig(fname, mcfg=mcfg)
+        return UserConfig(full_config_ini, mcfg=mcfg)
 
+    @pytest.fixture(scope='class')
+    def ucfg_w_recipes(self, full_config_ini):
+        mcfg = MasterConfig(modules='inicheck')
 
-@pytest.fixture
-def ucfg_tester():
-    return UserConfigTester()
+        ucfg = UserConfig(full_config_ini, mcfg=mcfg)
+        ucfg.apply_recipes()
+        return ucfg
 
-
-def test_ucfg_init(ucfg_tester):
-    """
-    Simply opens and looks at the base config BEFORE all the recipes and
-    stuff has been applied
-    """
-
-    # Assert important attributes
-    for a in ['mcfg', 'cfg', 'raw_cfg', 'recipes']:
-        assert(hasattr(ucfg_tester.ucfg, a))
-
-
-def test_apply_recipes(ucfg_tester):
-    """
-    Tests that the correct recipes were identified to be used for
-    interpretation
-    """
-
-    truth = {'topo':
-             {'filename': ['None'],
-              'type': 'netcdf'},
-             'cloud_factor':
-             {'distribution': 'idw'}
-             }
-
-    ucfg_tester.ucfg.apply_recipes()
-    valid_recipes = ['topo_basic_recipe', 'time_recipe', 'air_temp_recipe',
-                     'vp_recipe', 'wind_recipe', 'precip_recipe',
-                     'non_winstral_recipe', 'cloud_factor_recipe',
-                     'albedo_recipe', 'date_decay_method_recipe',
-                     'solar_recipe', 'thermal_recipe', 'soil_recipe',
-                     'output_recipe', 'system_recipe', 'csv_recipe',
-                     'remove_wind_ninja_recipe', 'non_grid_local_recipe',
-                     'dk_recipe', 'idw_recipe']
-    for v in valid_recipes:
-        assert v in [r.name for r in ucfg_tester.ucfg.recipes]
-
-
-class RecipeTester():
-
-    def __init__(self):
-        self.fname = os.path.abspath(os.path.dirname(__file__) +
-                                     '/test_configs/full_config.ini')
-
-        self.mcfg = MasterConfig(modules='inicheck')
-        self.ucfg = UserConfig(self.fname, mcfg=self.mcfg)
-
-    def modify_cfg(self, mod_cfg):
+    @pytest.mark.parametrize('important_att', ['mcfg', 'cfg', 'raw_cfg', 'recipes'])
+    def test_userconfig_attributes(self, ucfg, important_att):
         """
+        Simply confirms the user config has the important attributes that inicheck relies on
         """
+        assert (hasattr(ucfg, important_att))
 
+    @pytest.mark.parametrize("expected_recipe_name", [
+        'topo_basic_recipe', 'time_recipe', 'air_temp_recipe', 'vp_recipe', 'wind_recipe', 'precip_recipe',
+        'non_winstral_recipe', 'cloud_factor_recipe', 'albedo_recipe', 'date_decay_method_recipe', 'solar_recipe',
+        'thermal_recipe', 'soil_recipe', 'output_recipe', 'system_recipe', 'csv_recipe', 'remove_wind_ninja_recipe',
+        'non_grid_local_recipe', 'dk_recipe', 'idw_recipe'
+    ])
+    def test_apply_recipes(self, ucfg_w_recipes, expected_recipe_name):
+        """
+        Tests that the correct recipes were identified to be used for
+        interpretation
+        """
+        assert expected_recipe_name in [r.name for r in ucfg_w_recipes.recipes]
+
+
+class TestRecipeActions:
+    """
+    This tests the interpretation/actions of the recipes on the config.
+    """
+
+    @pytest.fixture(scope='function')
+    def ucfg(self, full_config_ini, del_sections, mod_cfg):
+        mcfg = MasterConfig(modules='inicheck')
+        ucfg = UserConfig(full_config_ini, mcfg=mcfg)
+
+        # Delete and section
+        for s in del_sections:
+            del ucfg.raw_cfg[s]
+
+        # Modify the config
         for s, v in mod_cfg.items():
-            self.ucfg.raw_cfg[s] = v
+            ucfg.raw_cfg[s] = v
 
-        self.ucfg.apply_recipes()
+        ucfg.apply_recipes()
+        return ucfg
 
-    def check_items(self, section=None, ignore=[]):
+    def check_items(self, ucfg, section=None, ignore=[]):
         """
         Checks a section for all the items in the master config.
 
         Args:
+            ucfg: instantiated UserConfig
             section: Section to exmaine
             ignore: list of items to ignore useful for case when not everything
                     is added for certain values
         """
-        checkable = [v for v in self.mcfg.cfg[section].keys()
+        checkable = [v for v in ucfg.mcfg.cfg[section].keys()
                      if v not in ignore]
 
         for v in checkable:
-            assert v in self.ucfg.cfg[section].keys()
+            assert v in ucfg.cfg[section].keys()
 
-    def check_defaults(self, section=None, ignore=[]):
+    def check_defaults(self, ucfg, section=None, ignore=[]):
         """
         Checks a section for all the items in the master config.
         """
-        checkable = [v for v in self.mcfg.cfg[section].keys()
+        checkable = [v for v in ucfg.mcfg.cfg[section].keys()
                      if v not in ignore]
 
         for i in checkable:
-            assert self.ucfg.cfg[section][i] == self.mcfg.cfg[section][i].default
+            assert ucfg.cfg[section][i] == ucfg.mcfg.cfg[section][i].default
 
-
-@pytest.fixture
-def recipe_tester():
-    return RecipeTester()
-
-
-def test_apply_defaults(recipe_tester):
-    """
-    Tests the functionality of a recipes ability to add in defaults for
-    section when a section is not there.
-    """
-
-    del recipe_tester.ucfg.raw_cfg['csv']
-
-    test = {'csv': {'stations': None}}
-    recipe_tester.modify_cfg(test)
-
-    recipe_tester.check_items(section='csv')
-    recipe_tester.check_defaults(section='csv')
-
-
-def test_remove_section(recipe_tester):
-    """
-    Tests the functionality of a recipes ability to a section in defaults for
-    section when a section is not there.
-    """
-
-    del recipe_tester.ucfg.raw_cfg['csv']
-
-    # Order matters, since we have conflicting recipes the first one will be
-    # applied, in this case CSV will beat out gridded
-    test = {'csv': {'stations': None},
-            'gridded': {}}
-
-    recipe_tester.modify_cfg(test)
-
-    recipe_tester.check_items(section='csv')
-    assert 'gridded' not in recipe_tester.ucfg.cfg.keys()
-
-
-def test_remove_item_for_a_section(recipe_tester):
-    """
-    Sometimes a recipe will remove an item when a certain section is present
-    This tests that scenario occurs, uses thermal_distribution_recipe
-    """
-
-    test = {'gridded': {'data_type': 'wrf'}}
-    # The order of recipes matters. Del the csv section to avoid recipes on
-    # it
-    del recipe_tester.ucfg.raw_cfg['csv']
-    recipe_tester.modify_cfg(test)
-
-    assert 'distribution' not in recipe_tester.ucfg.cfg['thermal'].keys()
-
-
-def test_add_items_for_has_value(recipe_tester):
-    """
-    Recipes have the available keyword has_value to trigger on event where
-    a section item has a value. This tests that we can trigger on it and
-    make edits. Test uses the idw_recipe in which if any section is found
-    with the item distribution set to idw, then we add idw_power and remove
-    dk_ncores.
-    """
-
-    test = {'precip': {'distribution': 'idw', 'dk_ncores': '2'}}
-    recipe_tester.modify_cfg(test)
-
-    assert 'dk_ncores' not in recipe_tester.ucfg.cfg['precip'].keys()
-    assert 'idw_power' in recipe_tester.ucfg.cfg['precip'].keys()
-
-
-def test_apply_defaults_for_has_value(recipe_tester):
-    """
-    This recipe applies defaults to items when an item has a certain value
-    This test uses the krig_recipe in which any item distribution is set to
-    kriging applies several defautls.
-    """
-
-    test = {'precip': {'distribution': 'kriging', 'dk_ncores': '2'}}
-    recipe_tester.modify_cfg(test)
-    assert 'krig_variogram_model' in recipe_tester.ucfg.cfg['precip'].keys()
-    assert 'dk_ncores' not in recipe_tester.ucfg.cfg['precip'].keys()
-
-
-class MasterConfigTester():
-    def __init__(self):
+    @pytest.mark.parametrize("del_sections, mod_cfg, section_to_check", [
+        (['csv'], {'csv': {'stations': None}}, 'csv')
+    ])
+    def test_apply_defaults(self, ucfg, del_sections, mod_cfg, section_to_check):
         """
-        Stage our truthing data here
+        Tests the functionality of a recipes ability to ADD in defaults for
+        section when a section is not there.
         """
-        self.truth_defaults = {'topo':
-                               {'type': 'netcdf',
-                                'filename': ['./common_data/topo/topo.nc']},
-                               'air_temp':
-                               {'distribution': 'idw',
-                                'detrend': 'true',
-                                'dk_ncores': '1'}}
+        self.check_items(ucfg, section=section_to_check)
+        self.check_defaults(ucfg, section=section_to_check)
+
+    @pytest.mark.parametrize("del_sections, mod_cfg, expected_removed_section", [
+        # Order matters, since we have conflicting recipes the first one will be
+        # applied, in this case CSV will beat out gridded
+        (['csv'], {'csv': {'stations': None}, 'gridded': {}}, 'gridded')
+    ])
+    def test_remove_section(self, ucfg, del_sections, mod_cfg, expected_removed_section):
+        """
+        Tests the functionality of a recipes ability to REMOVE a section in defaults
+        """
+        assert expected_removed_section not in ucfg.cfg.keys()
+
+    @pytest.mark.parametrize("del_sections, mod_cfg, expected_section, expected_item_removed", [
+        # Test removing an item when a section is present
+        (['csv'], {'gridded': {'data_type': 'wrf'}}, 'thermal', 'distribution'),
+        # Test removing an item when an item has a value
+        ([], {'precip': {'distribution': 'idw', 'dk_ncores': '2'}}, 'precip', 'dk_ncore')
+    ])
+    def test_remove_item_recipe(self, ucfg, del_sections, mod_cfg, expected_section, expected_item_removed):
+        """
+        Recipes can be triggered to remove items under certain events. The triggers can be the presence of a section
+        or an item has a specific value
+        """
+        assert expected_item_removed not in ucfg.cfg[expected_section].keys()
+
+    @pytest.mark.parametrize("del_sections, mod_cfg, expected_section, expected_item_added", [
+        # Test krig_recipe which added the variogram when the distribution is kriging
+        (['precip'], {'precip': {'distribution': 'kriging'}}, 'precip', 'krig_variogram_model')
+    ])
+    def test_adding_item_recipe(self, ucfg, del_sections, mod_cfg, expected_section, expected_item_added):
+        """
+        This recipe applies defaults to items when an item has a certain value
+        """
+        assert expected_item_added in ucfg.cfg[expected_section].keys()
 
 
-@pytest.fixture
-def mcfg_tester():
-    return MasterConfigTester()
+class TestMasterConfig():
+    @pytest.fixture
+    def mcfg(self):
+        return MasterConfig(modules='inicheck')
 
+    @pytest.mark.parametrize("mcfg_kwargs", [
+    ({"modules":'inicheck'}), # Master config from module
+    ({"path": join(TEST_ROOT, 'test_configs', 'CoreConfig.ini')}),  # Master config from file path
+    ])
+    def test_mcfg_instantiate(self, mcfg_kwargs):
+        """
+        Attempt to instantiate a master config with different kwargs
+        """
+        try:
+            MasterConfig(**mcfg_kwargs)
+            assert True
+        except BaseException:
+            assert False
 
-def test_grabbing_mcfg(mcfg_tester):
-    """
-    Builds a master config from the module and paths, check it.
-    """
-    # Build a master config file using multiple files
-    try:
-        mcfg = MasterConfig(modules='inicheck')
-        assert True
-    except BaseException:
-        assert False
-
-    base = os.path.dirname(__file__)
-    master = os.path.join(base, "./test_configs/CoreConfig.ini")
-    recipes = os.path.join(base, "./test_configs/recipes.ini")
-
-    try:
-        mcfg = MasterConfig(path=[master, recipes])
-        assert True
-    except BaseException:
-        assert False
-
-
-def test_add_files(mcfg_tester):
-    """
-    Builds a master config from the files, check it.
-    """
-    # Build a master config file using multiple files
-    base = os.path.dirname(__file__)
-    master = os.path.join(base, "test_configs/CoreConfig.ini")
-    recipes = os.path.join(base, "test_configs/recipes.ini")
-
-    mcfg = MasterConfig(path=master)
-    mcfg.cfg = mcfg.add_files([master, recipes])
-
-    valid_sections = ['topo', 'csv', 'air_temp']
-    for v in valid_sections:
-        assert v in mcfg.cfg.keys()
-
-    assert 'topo_basic_recipe' in [r.name for r in mcfg.recipes]
-
-
-def test_check_types(mcfg_tester):
-    """
-    Checks to make sure we throw the correct error when an unknown data
-    type is requested
-    """
-
-    # Call out a BS entry type to raise the error
-    checkers = get_checkers()
-    valids = ['bool', 'criticaldirectory', 'criticalfilename',
-              'discretionarycriticalfilename', 'datetime',
-              'datetimeorderedpair', 'directory', 'filename', 'float',
-              'int', 'string', 'url']
-
-    for kw in valids:
-        line = ["type = {}".format(kw), "description = test"]
-        cfg = {"section": {"test": ConfigEntry(name='test',
-                                               parseable_line=line)}}
-        assert check_types(cfg, checkers)
-
-
-def test_check_types_exception(mcfg_tester):
-
-    # Call out a BS entry type to raise the error
-    checkers = get_checkers()
-    invalids = ['str', 'filepath', 'criticalfile']
-
-    for kw in invalids:
-        line = ["type = {}".format(kw), "description = test"]
-        cfg = {"section": {"test": ConfigEntry(name='test',
-                                               parseable_line=line)}}
+    def test_exception_on_no_files(self):
+        """
+        This tests that a master config when attempted to instantiate without a module or a path throws an exception
+        """
         with pytest.raises(ValueError):
-            check_types(cfg, checkers)
+            MasterConfig()
+
+    def test_add_recipe_file(self, core_ini, recipes_ini):
+        """
+        Builds a master config from the files, add a recipe file, check that the recipe name is in the list
+        """
+        # Build a master config file using multiple files
+        mcfg = MasterConfig(path=core_ini)
+        mcfg.cfg = mcfg.add_files([recipes_ini])
+        assert 'topo_basic_recipe' in [r.name for r in mcfg.recipes]
+
+#     @pytest.mark.parametrize("valid_type")
+#     def test_check_types(mcfg_tester):
+#         """
+#         Checks to make sure we throw the correct error when an unknown data
+#         type is requested
+#         """
+#
+#         # Call out a BS entry type to raise the error
+#         checkers = get_checkers()
+#         valids = ['bool', 'criticaldirectory', 'criticalfilename',
+#                   'discretionarycriticalfilename', 'datetime',
+#                   'datetimeorderedpair', 'directory', 'filename', 'float',
+#                   'int', 'string', 'url']
+#
+#         for kw in valids:
+#             line = ["type = {}".format(kw), "description = test"]
+#             cfg = {"section": {"test": ConfigEntry(name='test',
+#                                                    parseable_line=line)}}
+#             assert check_types(cfg, checkers)
+#
+#
+# def test_check_types_exception(mcfg_tester):
+#     # Call out a BS entry type to raise the error
+#     checkers = get_checkers()
+#     invalids = ['str', 'filepath', 'criticalfile']
+#
+#     for kw in invalids:
+#         line = ["type = {}".format(kw), "description = test"]
+#         cfg = {"section": {"test": ConfigEntry(name='test',
+#                                                parseable_line=line)}}
+#         with pytest.raises(ValueError):
+#             check_types(cfg, checkers)

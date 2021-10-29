@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-import sys
-
-from os.path import join
-
 from inicheck.cli import current_version, inicheck_main, inidiff_main
 from .test_output import capture_print
 import pytest

@@ -1,9 +1,9 @@
-import os
+from os.path import join, dirname, abspath
 from pathlib import Path
 
 import pytest
 
-TEST_ROOT = os.path.dirname(os.path.abspath(__file__))
+TEST_ROOT = dirname(abspath(__file__))
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -13,26 +13,34 @@ def test_config_dir():
 
 @pytest.fixture(scope='session', autouse=True)
 def full_config_ini(test_config_dir):
-    return Path(test_config_dir).joinpath("full_config.ini")
+    return join(test_config_dir, "full_config.ini")
+
 
 @pytest.fixture(scope='session', autouse=True)
 def base_config_ini(test_config_dir):
-    return Path(test_config_dir).joinpath("base_cfg.ini")
+    return join(test_config_dir, "base_cfg.ini")
+
 
 @pytest.fixture(scope='session', autouse=True)
 def old_smrf_config_ini(test_config_dir):
-    return Path(test_config_dir).joinpath("old_smrf_config.ini")
+    return join(test_config_dir, "old_smrf_config.ini")
 
 
 @pytest.fixture(scope='session', autouse=True)
 def changelog_ini(test_config_dir):
-    return Path(test_config_dir).joinpath("changelog.ini")
+    return join(test_config_dir, "changelog.ini")
 
 
 @pytest.fixture(scope='session', autouse=True)
-def master_ini(test_config_dir):
-    return [os.path.join(test_config_dir, "CoreConfig.ini"), os.path.join(test_config_dir, "recipes.ini")]
+def core_ini(test_config_dir):
+    return join(test_config_dir, "CoreConfig.ini")
+
 
 @pytest.fixture(scope='session', autouse=True)
 def recipes_ini(test_config_dir):
-    return Path(test_config_dir).joinpath("recipes.ini")
+    return join(test_config_dir, "recipes.ini")
+
+
+@pytest.fixture(scope='session', autouse=True)
+def master_ini(core_ini, recipes_ini):
+    return [core_ini, recipes_ini]
