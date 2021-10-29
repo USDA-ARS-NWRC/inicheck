@@ -43,77 +43,78 @@ def capture_print(function_call, *args, **kwargs):
     return out
 
 
-class OutputTester():
+class TestOutput:
 
-    def __init__(self):
-        base = os.path.dirname(__file__)
-        self.ucfg = get_user_config(os.path.join(base, "test_configs/full_config.ini"),
-                                    modules="inicheck")
+    @pytest.fixture()
+    def ucfg(self, full_config_ini):
+        return get_user_config(full_config_ini, modules="inicheck")
+
+    def test_generate_config_header(self, ucfg):
+        """
+            Tests if we generate a config and dump it to a file with a header
+            """
+        generate_config(ucfg, 'out_config.ini', cli=False)
+
+        with open('out_config.ini') as fp:
+            lines = fp.readlines()
+            fp.close()
+
+        # Assert a header is written
+        assert 'Configuration' in lines[1]
+
+    def test_generate_config_sections(self, ucfg):
+        """
+            Tests if we generate a config and dump it to a file and all
+            the sections are written to the file
+            """
+        generate_config(ucfg, 'out_config.ini', cli=False)
+
+        with open('out_config.ini') as fp:
+            lines = fp.readlines()
+            fp.close()
+
+        key_count = 0
+
+        # Assert all the sections are written
+        for k in ucfg.cfg.keys():
+            for line in lines:
+                if k in line:
+                    key_count += 1
+                    break
+
+        assert key_count == len(ucfg.cfg.keys())
+
+    @pytest.mark.parametrize('keyword, expected_count', [
+        ('\n', 365),  # Test 365 line returns are produced
+        ('recipe', 34)  # Test 34 recipes are printed out
+    ])
+    def test_print_recipe_summary(self, ucfg, keyword, expected_count):
+        """
+            Checks that the print_summary produces a specific count of a keyword in the output
+            """
+        lst_recipes = ucfg.mcfg.recipes
+        out = capture_print(print_recipe_summary, lst_recipes)
+        assert out.count(keyword) == expected_count
+
+    @pytest.mark.parametrize('details_list, keyword, expected_count', [
+        (['air_temp'], 'air_temp', 18),  # test details on one section, should match the number of items in the section
+        (['precip', 'distribution'], 'distribution', 1),  # test details output on an item
+    ])
+    def test_print_details(self, ucfg, details_list, keyword, expected_count):
+        """
+        Tests the function for printting help on the master config
+        """
+        # Test for a whole section
+        out = capture_print(print_details, details_list, ucfg.mcfg.cfg)
+
+        assert out.count(keyword) == expected_count
 
 
-@pytest.fixture
-def output_tester():
-    return OutputTester()
+    def test_non_default_print(self, ucfg):
+        """
+        Tests if printing the non-defaults is working
+        """
+        out = capture_print(print_non_defaults, ucfg)
 
-
-def test_generate_config(output_tester):
-    """
-    Tests if we generate a config to a file
-    """
-    generate_config(output_tester.ucfg, 'out_config.ini', cli=False)
-
-    with open('out_config.ini') as fp:
-        lines = fp.readlines()
-        fp.close()
-
-    # Assert a header is written
-    assert 'Configuration' in lines[1]
-
-    key_count = 0
-
-    # Assert all the sections are written
-    for k in output_tester.ucfg.cfg.keys():
-        for l in lines:
-            if k in l:
-                key_count += 1
-                break
-
-    assert key_count == len(output_tester.ucfg.cfg.keys())
-
-
-def test_print_recipe_summary(output_tester):
-    """
-    Checks that the output produces 366 lines of recipe info
-    """
-    lst_recipes = output_tester.ucfg.mcfg.recipes
-    out = capture_print(print_recipe_summary, lst_recipes)
-
-    assert len(out.split('\n')) == 366
-    assert out.count('recipe') == 34
-
-
-def test_print_details(output_tester):
-    """
-    Tests the function for printting help on the master config
-    """
-    # Test for a whole section
-    details = ['air_temp']
-    out = capture_print(print_details, details, output_tester.ucfg.mcfg.cfg)
-
-    assert out.count('air_temp') == len(
-        output_tester.ucfg.mcfg.cfg[details[0]])
-
-    # test for a section and item
-    details = ['precip', 'distribution']
-    out = capture_print(print_details, details, output_tester.ucfg.mcfg.cfg)
-    assert out.count('precip ') == 1
-
-
-def test_non_default_print(output_tester):
-    """
-    Tests if printing the non-defaults is working
-    """
-    out = capture_print(print_non_defaults, output_tester.ucfg)
-
-    # Check that we have 27 lines of info for non-defaults
-    assert len(out.split('\n')) == 27
+        # Check that we have 27 lines of info for non-defaults
+        assert len(out.split('\n')) == 27

@@ -57,35 +57,29 @@ def test_remove_chars():
     assert ' ' not in out
 
 
-def test_find_options_in_recipes():
+@pytest.mark.parametrize("expected_options", [
+    (['gridded', 'csv', 'mysql'])
+])
+def test_find_options_in_recipes(full_ucfg, expected_options):
     """
     Tests utilities.find_options_in_recipes which extracts choices being
     made by looking at the recipes and determining which work on each other
     such that they don't exist at the same time. Used in the inimake cli
     """
-    base = dirname(__file__)
-    ucfg = get_user_config(join(base, "test_configs", "full_config.ini"),
-                           modules='inicheck')
-    mcfg = ucfg.mcfg
+    mcfg = full_ucfg.mcfg
     choices = find_options_in_recipes(mcfg.recipes, mcfg.cfg.keys(),
                                       "remove_section")
-
-    # Currently there is 3 sections that are set as optional in the recipes
-    for opt in ['gridded', 'mysql', 'csv']:
-        assert opt in choices[0]
+    assert sorted(expected_options) == sorted(choices[0])
 
 
-def test_get_relative_to_cfg():
+def test_get_relative_to_cfg(full_ucfg):
     """
     Tests that all paths in a config can be made relative to the config
     """
-    base = dirname(__file__)
-    ucfg = get_user_config(join(base, "test_configs", "full_config.ini"),
-                           modules='inicheck')
-    mcfg = ucfg.mcfg
+    mcfg = full_ucfg.mcfg
     choices = find_options_in_recipes(mcfg.recipes, mcfg.cfg.keys(),
                                       "remove_section")
-    p = get_relative_to_cfg(__file__, ucfg.filename)
+    p = get_relative_to_cfg(__file__, full_ucfg.filename)
     assert p == '../test_utilities.py'
 
 
@@ -147,18 +141,16 @@ def test_is_valid(value, dtype, allow_none, expected):
     assert result[1] == expected[1]
 
 
-def test_get_inicheck_cmd():
+def test_get_inicheck_cmd(full_config_ini):
     """
     Test if the cmd used to generate the str command is working
 
     """
-    base = dirname(__file__)
-    fname = join(base, "test_configs", "full_config.ini")
     cmd = get_inicheck_cmd(
-        fname,
+        full_config_ini,
         modules='inicheck',
         master_files=None)
-    assert cmd == 'inicheck -f {} -m inicheck'.format(fname)
+    assert cmd == 'inicheck -f {} -m inicheck'.format(full_config_ini)
 
 
 class TestUtilitiesDateParse():
