@@ -29,11 +29,12 @@ class TestEntries():
         assert(t.conditions == expected_conditions_list)
 
     @pytest.mark.parametrize("entry_str_list, expected_attribute, expected_value", [
-        (["default= [swe_z]", "type= string list"], 'default', ['swe_z']),
+        (["default= [swe_z]", "type= string list"], 'default', ['swe_z']),  # Test the list keyword in the type
+        (["default= [swe_z]", "type= string listed"], 'default', ['swe_z']), # Test the other list keyword in type
         (["default= 10.5", "type= float"], 'default', '10.5'),
         (["min = 2"], 'min', '2'),
-        # (["allow_none = true"], 'allow_none', 'true'),
-        # (["allow_none = false"], 'allow_none', False),
+        (["allow_none = true"], 'allow_none', True),
+        (["allow_none = false"], 'allow_none', False),
         (["options = [auth guest]"], 'options', ['auth', 'guest']),
         (["description = test"], 'description', 'test'),
     ])
@@ -44,3 +45,9 @@ class TestEntries():
         e = ConfigEntry(name=None, parseable_line=entry_str_list)
         assert getattr(e, expected_attribute) == expected_value
 
+    def test_config_entry_allow_none_exception(self):
+        """
+        Test that an invalid string bool raises an exception
+        """
+        with pytest.raises(ValueError):
+            e = ConfigEntry(name=None, parseable_line=['allow_none = ture'])
