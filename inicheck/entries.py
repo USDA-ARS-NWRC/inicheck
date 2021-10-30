@@ -190,4 +190,5 @@ class ConfigEntry:
         elif str(self.allow_none).lower() == 'true':
             self.allow_none = True
         else:
-            raise ValueError('Unrecognized allow_none in config entry named {}'.format(self.name))
+            raise ValueError('Unrecognized allow_none in config entry named {}'
+                             ''.format(self.name))

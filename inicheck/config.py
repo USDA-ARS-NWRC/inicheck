@@ -10,7 +10,7 @@ from .iniparse import read_config
 from .utilities import get_relative_to_cfg, mk_lst
 
 # Unused import required for get_checkers to work.
-from . import checkers as checkers_module
+from . import checkers as checkers_module  # noqa
 
 DEBUG = False
 FULL_DEBUG = False
