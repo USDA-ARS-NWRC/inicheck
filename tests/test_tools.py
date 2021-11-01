@@ -13,6 +13,7 @@ from datetime import datetime
 from os.path import join
 from .conftest import TEST_ROOT
 
+
 @pytest.mark.parametrize('fn_kwargs, expected_types', [
     ({}, ['bool', 'criticaldirectory', 'criticalfilename', 'datetime', 'datetimeorderedpair',
           'directory', 'filename', 'float', 'int', 'string', 'url']),
@@ -38,6 +39,7 @@ def test_check_config(full_ucfg):
     """
     warnings, errors = check_config(full_ucfg)
     assert len(errors) == 11
+
 
 @pytest.mark.parametrize("section, item, str_value, expected_type", [
     ('time', 'start_date', "10-1-2019", datetime),
@@ -75,14 +77,17 @@ def test_config_documentation_error():
         f = '/no/folder/exists/f.rst'
         config_documentation(f, modules='inicheck')
 
+
 @pytest.fixture()
 def documentation_f():
     f = 'test.rst'
     yield f
     os.remove(f)
+
+
 @pytest.mark.parametrize("fn_kwargs", [
-     {"modules": 'inicheck'},
-     {"paths": [join(TEST_ROOT, 'test_configs', 'CoreConfig.ini')]}
+    {"modules": 'inicheck'},
+    {"paths": [join(TEST_ROOT, 'test_configs', 'CoreConfig.ini')]}
 ])
 def test_config_documentation(documentation_f, fn_kwargs):
     """
@@ -94,4 +99,3 @@ def test_config_documentation(documentation_f, fn_kwargs):
     with open(documentation_f) as fp:
         lines = fp.readlines()
     assert len(lines) == 1483
-

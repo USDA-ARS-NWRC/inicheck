@@ -1,7 +1,7 @@
 import pytest
 
 from inicheck import checkers
-from inicheck.config import MasterConfig, UserConfig
+from inicheck.config import UserConfig
 from .conftest import TEST_ROOT
 from os.path import join
 
@@ -9,20 +9,14 @@ from os.path import join
 class CheckerTestBase:
     checker_cls = None
 
-    @pytest.fixture(scope='function')
-    def master_config(self, test_config_dir, section, item):
-        """
-        Master config from test data
-        """
-        return MasterConfig(
-            path=test_config_dir.joinpath('master.ini').as_posix()
-        )
-
     @pytest.fixture
-    def user_config(self, test_config_dir, master_config):
+    def user_config(self, base_config_ini, basic_mcfg):
+        """
+        Use a function scoped user_config to allow for modifying of the object
+        """
         return UserConfig(
-            test_config_dir.joinpath('base_cfg.ini').as_posix(),
-            mcfg=master_config
+            base_config_ini,
+            mcfg=basic_mcfg
         )
 
     @pytest.fixture

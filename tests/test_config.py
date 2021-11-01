@@ -7,31 +7,26 @@ test_config
 Tests for `inicheck.config` module.
 """
 import pytest
-from inicheck.config import *
+from inicheck.config import MasterConfig, UserConfig, check_types
+from inicheck.entries import ConfigEntry
 from tests.conftest import TEST_ROOT
 from os.path import join
 
 
 class TestUserConfig:
-    @pytest.fixture(scope='class')
-    def ucfg(self, full_config_ini):
-        mcfg = MasterConfig(modules='inicheck')
-        return UserConfig(full_config_ini, mcfg=mcfg)
 
     @pytest.fixture(scope='class')
-    def ucfg_w_recipes(self, full_config_ini):
-        mcfg = MasterConfig(modules='inicheck')
-
-        ucfg = UserConfig(full_config_ini, mcfg=mcfg)
+    def ucfg_w_recipes(self, full_config_ini, full_mcfg):
+        ucfg = UserConfig(full_config_ini, mcfg=full_mcfg)
         ucfg.apply_recipes()
         return ucfg
 
     @pytest.mark.parametrize('important_att', ['mcfg', 'cfg', 'raw_cfg', 'recipes'])
-    def test_userconfig_attributes(self, ucfg, important_att):
+    def test_userconfig_attributes(self, full_ucfg, important_att):
         """
         Simply confirms the user config has the important attributes that inicheck relies on
         """
-        assert (hasattr(ucfg, important_att))
+        assert (hasattr(full_ucfg, important_att))
 
     @pytest.mark.parametrize("expected_recipe_name", [
         'topo_basic_recipe', 'time_recipe', 'air_temp_recipe', 'vp_recipe', 'wind_recipe', 'precip_recipe',
@@ -53,9 +48,8 @@ class TestRecipeActions:
     """
 
     @pytest.fixture(scope='function')
-    def ucfg(self, full_config_ini, del_sections, mod_cfg):
-        mcfg = MasterConfig(modules='inicheck')
-        ucfg = UserConfig(full_config_ini, mcfg=mcfg)
+    def ucfg(self, full_config_ini, full_mcfg, del_sections, mod_cfg):
+        ucfg = UserConfig(full_config_ini, mcfg=full_mcfg)
 
         # Delete and section
         for s in del_sections:
@@ -141,9 +135,6 @@ class TestRecipeActions:
 
 
 class TestMasterConfig():
-    @pytest.fixture
-    def mcfg(self):
-        return MasterConfig(modules='inicheck')
 
     @pytest.mark.parametrize("mcfg_kwargs", [
         ({"modules": 'inicheck'}),  # Master config from module

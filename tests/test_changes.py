@@ -7,21 +7,17 @@ test_changes
 Tests for `inicheck.changes` module.
 """
 
-import os
-
 from inicheck.changes import ChangeLog
-from inicheck.config import MasterConfig
 
 
-class TestChanges():
+class TestChanges:
 
-    def test_valid_syntax(self, master_ini, changelog_ini):
+    def test_valid_syntax(self, full_mcfg, changelog_ini):
         """
         Test we can detect valid syntax
         """
-        mcfg = MasterConfig(path=master_ini)
         try:
-            c = ChangeLog(paths=changelog_ini, mcfg=mcfg)
+            c = ChangeLog(paths=changelog_ini, mcfg=full_mcfg)
             assert True
         except Exception:
             assert False

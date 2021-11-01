@@ -1,7 +1,7 @@
 from os.path import join, dirname, abspath
 from pathlib import Path
 from inicheck.tools import get_user_config, get_checkers
-
+from inicheck.config import MasterConfig
 
 import pytest
 
@@ -47,6 +47,16 @@ def recipes_ini(test_config_dir):
 def master_ini(core_ini, recipes_ini):
     return [core_ini, recipes_ini]
 
+@pytest.fixture(scope='session', autouse=True)
+def basic_mcfg(test_config_dir,):
+    """
+    Master config fixture to be used with the basic config fixture
+    """
+    return MasterConfig(path=join(test_config_dir, 'master.ini'))
+
+@pytest.fixture(scope='session', autouse=True)
+def full_mcfg(master_ini):
+    return MasterConfig(path=master_ini)
 
 @pytest.fixture(scope='session', autouse=True)
 def full_ucfg(full_config_ini, master_ini):
