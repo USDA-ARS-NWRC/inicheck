@@ -6,15 +6,11 @@ test_config
 
 Tests for `inicheck.config` module.
 """
-
-import datetime
-import os
-
 import pytest
 from inicheck.config import *
-from inicheck.tools import cast_all_variables, get_checkers
-from tests.conftest import TEST_ROOT, test_config_dir
+from tests.conftest import TEST_ROOT
 from os.path import join
+
 
 class TestUserConfig:
     @pytest.fixture(scope='class')
@@ -150,8 +146,8 @@ class TestMasterConfig():
         return MasterConfig(modules='inicheck')
 
     @pytest.mark.parametrize("mcfg_kwargs", [
-    ({"modules":'inicheck'}), # Master config from module
-    ({"path": join(TEST_ROOT, 'test_configs', 'CoreConfig.ini')}),  # Master config from file path
+        ({"modules": 'inicheck'}),  # Master config from module
+        ({"path": join(TEST_ROOT, 'test_configs', 'CoreConfig.ini')}),  # Master config from file path
     ])
     def test_mcfg_instantiate(self, mcfg_kwargs):
         """
@@ -179,35 +175,34 @@ class TestMasterConfig():
         mcfg.cfg = mcfg.add_files([recipes_ini])
         assert 'topo_basic_recipe' in [r.name for r in mcfg.recipes]
 
-#     @pytest.mark.parametrize("valid_type")
-#     def test_check_types(mcfg_tester):
-#         """
-#         Checks to make sure we throw the correct error when an unknown data
-#         type is requested
-#         """
-#
-#         # Call out a BS entry type to raise the error
-#         checkers = get_checkers()
-#         valids = ['bool', 'criticaldirectory', 'criticalfilename',
-#                   'discretionarycriticalfilename', 'datetime',
-#                   'datetimeorderedpair', 'directory', 'filename', 'float',
-#                   'int', 'string', 'url']
-#
-#         for kw in valids:
-#             line = ["type = {}".format(kw), "description = test"]
-#             cfg = {"section": {"test": ConfigEntry(name='test',
-#                                                    parseable_line=line)}}
-#             assert check_types(cfg, checkers)
-#
-#
-# def test_check_types_exception(mcfg_tester):
-#     # Call out a BS entry type to raise the error
-#     checkers = get_checkers()
-#     invalids = ['str', 'filepath', 'criticalfile']
-#
-#     for kw in invalids:
-#         line = ["type = {}".format(kw), "description = test"]
-#         cfg = {"section": {"test": ConfigEntry(name='test',
-#                                                parseable_line=line)}}
-#         with pytest.raises(ValueError):
-#             check_types(cfg, checkers)
+
+@pytest.fixture
+def cfg_type(type_name):
+    """
+    Simple config dictionary to test check_types from config.py
+    """
+    line = ["type = {}".format(type_name)]
+    cfg = {"section": {"test": ConfigEntry(name='test',
+                                           parseable_line=line)}}
+    return cfg
+
+
+@pytest.mark.parametrize("type_name", ['bool', 'criticaldirectory', 'criticalfilename',
+                                       'discretionarycriticalfilename', 'datetime',
+                                       'datetimeorderedpair', 'directory', 'filename', 'float',
+                                       'int', 'string', 'url'])
+def test_check_types_valid(checkers_dict, cfg_type, type_name):
+    """
+    Check the valid set of item types that the master config will accept
+    """
+    assert check_types(cfg_type, checkers_dict)
+
+
+@pytest.mark.parametrize("type_name", ['str', 'filepath', 'criticalfile'])
+def test_check_types_exception(checkers_dict, cfg_type, type_name):
+    """
+    Check an invalid item type in the master config will raise an exception
+    """
+    with pytest.raises(ValueError):
+        check_types(cfg_type, checkers_dict)
+

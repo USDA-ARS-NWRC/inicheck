@@ -1,6 +1,7 @@
 from os.path import join, dirname, abspath
 from pathlib import Path
-from inicheck.tools import get_user_config
+from inicheck.tools import get_user_config, get_checkers
+
 
 import pytest
 
@@ -46,6 +47,15 @@ def recipes_ini(test_config_dir):
 def master_ini(core_ini, recipes_ini):
     return [core_ini, recipes_ini]
 
+
 @pytest.fixture(scope='session', autouse=True)
 def full_ucfg(full_config_ini, master_ini):
     return get_user_config(full_config_ini, master_files=master_ini)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def checkers_dict():
+    """
+    Get a dictionary of checkers to use.
+    """
+    return get_checkers()
