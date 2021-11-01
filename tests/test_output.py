@@ -8,15 +8,23 @@ Tests for `inicheck.output` module.
 """
 
 import io
-import os
 from os.path import isfile
-import shutil
-from collections import OrderedDict
 from contextlib import redirect_stdout
 
 from inicheck.output import *
 from inicheck.tools import get_user_config
 import pytest
+
+
+@pytest.fixture()
+def out_config_ini():
+    """
+    Fixture for the generated config file path and its clean up
+    """
+    out_f = 'out_config.ini'
+    yield out_f
+    if isfile(out_f):
+        os.remove(out_f)
 
 
 def capture_print(function_call, *args, **kwargs):
@@ -36,40 +44,40 @@ def capture_print(function_call, *args, **kwargs):
     with redirect_stdout(f):
         function_call(*args, **kwargs)
     out = f.getvalue()
-
-    out_f = 'out_config.ini'
-    if isfile(out_f):
-        os.remove(out_f)
     return out
 
 
 class TestOutput:
 
-    @pytest.fixture()
+    @pytest.fixture(scope='function')
     def ucfg(self, full_config_ini):
+        """
+        Function scoped version of the ucfg fixture so changes can be made to it
+        w/o disrupting other tests.
+        """
         return get_user_config(full_config_ini, modules="inicheck")
 
-    def test_generate_config_header(self, ucfg):
+    def test_generate_config_header(self, ucfg, out_config_ini):
         """
-            Tests if we generate a config and dump it to a file with a header
-            """
-        generate_config(ucfg, 'out_config.ini', cli=False)
+        Tests if we generate a config header and dump it to a file
+        """
+        generate_config(ucfg, out_config_ini, cli=False)
 
-        with open('out_config.ini') as fp:
+        with open(out_config_ini) as fp:
             lines = fp.readlines()
             fp.close()
 
         # Assert a header is written
         assert 'Configuration' in lines[1]
 
-    def test_generate_config_sections(self, ucfg):
+    def test_generate_config_sections(self, ucfg, out_config_ini):
         """
             Tests if we generate a config and dump it to a file and all
             the sections are written to the file
             """
-        generate_config(ucfg, 'out_config.ini', cli=False)
+        generate_config(ucfg, out_config_ini, cli=False)
 
-        with open('out_config.ini') as fp:
+        with open(out_config_ini) as fp:
             lines = fp.readlines()
             fp.close()
 
@@ -108,7 +116,6 @@ class TestOutput:
         out = capture_print(print_details, details_list, ucfg.mcfg.cfg)
 
         assert out.count(keyword) == expected_count
-
 
     def test_non_default_print(self, ucfg):
         """
