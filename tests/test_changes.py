@@ -10,7 +10,7 @@ Tests for `inicheck.changes` module.
 import os
 
 from inicheck.changes import ChangeLog
-from inicheck.config import MasterConfig, UserConfig
+from inicheck.config import MasterConfig
 
 
 class TestChanges():

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 test_iniparse
 ----------------------------------
 
 Tests for `inicheck.iniparse` module.
-'''
-from collections import OrderedDict
+"""
 
 import pytest
 from inicheck.iniparse import *
@@ -15,9 +14,9 @@ from inicheck.iniparse import *
 class IniparseTester():
 
     def run_parsing_test(self, fn, info, expected, exception):
-        '''
+        """
         Manages testing exceptions and testing dict output
-        '''
+        """
         if isinstance(info, OrderedDict):
             expected = OrderedDict(expected)
 
@@ -53,7 +52,7 @@ def iniparse_tester():
     ([';[commented]'], {}),
     (['[s]', 'i:v ;comment'], {'s': ['i:v']}), ])
 def test_parse_sections(iniparse_tester, info, expected):
-    '''
+    """
     Tests our base function used to parse sections before we do any
     processing
 
@@ -62,7 +61,7 @@ def test_parse_sections(iniparse_tester, info, expected):
     * we can handle comments around sections.
     * caps issues
 
-    '''
+    """
     iniparse_tester.run_parsing_test(parse_sections, info, expected, None)
 
 
@@ -73,7 +72,7 @@ def test_parse_sections(iniparse_tester, info, expected):
     (['a#', '#', '[test]'], {}),
 ])
 def test_parse_sections_exception(iniparse_tester, info, expected):
-    '''
+    """
     Tests our base function used to parse sections before we do any
     processing
 
@@ -82,7 +81,7 @@ def test_parse_sections_exception(iniparse_tester, info, expected):
     * we can handle comments around sections.
     * caps issues
 
-    '''
+    """
     iniparse_tester.run_parsing_test(parse_sections, info, expected, Exception)
 
 
@@ -97,14 +96,14 @@ def test_parse_sections_exception(iniparse_tester, info, expected):
      'a': 'default=10 options=[10 15 20]'}),
 ])
 def test_parse_items(iniparse_tester, info, expected):
-    '''
+    """
     Tests our base function used to parse items after reading sections but
     before processing values.
 
     * tests for wrapped lists
     * tests to remove bracketed lists with comments
     * tests for properties being added in master files
-    '''
+    """
     # Assign a section to the info which are always OrderedDict
     info = OrderedDict({'s': info})
     expected = {'s': OrderedDict(expected)}
@@ -119,13 +118,13 @@ def test_parse_items(iniparse_tester, info, expected):
      'default=10', 'options=[10 15 20]']),
 ])
 def test_parse_values(iniparse_tester, info, expected):
-    '''
+    """
     test parse values
 
     Ensures:
     * Cleans up values with list entries
     * Cleans up properties we recieve including non-comma sep lists
-    '''
+    """
     # Assign info to a place in a dict of dict which are all ordered
     info = OrderedDict({'s': OrderedDict({'i': info})})
     expected = OrderedDict({'s': OrderedDict({'i': expected})})
@@ -148,10 +147,10 @@ def test_parse_values(iniparse_tester, info, expected):
                                              'any', 'any'], ['section', 'new_item', 'any', 'any']]),
 ])
 def test_parse_changes(iniparse_tester, info, expected):
-    '''
+    """
     Tests tha change lof parsing. Ensures we raise a value error for invalid
     syntax and that valid syntax is parsed correctly
-    '''
+    """
     iniparse_tester.run_parsing_test(parse_changes, info, [expected], None)
 
 
@@ -160,9 +159,9 @@ def test_parse_changes(iniparse_tester, info, expected):
     (['section/item > REMOVED'], []),
 ])
 def test_parse_changes_exception(iniparse_tester, info, expected):
-    '''
+    """
     Tests tha change lof parsing. Ensures we raise a value error for invalid
     syntax and that valid syntax is parsed correctly
-    '''
+    """
     iniparse_tester.run_parsing_test(
         parse_changes, info, [expected], ValueError)

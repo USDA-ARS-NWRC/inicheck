@@ -1,11 +1,10 @@
-import os
-
 import pytest
 
 from inicheck import checkers
 from inicheck.config import MasterConfig, UserConfig
 from .conftest import TEST_ROOT
 from os.path import join
+
 
 class CheckerTestBase:
     checker_cls = None
@@ -78,6 +77,7 @@ class TestCheckBool(CheckerTestBase):
     def test_check(self, checker, section, item, value, extra_config, valid):
         assert self.check_value(checker) == valid
 
+
 class TestCheckFloat(CheckerTestBase):
     checker_cls = checkers.CheckFloat
 
@@ -101,11 +101,12 @@ class TestCheckFloat(CheckerTestBase):
     def test_bounds_check(self, checker, section, item, value, extra_config, valid):
         assert self.check_value(checker) == valid
 
+
 class TestCheckInt(CheckerTestBase):
     checker_cls = checkers.CheckInt
 
     @pytest.mark.parametrize('section, item, value, extra_config, valid', [
-        ('basic', 'num_users', 10,  None, True),
+        ('basic', 'num_users', 10, None, True),
         ('basic', 'num_users', 1.0, None, True),
         ('basic', 'num_users', '2', None, True),
         ('basic', 'num_users', 'tough', None, False),
@@ -115,6 +116,7 @@ class TestCheckInt(CheckerTestBase):
     ])
     def test_check(self, checker, section, item, value, extra_config, valid):
         assert self.check_value(checker) == valid
+
 
 class TestCheckDatetime(CheckerTestBase):
     checker_cls = checkers.CheckDatetime
@@ -149,11 +151,12 @@ class TestCheckDirectory(CheckerTestBase):
     def test_check(self, checker, section, item, value, extra_config, valid):
         assert self.check_value(checker) == valid
 
+
 class TestCheckFilename(CheckerTestBase):
     checker_cls = checkers.CheckFilename
 
     @pytest.mark.parametrize('section, item, value, extra_config, valid', [
-        ('basic', 'log',  join(TEST_ROOT, 'test_checkers.py'), None, True),
+        ('basic', 'log', join(TEST_ROOT, 'test_checkers.py'), None, True),
         ('basic', 'log', './non_existent_file.z', None, False),
     ])
     def test_check(self, checker, section, item, value, extra_config, valid):
@@ -161,7 +164,7 @@ class TestCheckFilename(CheckerTestBase):
 
     @pytest.mark.parametrize('section, item, default', [
         ('basic', 'log', '/var/log/log.txt'),
-     ])
+    ])
     def test_filename_default_on_empty_string(self, user_config, section, item, default):
         """
         Check noncritical path in the event an empty string is passed that a default is not None.

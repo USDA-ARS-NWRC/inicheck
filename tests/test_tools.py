@@ -7,8 +7,6 @@ test_recipe
 Tests for `inicheck.Tools` module.
 """
 
-from collections import OrderedDict
-
 import pytest
 from inicheck.tools import *
 from datetime import datetime
