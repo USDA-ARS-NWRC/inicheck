@@ -187,3 +187,8 @@ class ConfigEntry:
         # Allow none should always be a bool
         if str(self.allow_none).lower() == 'false':
             self.allow_none = False
+        elif str(self.allow_none).lower() == 'true':
+            self.allow_none = True
+        else:
+            raise ValueError('Unrecognized allow_none in config entry named {}'
+                             ''.format(self.name))

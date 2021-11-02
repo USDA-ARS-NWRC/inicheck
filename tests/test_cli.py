@@ -2,110 +2,77 @@
 # -*- coding: utf-8 -*-
 
 import re
-import sys
-import unittest
-from os.path import abspath, dirname, join
-
 from inicheck.cli import current_version, inicheck_main, inidiff_main
-
 from .test_output import capture_print
+import pytest
 
 
-class TestCLI(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.test_base = abspath(join(dirname(__file__), 'test_configs'))
-        cls.master = [
-            join(cls.test_base, 'recipes.ini'),
-            join(cls.test_base, 'CoreConfig.ini')
-        ]
-        cls.full_config = join(cls.test_base, 'full_config.ini')
+class TestInicheckCLI:
 
-    @classmethod
-    def capture_with_params(cls, **kwargs):
+    def capture_with_params(self, config_ini, master_ini, **kwargs):
         return str(
             capture_print(
                 inicheck_main,
-                config_file=cls.full_config,
-                master=cls.master,
+                config_file=config_ini,
+                master=master_ini,
                 **kwargs
             )
         )
 
-    def test_basic_inicheck_cli(self):
-        """ Test simplest usage of CLI """
+    @pytest.mark.parametrize('flags_dict, countable_str, expected_str_count', [
+        ({}, "File does not exist", 9),
+        ({}, "Not a registered option", 23),
+        ({"show_recipes": True}, "_recipe", 20),
+        ({"show_non_defaults": True}, "wind", 35),
+        ({"show_non_defaults": True}, "albedo", 3),
+        ({"details": ['topo']}, "topo", 6),
+        ({"details": ['topo', 'basin_lat']}, "basin", 3),
+    ])
+    def test_cli_output(self, full_config_ini, master_ini, flags_dict, countable_str, expected_str_count):
+        """
+        Collec the console output from the cli and count certain keywords to check if the result is as expected.
+        Args:
+            flags_dict: Kwargs to pass to the cli
+            countable_str: String to search for in the output and count its occurances
+            expected_str_count: Integer of expected occurances of the countable_str
+        """
+        s = self.capture_with_params(full_config_ini, master_ini, **flags_dict)
+        assert s.count(countable_str) == expected_str_count
 
-        s = self.capture_with_params()
-
-        assert s.count("File does not exist") >= 9
-        assert s.count("Not a registered option") >= 20
-
-    def test_inicheck_recipe_use(self):
-        """ Test recipe output """
-
-        s = self.capture_with_params(show_recipes=True)
-
-        assert s.count("_recipe") == 20
-
-    def test_inicheck_non_defaults_use(self):
-        """ Test non-default output"""
-
-        s = self.capture_with_params(show_non_defaults=True)
-
-        assert s.count("wind") >= 7
-        assert s.count("albedo") >= 3
-
-    def test_inicheck_details_use(self):
-        """ Test details output """
-
-        s = self.capture_with_params(details=['topo'])
-
-        assert s.count("topo") >= 4
-
-        s = self.capture_with_params(details=['topo', 'basin_lat'])
-
-        assert s.count("topo") >= 1
-
-    def test_inicheck_changelog_use(self):
+    @pytest.mark.parametrize("countable_str, expected_str_count", [
+        ("topo", 7),
+        ('wind', 12),
+        ('solar', 9),
+        ('precip', 18),
+        ('air_temp', 9),
+        ('albedo', 30)
+    ])
+    def test_inicheck_changelog_use(self, old_smrf_config_ini, master_ini, changelog_ini, countable_str,
+                                    expected_str_count):
         """ Test changelog detection output """
-
-        old_cfg = join(self.test_base, 'old_smrf_config.ini')
-
         s = str(capture_print(
             inicheck_main,
-            config_file=old_cfg,
-            master=self.master,
-            changelog_file=join(self.test_base, 'changelog.ini')
+            config_file=old_smrf_config_ini,
+            master=master_ini,
+            changelog_file=changelog_ini
         ))
-        assert s.count("topo") == 7
-        assert s.count("wind") == 12
-        assert s.count("stations") == 5
-        assert s.count("solar") == 9
-        assert s.count("precip") == 18
-        assert s.count("air_temp") == 9
-        assert s.count("albedo") == 30
+        assert s.count(countable_str) == expected_str_count
 
-    def test_inidiff(self):
+
+class TestInidiffCLI():
+
+    def test_inidiff(self, full_config_ini, base_config_ini, master_ini):
         """
         Tests if the inidiff script is producing the same information
         """
-
-        configs = [
-            join(self.test_base, 'full_config.ini'),
-            join(self.test_base, 'base_cfg.ini')
-        ]
-
-        s = capture_print(inidiff_main, configs, master=self.master)
+        s = capture_print(inidiff_main, [full_config_ini, base_config_ini], master=master_ini)
 
         mismatches = s.split("config mismatches:")[-1].strip()
         assert '117' in mismatches
 
-    def test_version(self):
-        exception_message = re.search(
-            '(exception|error)', str(current_version()), re.IGNORECASE
-        )
-        assert exception_message is None
 
-
-if __name__ == '__main__':
-    sys.exit(unittest.main())
+def test_version():
+    exception_message = re.search(
+        '(exception|error)', str(current_version()), re.IGNORECASE
+    )
+    assert exception_message is None

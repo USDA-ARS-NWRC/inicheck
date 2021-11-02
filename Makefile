@@ -53,8 +53,8 @@ lint: ## check style with isort and pep8
 test: ## run tests quickly with the default Python
 	py.test
 
-coverage: ## run coverage and submit
-	coverage run --source inicheck setup.py test
+coverage: ## check code coverage quickly with the default Python
+	coverage run --source inicheck -m pytest
 	coverage report --fail-under=80
 
 coveralls: coverage ## run coveralls

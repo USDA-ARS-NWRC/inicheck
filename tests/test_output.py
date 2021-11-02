@@ -8,14 +8,23 @@ Tests for `inicheck.output` module.
 """
 
 import io
-import os
-import shutil
-import unittest
-from collections import OrderedDict
+from os.path import isfile
 from contextlib import redirect_stdout
 
 from inicheck.output import *
 from inicheck.tools import get_user_config
+import pytest
+
+
+@pytest.fixture()
+def out_config_ini():
+    """
+    Fixture for the generated config file path and its clean up
+    """
+    out_f = 'out_config.ini'
+    yield out_f
+    if isfile(out_f):
+        os.remove(out_f)
 
 
 def capture_print(function_call, *args, **kwargs):
@@ -38,79 +47,81 @@ def capture_print(function_call, *args, **kwargs):
     return out
 
 
-class TestOutput(unittest.TestCase):
+class TestOutput:
 
-    @classmethod
-    def setUpClass(self):
-        base = os.path.dirname(__file__)
-        self.ucfg = get_user_config(os.path.join(base, "test_configs/full_config.ini"),
-                                    modules="inicheck")
+    @pytest.fixture(scope='function')
+    def ucfg(self, full_config_ini):
+        """
+        Function scoped version of the ucfg fixture so changes can be made to it
+        w/o disrupting other tests.
+        """
+        return get_user_config(full_config_ini, modules="inicheck")
 
-    @classmethod
-    def tearDownClass(self):
+    def test_generate_config_header(self, ucfg, out_config_ini):
         """
-        Delete any files
+        Tests if we generate a config header and dump it to a file
         """
-        os.remove('out_config.ini')
+        generate_config(ucfg, out_config_ini, cli=False)
 
-    def test_generate_config(self):
-        """
-        Tests if we generate a config to a file
-        """
-        generate_config(self.ucfg, 'out_config.ini', cli=False)
-
-        with open('out_config.ini') as fp:
+        with open(out_config_ini) as fp:
             lines = fp.readlines()
             fp.close()
 
         # Assert a header is written
         assert 'Configuration' in lines[1]
 
+    def test_generate_config_sections(self, ucfg, out_config_ini):
+        """
+            Tests if we generate a config and dump it to a file and all
+            the sections are written to the file
+            """
+        generate_config(ucfg, out_config_ini, cli=False)
+
+        with open(out_config_ini) as fp:
+            lines = fp.readlines()
+            fp.close()
+
         key_count = 0
 
         # Assert all the sections are written
-        for k in self.ucfg.cfg.keys():
-            for l in lines:
-                if k in l:
+        for k in ucfg.cfg.keys():
+            for line in lines:
+                if k in line:
                     key_count += 1
                     break
 
-        assert key_count == len(self.ucfg.cfg.keys())
+        assert key_count == len(ucfg.cfg.keys())
 
-    def test_print_recipe_summary(self):
+    @pytest.mark.parametrize('keyword, expected_count', [
+        ('\n', 365),  # Test 365 line returns are produced
+        ('recipe', 34)  # Test 34 recipes are printed out
+    ])
+    def test_print_recipe_summary(self, ucfg, keyword, expected_count):
         """
-        Checks that the output produces 366 lines of recipe info
-        """
-        lst_recipes = self.ucfg.mcfg.recipes
+            Checks that the print_summary produces a specific count of a keyword in the output
+            """
+        lst_recipes = ucfg.mcfg.recipes
         out = capture_print(print_recipe_summary, lst_recipes)
-        assert len(out.split('\n')) == 366
-        assert out.count('recipe') == 34
+        assert out.count(keyword) == expected_count
 
-    def test_print_details(self):
+    @pytest.mark.parametrize('details_list, keyword, expected_count', [
+        (['air_temp'], 'air_temp', 18),  # test details on one section, should match the number of items in the section
+        (['precip', 'distribution'], 'distribution', 1),  # test details output on an item
+    ])
+    def test_print_details(self, ucfg, details_list, keyword, expected_count):
         """
         Tests the function for printting help on the master config
         """
         # Test for a whole section
-        details = ['air_temp']
-        out = capture_print(print_details, details, self.ucfg.mcfg.cfg)
+        out = capture_print(print_details, details_list, ucfg.mcfg.cfg)
 
-        assert out.count('air_temp') == len(self.ucfg.mcfg.cfg[details[0]])
+        assert out.count(keyword) == expected_count
 
-        # test for a section and item
-        details = ['precip', 'distribution']
-        out = capture_print(print_details, details, self.ucfg.mcfg.cfg)
-        assert out.count('precip ') == 1
-
-    def test_non_default_print(self):
+    def test_non_default_print(self, ucfg):
         """
         Tests if printing the non-defaults is working
         """
-        out = capture_print(print_non_defaults, self.ucfg)
+        out = capture_print(print_non_defaults, ucfg)
 
         # Check that we have 27 lines of info for non-defaults
         assert len(out.split('\n')) == 27
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(unittest.main())

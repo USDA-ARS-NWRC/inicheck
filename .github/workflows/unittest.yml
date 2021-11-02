@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install coverage coveralls PyYAML
+          python3 -m pip install coverage coveralls PyYAML pytest
           python3 -m pip install -r requirements.txt
 
       - name: Run coverage
@@ -68,6 +68,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
+          python3 -m pip install pytest
 
       - name: Run unittests
-        run: python3 -m unittest -v
+        run: python3 -m pytest -v
