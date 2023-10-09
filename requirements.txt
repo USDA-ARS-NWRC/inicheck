@@ -1,3 +1,4 @@
-dateparser==0.7.2
+dateparser>=0.7.2,<1.2.0
 requests>=2.0.0
+regex>=2021.11.10,<=2023.10.3
 setuptools_scm<4.2
