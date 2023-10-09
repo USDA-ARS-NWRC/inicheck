@@ -240,8 +240,9 @@ class ChangeLog(object):
                     del cfg[s_o][i_o]
 
                 # look to remove a whole section
-                if len(cfg[s_o].keys()
-                       ) == 0 and s_o not in ucfg.mcfg.cfg.keys():
-                    del(cfg[s_o])
+                if len(
+                    cfg[s_o].keys()
+                ) == 0 and s_o not in ucfg.mcfg.cfg.keys():
+                    del cfg[s_o]
 
         return cfg
