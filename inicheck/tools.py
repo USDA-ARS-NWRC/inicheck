@@ -178,7 +178,10 @@ def cast_all_variables(config_obj, mcfg_obj):
                     fn = all_checks[mcfg[s][i].type]
 
                     b = fn(config=config_obj, section=s, item=i)
-                    values = b.cast()
+                    try:
+                        values = b.cast()
+                    except ValueError:
+                        values = ucfg[s][i]
 
                 # Not recognized items, keep them anyways
                 else:

@@ -68,6 +68,21 @@ def test_get_user_config_exception():
         get_user_config('not_a_file.ini')
 
 
+def test_cast_all_variables_invalid_int_value(full_config_ini, core_ini):
+    """
+    Ensure invalid float values for int fields are reported by check_config.
+    """
+    ucfg = get_user_config(full_config_ini, master_files=core_ini)
+    ucfg.cfg = {'air_temp': {'dk_ncores': '0.1'}}
+    ucfg = cast_all_variables(ucfg, ucfg.mcfg)
+
+    warnings, errors = check_config(ucfg)
+
+    assert warnings == []
+    assert len(errors) == 1
+    assert "Expecting int received str" in errors[0]
+
+
 def test_config_documentation_error():
     """
     Confirms that we still make config documentation
